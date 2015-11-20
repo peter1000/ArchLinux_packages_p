@@ -1,0 +1,37 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Gustavo Alvarez <sl1pkn07@gmail.com>
+
+_srcname=l-smash
+pkgname=${_srcname}-git_p
+pkgver=2.9.1.r22.g3408947               #commit=3408947  OK
+pkgrel=1
+pkgdesc="MP4 muxer and other tools (GIT Version)"
+arch=('x86_64')
+license=('custom:l-smash')
+depends=('glibc')
+makedepends=('git')
+provides=('liblsmash.so' "lsmash" "${pkgname}=${pkgver}")
+conflicts=('liblsmash.so' 'lsmash' 'lsmash-git')
+url="http://l-smash.github.io/l-smash/"
+source=("${_srcname}::git+https://github.com/l-smash/${_srcname}.git#commit=3408947 ")
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr --enable-shared --disable-static
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="${pkgdir}" install
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

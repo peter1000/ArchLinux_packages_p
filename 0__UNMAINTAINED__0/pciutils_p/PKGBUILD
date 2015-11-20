@@ -1,0 +1,33 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Tobias Powalowski <tpowa@archlinux.org>
+
+_srcname=pciutils
+pkgname=${_srcname}_p
+pkgver=3.3.1
+pkgrel=1
+pkgdesc="PCI bus configuration space access library and tools"
+arch=('x86_64')
+license=('GPL2')
+groups=('base')
+url="http://mj.ucw.cz/sw/pciutils/"
+depends=('glibc' 'hwids' 'kmod')
+provides=("pciutils=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('pciutils')
+source=(#ftp://ftp.kernel.org/pub/software/utils/${_srcname}/${_srcname}-${pkgver}.tar.bz2
+       ftp://atrey.karlin.mff.cuni.cz/pub/linux/pci/${_srcname}-${pkgver}.tar.gz)
+sha1sums=('23730ee7bbb83a36fb2a89cb5f5228d59a1aaa83')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make ${MAKEFLAGS} OPT="${CFLAGS} -DPIC" ZLIB=no SHARED=no PREFIX=/usr SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man SBINDIR=/usr/bin lib/libpci.a 
+    cp lib/libpci.a "${srcdir}/"
+    make ${MAKEFLAGS} clean
+    make ${MAKEFLAGS} OPT="${CFLAGS}" ZLIB=no SHARED=yes PREFIX=/usr SBINDIR=/usr/bin SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man all
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make SHARED=yes PREFIX=/usr SBINDIR=/usr/bin SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man DESTDIR="${pkgdir}" install install-lib
+    # this is now supplied by the hwids package
+    rm -rf $pkgdir/usr/{sbin/update-pciids,share/{man/man8/update-pciids.8,hwdata}}
+}

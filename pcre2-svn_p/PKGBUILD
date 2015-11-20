@@ -1,0 +1,68 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Felix Yan <felixonmars@archlinux.org>
+# Contributor: Mateusz 'mrlemux' Lemusisk mrlemux at gmail dotcom
+# Based on the pcre package by Sébastien "Seblu" Luttringer
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Eric Belanger <eric@archlinux.org>
+# Contributor: John Proctor <jproctor@prium.net>
+
+_srcname=pcre2
+pkgname=${_srcname}-svn_p
+_tag=10.20
+pkgver=10.20.r442 
+pkgrel=1
+arch=('x86_64')
+pkgdesc='A library that implements Perl 5-style regular expressions. 2nd version'
+url='http://www.pcre.org/'
+license=('BSD')
+depends=('zlib' 'bzip2' 'bash')
+makedepends=('subversion')
+provides=("pcre2=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('pcre2' 'pcre2-svn')
+source=("${_srcname}::svn://vcs.exim.org/pcre2/code/trunk")     #revision=442 OK
+sha512sums=('SKIP')
+
+pkgver() {
+    cd "${srcdir}/${_srcname}"
+    local ver="$(svnversion)"
+    printf "${_tag}.r%s" "${ver//[[:alpha:]]}"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    autoreconf -fiv
+    
+    # fix test permission: #revision=427
+    #    ./test-driver: line 107: ./RunTest: Permission denied
+    #    FAIL RunTest (exit status: 126)
+    #    ./test-driver: line 107: ./RunGrepTest: Permission denied
+    #    FAIL RunGrepTest (exit status: 126)
+    
+    chmod +x RunTest
+    chmod +x RunGrepTest
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure \
+        --prefix=/usr \
+        --enable-pcre2-16 \
+        --enable-pcre2-32 \
+        --enable-jit \
+        --enable-pcre2grep-libz \
+        --enable-pcre2grep-libbz2 \
+        --enable-pcre2test-libreadline
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd "${srcdir}/${_srcname}"
+    make -j1 check
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir" install
+
+    install -Dm644 LICENCE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

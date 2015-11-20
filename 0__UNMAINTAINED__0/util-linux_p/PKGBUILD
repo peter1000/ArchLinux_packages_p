@@ -1,0 +1,99 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Tom Gundersen <teg@jklm.no>
+# Contributor: Dave Reisner <dreisner@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+
+_srcname=util-linux
+pkgbase=${_srcname}_p
+pkgname=('util-linux_p' 'libutil-linux_p')
+pkgver=2.27
+pkgrel=6
+pkgdesc="Miscellaneous system utilities for Linux"
+url="https://www.kernel.org/pub/linux/utils/util-linux/"
+arch=('x86_64')
+makedepends=('systemd' 'python')
+license=('GPL2')
+options=('strip' 'debug')
+source=("https://www.kernel.org/pub/linux/utils/util-linux/v2.27/$_srcname-$pkgver.tar.xz"
+        "0001-libmount-monitor-don-t-check-for-regular-mtab.patch"
+        pam-{login,common,su})
+sha256sums=('fcbf04e3ef8377fc8369af7f9afee341c5eef9b02dd5a7ce71532d0957e86dc7'
+            'd02899c445fa3783b35c8926d68b40ff182158081c0a3084f23db52f07cae7ac'
+            '993a3096c2b113e6800f2abbd5d4233ebf1a97eef423990d3187d665d3490b92'
+            'fc6807842f92e9d3f792d6b64a0d5aad87995a279153ab228b1b2a64d9f32f20'
+            '51eac9c2a2f51ad3982bba35de9aac5510f1eeff432d2d63c6362e45d620afc0')
+
+prepare() {
+	cd "${_srcname}-${pkgver}"
+
+	patch -Np1 <../0001-libmount-monitor-don-t-check-for-regular-mtab.patch
+}
+
+build() {
+	cd "${_srcname}-${pkgver}"
+
+	./configure --prefix=/usr \
+		--libdir=/usr/lib \
+		--bindir=/usr/bin \
+		--localstatedir=/run \
+		--enable-fs-paths-extra=/usr/bin \
+		--enable-raw \
+		--enable-vipw \
+		--enable-newgrp \
+		--enable-chfn-chsh \
+		--enable-write \
+		--enable-mesg \
+		--enable-libmount-force-mountinfo \
+		--with-python=3
+
+	make ${MAKEFLAGS}
+}
+
+package_util-linux_p() {
+	provides=("util-linux-ng=${pkgver}" 'eject' 'zramctl' "util-linux=${pkgver}" "${pkgname}=${pkgver}")
+	conflicts=('util-linux-ng' 'eject' 'zramctl')
+	replaces=('zramctl')
+	depends=('pam' 'shadow' 'coreutils' 'libsystemd' 'libutil-linux')
+	optdepends=('python: python bindings to libmount')
+	groups=('base' 'base-devel')
+	backup=(etc/pam.d/chfn
+          etc/pam.d/chsh
+          etc/pam.d/login
+          etc/pam.d/su
+          etc/pam.d/su-l)
+
+	cd "${_srcname}-${pkgver}"
+
+	make DESTDIR="$pkgdir" install
+
+	# setuid chfn and chsh
+	chmod 4755 "$pkgdir"/usr/bin/{newgrp,ch{sh,fn}}
+
+	# install PAM files for login-utils
+	install -Dm644 "$srcdir/pam-common" "$pkgdir/etc/pam.d/chfn"
+	install -m644 "$srcdir/pam-common" "$pkgdir/etc/pam.d/chsh"
+	install -m644 "$srcdir/pam-login" "$pkgdir/etc/pam.d/login"
+	install -m644 "$srcdir/pam-su" "$pkgdir/etc/pam.d/su"
+	install -m644 "$srcdir/pam-su" "$pkgdir/etc/pam.d/su-l"
+
+	# TODO(dreisner): offer this upstream?
+	sed -i '/ListenStream/ aRuntimeDirectory=uuidd' "$pkgdir/usr/lib/systemd/system/uuidd.socket"
+
+	# adjust for usrmove
+	# TODO(dreisner): fix configure.ac upstream so that this isn't needed
+	cd "$pkgdir"
+	mv {,usr/}sbin/* usr/bin
+	rmdir sbin usr/sbin
+
+	### runtime libs are shipped as part of libutil-linux
+	rm "$pkgdir"/usr/lib/lib*.{a,so}*
+}
+
+package_libutil-linux_p() {
+	pkgdesc="util-linux runtime libraries"
+	provides=('libblkid.so' 'libfdisk.so' 'libmount.so' 'libsmartcols.so' 'libuuid.so'  "libutil-linux=${pkgver}" "${pkgname}=${pkgver}")
+	conflicts=('libutil-linux')
+	
+	make -C "${_srcname}-${pkgver}" DESTDIR="$pkgdir" install-usrlib_execLTLIBRARIES
+}

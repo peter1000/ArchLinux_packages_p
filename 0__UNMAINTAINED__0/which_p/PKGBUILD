@@ -1,0 +1,33 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Sébastien Luttringer <seblu@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+
+_srcname=which
+pkgname=${_srcname}_p
+pkgver=2.21
+pkgrel=1
+pkgdesc='A utility to show the full path of commands'
+arch=('x86_64')
+url='http://savannah.gnu.org/projects/which'
+license=('GPL3')
+groups=('base' 'base-devel')
+depends=('glibc' 'bash')
+install=which.install
+# gpg key is using deprecated md5 algo, do not use
+# check if a new one is issued in the next release
+provides=("which=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('which')
+source=("http://ftp.gnu.org/gnu/$_srcname/$_srcname-$pkgver.tar.gz")
+sha256sums=('f4a245b94124b377d8b49646bf421f9155d36aa7614b6ebf83705d3ffc76eaad')
+
+build() {
+	cd $_srcname-$pkgver
+	./configure --prefix=/usr
+	make ${MAKEFLAGS}
+}
+
+package() {
+	cd $_srcname-$pkgver
+	make DESTDIR="$pkgdir" install
+}

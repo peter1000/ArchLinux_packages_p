@@ -1,0 +1,37 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Felix Yan <felixonmars@archlinux.org>
+# Contributor: Thomas Dziedzic < gostrc at gmail >
+
+_srcname=tornado
+pkgname=python-${_srcname}-git_p
+pkgver=4.3.0b2.r5.g1ecc738              #commit=1ecc738  OK
+pkgrel=1
+pkgdesc='open source version of the scalable, non-blocking web server and tools'
+arch=('x86_64')
+url='http://www.tornadoweb.org/'
+license=('Apache')
+makedepends=('python-setuptools' 'git')
+provides=("python-tornado=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('python-tornado' 'python-tornado-git')
+source=("${_srcname}::git+https://github.com/tornadoweb/${_srcname}.git#commit=1ecc738")
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py build
+}
+
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py install --skip-build --root="${pkgdir}" --optimize=1
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

@@ -1,0 +1,37 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Sébastien Luttringer <seblu@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+
+_srcname=file
+pkgname=${_srcname}_p
+pkgver=5.25
+pkgrel=1
+pkgdesc='File type identification utility'
+arch=('x86_64')
+license=('custom')
+groups=('base' 'base-devel')
+url='http://www.darwinsys.com/file/'
+depends=('glibc' 'zlib')
+provides=("file=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('file')
+source=("ftp://ftp.astron.com/pub/$_srcname/$_srcname-$pkgver.tar.gz")
+sha256sums=('3735381563f69fb4239470b8c51b876a80425348b8285a7cded8b61d6b890eca')
+
+build() {
+	cd $_srcname-$pkgver
+	./configure --prefix=/usr --datadir=/usr/share/file
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd $_srcname-$pkgver
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd $_srcname-$pkgver
+	make DESTDIR="$pkgdir" install
+	install -Dm644 COPYING "$pkgdir/usr/share/licenses/${pkgname}/COPYING"
+	rmdir "$pkgdir/usr/share/man/man5"
+}

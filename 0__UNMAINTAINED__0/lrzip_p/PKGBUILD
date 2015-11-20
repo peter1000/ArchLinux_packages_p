@@ -1,0 +1,36 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Alexander Rødseth <rodseth@gmail.com>
+# Contributor: graysky <graysky AT archlinux DOT us>
+# Contributor: kastor@fobos.org.ar
+
+_srcname=lrzip
+pkgname=${_srcname}_p
+pkgver=0.621
+pkgrel=1
+pkgdesc='Multi-threaded compression using the rzip/lzma, lzo, and zpaq algorithms'
+url='http://lrzip.kolivas.org/'
+license=('GPL')
+arch=('x86_64')
+depends=('lzo' 'zlib')
+provides=("lrzip=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('lrzip')
+source=("http://ck.kolivas.org/apps/$_srcname/$_srcname-$pkgver.tar.bz2")
+sha256sums=('31c26fbee8b9b0bd413ca214862dbc0d9e6d3477f23e9839774936bf140ceb6b')
+
+build() {
+    cd "$_srcname-$pkgver"
+
+    CFLAGS="$CFLAGS -fomit-frame-pointer"
+    CXXFLAGS="$CXXFLAGS -fomit-frame-pointer"
+    ./autogen.sh --prefix=/usr --enable-asm
+
+    make ${MAKEFLAGS}
+}
+
+check() {
+    make ${MAKEFLAGS} -C "$_srcname-$pkgver" -k check
+}
+
+package() {
+    make -C "$_srcname-$pkgver" DESTDIR="$pkgdir" install-strip
+}

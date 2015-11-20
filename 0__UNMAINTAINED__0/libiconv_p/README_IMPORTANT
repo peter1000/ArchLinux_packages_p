@@ -1,0 +1,6 @@
+Seems this interfered with some other things:
+
+e.g. fdkaac-git_p: compat_posix.c:(.text+0x1c7): undefined reference to `locale_charset'
+After removing this package it compiled fine.
+
+see also: https://bbs.archlinux.org/viewtopic.php?id=1937

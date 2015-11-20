@@ -1,0 +1,47 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Rémy Oudompheng <remy@archlinux.org>
+# Contributor: Yen Chi Hsuan <yan12125 at gmail.com>
+# Contributor: Dave Reisner <d@falconindy.com>
+
+_srcname=pyalpm
+pkgname=${_srcname}-git_p
+pkgver=0.6.2.r3.g3c4692b               #commit=3c4692b  OK
+pkgrel=1
+pkgdesc="Libalpm bindings for Python 3 (Git version)"
+arch=('x86_64')
+url="http://projects.archlinux.org/users/remy/pyalpm.git/"
+license=('GPL')
+depends=('python>=3.5' 'pacman-git_p>=4.2')
+makedepends=('git')
+provides=("pyalpm=${pkgver}" "pyalpm-git=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('pyalpm' 'pyalpm-git')
+source=("${_srcname}::git+https://projects.archlinux.org/git/users/remy/${_srcname}.git#commit=3c4692b")
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    # workaround when building with Python 3.5
+    sed -i "s/'-Werror',//" setup.py
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    # workaround Python packaging issue (FS#34658)
+    export CFLAGS="$CFLAGS -Wno-format"
+    
+    python setup.py build
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py install --skip-build --root="${pkgdir}" --optimize=1
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

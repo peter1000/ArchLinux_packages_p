@@ -1,0 +1,38 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+
+_srcname=findutils
+pkgname=${_srcname}_p
+pkgver=4.4.2
+pkgrel=6
+pkgdesc="GNU utilities to locate files"
+arch=('x86_64')
+license=('GPL3')
+groups=('base' 'base-devel')
+depends=('glibc' 'sh')
+url="http://www.gnu.org/software/findutils"
+provides=("findutils=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('findutils')
+source=(ftp://ftp.gnu.org/pub/gnu/findutils/${_srcname}-${pkgver}.tar.gz)
+install=findutils.install
+sha1sums=('e8dd88fa2cc58abffd0bfc1eddab9020231bb024')
+
+build() {
+	cd "${srcdir}/${_srcname}-${pkgver}"
+
+	# Don't build or install locate because we use mlocate,
+	# which is a secure version of locate.
+	sed -i '/^SUBDIRS/s/locate//' Makefile.in
+
+	./configure --prefix=/usr
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd "${srcdir}/${_srcname}-${pkgver}"
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd "${srcdir}/${_srcname}-${pkgver}"
+	make DESTDIR=$pkgdir install
+}

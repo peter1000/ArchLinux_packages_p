@@ -1,0 +1,29 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
+# Contributor: Michal Bozon <michal.bozon__at__gmail.com>
+
+_srcname=PyYAML
+pkgname=python-yaml_p
+pkgver=3.11
+pkgrel=2
+pkgdesc="Python bindings for YAML, using fast libYAML library"
+arch=('i686' 'x86_64')
+url="http://pyyaml.org"
+license=('MIT')
+makedepends=('python' 'libyaml' 'python-setuptools')
+install='python-yaml.install'
+provides=("python-yaml=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('python-yaml')
+source=("http://pyyaml.org/download/pyyaml/${_srcname}-${pkgver}.tar.gz")
+sha256sums=('c36c938a872e5ff494938b33b14aaa156cb439ec67548fcab3535bb78b0846e8')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    python setup.py build
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    python setup.py install --skip-build --root="${pkgdir}" --optimize=1
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

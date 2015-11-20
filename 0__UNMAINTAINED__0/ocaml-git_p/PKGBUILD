@@ -1,0 +1,68 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Tobias Powalowski <tpowa@archlinux.org>
+
+_srcname=ocaml
+ocaml=${_srcname}-git_p
+pkgname=('ocaml-git_p' 'ocaml-compiler-libs-git_p')
+_tag=4.02.3
+pkgver=4.02.3.r10912.ge88b2fb               #commit=e88b2fb   OK
+pkgrel=1
+arch=('x86_64')
+license=('LGPL2.1' 'custom: QPL-1.0')
+url="http://caml.inria.fr/"
+makedepends=('git' 'tk>=8.6.0' 'ncurses>=5.6-7' 'libx11' 'gdbm')
+options=('!makeflags' '!emptydirs' 'staticlibs')
+source=("${_srcname}::git+https://github.com/ocaml/${_srcname}.git#commit=e88b2fb")
+sha256sums=('SKIP')
+
+pkgver() {
+    cd "${srcdir}/${_srcname}"
+    printf "${_tag}.r%s.g%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure -prefix /usr -x11include /usr/include 
+    make ${MAKEFLAGS} world.opt
+}
+
+package_ocaml-git_p() {
+    pkgdesc="A functional language with OO extensions"
+    depends=('gdbm')
+    optdepends=('ncurses: advanced ncurses features' 'tk: advanced tk features')
+    provides=("ocaml=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('ocaml' 'ocaml-git')
+
+    cd "${srcdir}/${_srcname}"
+    make PREFIX="${pkgdir}/usr" MANDIR="${pkgdir}/usr/share/man" install
+
+    # Save >10MB with this one, makepkg only strips debug symbols.
+    #find "${pkgdir}/usr/lib" -type f -name '*.so.*' -exec strip --strip-unneeded {} \;
+
+    # install license
+    install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+    install -m644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/"
+}
+
+package_ocaml-compiler-libs-git_p() {
+    pkgdesc="Several modules used internally by the OCaml compiler"
+    license=('custom: QPL-1.0')
+    depends=('ocaml-git_p')
+    provides=("ocaml-compiler-libs=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('ocaml-compiler-libs' 'ocaml-compiler-libs-git')
+    
+    cd "${srcdir}/${_srcname}"
+
+    # Install compiler libraries
+    local compiler_libs="${pkgdir}/usr/lib/ocaml/compiler-libs"
+    mkdir -p "$compiler_libs"/{parsing,typing,utils}
+    cp parsing/*.{cmi,cmo,cmx,ml,mli,mll,o} "$compiler_libs"/parsing
+    cp typing/*.{cmi,cmo,cmx,ml,mli,o} "$compiler_libs"/typing
+    cp utils/*.{cmi,cmo,cmx,ml,mli,o} "$compiler_libs"/utils
+    # duplicated by installation
+    rm -f "$compiler_libs"/typing/outcometree.{cmi,mli}
+
+    # install license
+    install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+    install -m644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/"
+}

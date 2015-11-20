@@ -1,0 +1,43 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Alexander Rødseth <rodseth@gmail.com>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: DrZaius <lou[at]fakeoutdoorsman[dot]com>
+
+_srcname=opusfile
+pkgname=${_srcname}-git_p
+pkgver=0.6.r5.gcfe0329               
+pkgrel=1
+pkgdesc='Library for opening, seeking, and decoding .opus files'
+arch=('x86_64')
+url='http://www.opus-codec.org/'
+license=('BSD')
+depends=('libogg' 'openssl' 'opus')
+provides=("opusfile=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('opusfile' 'opusfile-git')
+source=("${_srcname}::git+https://git.xiph.org/${_srcname}.git#commit=cfe0329")		#commit=cfe0329  OK
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    ./autogen.sh
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir" install
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+}

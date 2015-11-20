@@ -1,0 +1,65 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Lubosz Sarnecki <lubosz@gmail.com>
+
+_srcname=gst-plugins-bad
+pkgname=${_srcname}-git_p
+pkgver=1.5.2.r255.g80d77aa
+pkgrel=1
+pkgdesc="GStreamer Multimedia Framework Bad Plugins"
+arch=('x86_64')
+license=('LGPL')
+url="http://gstreamer.freedesktop.org/"
+depends=('mjpegtools' 'gst-plugins-base-libs' 'curl' 'chromaprint' 'libmms' 'faad2' 'mpg123' 'faac' 'celt'
+    'libdca' 'soundtouch' 'spandsp' 'libdvdnav' 'libmodplug' 'libgme' 'opus' 'wayland' 'neon' 'libofa' 'fluidsynth'
+    'openjpeg' 'libwebp' 'libsrtp' 'gnutls' 'wildmidi' 'glu' 'sbc' 'rtmpdump' 'libgudev'
+
+    NOT finished)
+makedepends=('git' 'schroedinger' 'libexif' 'libdvdread' 'libvdpau' 'libmpeg2' 'python' 'valgrind' 'wildmidi' 'librsvg'
+             'gobject-introspection' 'gtk-doc' 'gtk3' 'clutter' 'opencv' 'libtiger' 'ladspa' 'openal' 'libusb' NOT finished)
+options=(!emptydirs)
+provides=("gst-plugins-bad=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('gst-plugins-bad' 'gst-plugins-bad-git')
+source=("${_srcname}::git+git://anongit.freedesktop.org/gstreamer/gst-plugins-bad")
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./autogen.sh --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+        --disable-static --enable-experimental --disable-fatal-warnings \
+        --with-gtk=3.0 --disable-gtk-doc
+    make
+}
+
+#build() {
+    #cd "${srcdir}/${_srcname}"
+
+    #./autogen.sh --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+        #--disable-static --enable-experimental --disable-gtk-doc \
+        #--with-package-name="GStreamer Bad Plugins (Arch Linux)" \
+        #--with-gtk=3.0
+
+    ## https://bugzilla.gnome.org/show_bug.cgi?id=655517
+    #sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+
+    #make ${MAKEFLAGS}
+#}
+
+#check() {
+    #cd "${srcdir}/${_srcname}"
+    ## don't have a camera for the camerabin test
+    #make -k check || :
+#}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="${pkgdir}" install
+}

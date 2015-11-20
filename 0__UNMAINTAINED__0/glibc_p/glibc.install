@@ -1,0 +1,63 @@
+# ADDED 20151031: Colored makepkg-like functions =======================
+msg_blue() {
+    printf "${blue}==>${bold} $1${all_off}\n"
+}
+
+note() {
+    printf "${blue}==>${yellow} NOTE$1:${bold} $2${all_off}\n"
+}
+
+all_off="$(tput sgr0)"
+bold="${all_off}$(tput bold)"
+blue="${bold}$(tput setaf 4)"
+yellow="${bold}$(tput setaf 3)"
+
+# ======================================================================
+
+infodir=usr/share/info
+filelist=(libc.info{,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11})
+
+_update() {
+    note " Renaming move new locale.gen: mv -f /etc/locale.gen /etc/locale.gen.example.txt"
+	mv -f /etc/locale.gen /etc/locale.gen.example.txt
+
+    msg_blue " Copying saved locale.gen: cp -f /etc/locale.gen.pacsave /etc/locale.gen"
+    cp -f /etc/locale.gen.pacsave /etc/locale.gen
+}
+
+post_install() {
+    _update
+}
+
+post_upgrade() {
+    ldconfig -r .
+
+    if [[ $(vercmp 2.22-1 $2) = 1 ]]; then
+        locale-gen
+    fi
+
+    [[ -x usr/bin/install-info ]] || return 0
+    for file in ${filelist[@]}; do
+        install-info $infodir/$file.gz $infodir/dir 2> /dev/null
+    done
+    
+    _update
+}
+
+
+pre_remove() {
+    [[ -x usr/bin/install-info ]] || return 0
+    for file in ${filelist[@]}; do
+        install-info --delete $infodir/$file.gz $infodir/dir 2> /dev/null
+    done
+}
+
+
+
+post_upgrade() {
+    _update
+}
+
+post_remove() {
+    post_upgrade
+}

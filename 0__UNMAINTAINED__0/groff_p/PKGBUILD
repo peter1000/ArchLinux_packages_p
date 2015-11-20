@@ -1,0 +1,54 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+
+### rebuild on every ghostscript update -  FS#36562 ###
+
+_srcname=groff
+pkgname=${_srcname}_p
+pkgver=1.22.3
+pkgrel=4
+pkgdesc="GNU troff text-formatting system"
+arch=('x86_64')
+url="http://www.gnu.org/software/groff/groff.html"
+license=('GPL')
+groups=('base-devel')
+depends=('perl' 'gcc-libs')
+makedepends=('netpbm' 'psutils' 'ghostscript' 'libxaw')
+optdepends=('netpbm: for use together with man -H command interaction in browsers'
+            'psutils: for use together with man -H command interaction in browsers'
+            'libxaw: for gxditview')
+provides=("groff=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('groff')
+source=(ftp://ftp.gnu.org/gnu/groff/groff-$pkgver.tar.gz
+        site.tmac)
+options=('!docs' '!emptydirs' '!makeflags')
+install=groff.install
+sha256sums=('3a48a9d6c97750bfbd535feeb5be0111db6406ddb7bb79fc680809cda6d828a5'
+            'af59ecde597ce9f8189368a7739279a5f8a391139fe048ef6b4e493ed46e5f5f')
+
+build() {
+	cd $srcdir/${_srcname}-${pkgver}
+	./configure --prefix=/usr --with-x --with-appresdir=/usr/share/X11/app-defaults
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd $srcdir/${_srcname}-${pkgver}
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd $srcdir/${_srcname}-${pkgver}
+	make DESTDIR=$pkgdir install
+
+	# add compatibility symlinks
+	ln -s eqn $pkgdir/usr/bin/geqn
+	ln -s tbl $pkgdir/usr/bin/gtbl
+	ln -s soelim $pkgdir/usr/bin/zsoelim
+
+	# FS33760 - TERMCAP variables not followed
+	# TODO: everyone is doing this - find out why upstream does not...
+	cat $srcdir/site.tmac >> \
+		$pkgdir/usr/share/groff/site-tmac/man.local
+	cat $srcdir/site.tmac >> \
+		$pkgdir/usr/share/groff/site-tmac/mdoc.local
+}

@@ -1,0 +1,45 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
+# Maintainer:  hydro <hydro@freenet.de>
+
+_srcname=MediaInfoLib
+pkgname=libmediainfo_p
+pkgver=0.7.78
+pkgrel=1
+pkgdesc="shared library for mediainfo"
+arch=('i686' 'x86_64')
+url="http://mediainfo.sourceforge.net"
+license=('GPL')
+depends=( 'curl' 'libmms' 'libzen')
+makedepends=('libtool' 'automake' 'autoconf')
+provides=("libmediainfo=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libmediainfo')
+source=("http://mediaarea.net/download/source/libmediainfo/${pkgver}/libmediainfo_${pkgver}.tar.bz2"
+	libmediainfo-0.7.50-libmms.patch)
+sha256sums=('9fd7c5c451892374130755b86e684a2bbda2456ba882058673a4d8ee4eb81edf'
+            '0adfbac0efee13e1f58dcfa5d2e50b3bc30029a9b1cf812e2d62d1e3308beeeb')
+
+prepare() {
+    cd "${srcdir}/${_srcname}/Project/GNU/Library"
+    autoreconf -fiv
+}
+
+build() {
+    cd "${srcdir}/${_srcname}/Project/GNU/Library"
+    ./configure --prefix=/usr --enable-shared --disable-static --with-libcurl --with-libmms
+    make clean
+    (cd ../../.. && patch -p1 <$srcdir/libmediainfo-0.7.50-libmms.patch)
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}/Project/GNU/Library"
+    make DESTDIR="${pkgdir}" install
+    for i in MediaInfo MediaInfoDLL; do
+        install -dm 755 $pkgdir/usr/include/$i
+        install -m 644 $srcdir/MediaInfoLib/Source/$i/*.h $pkgdir/usr/include/$i
+    done
+    install -dm 755 $pkgdir/usr/lib/pkgconfig
+    install -m 644 $srcdir/MediaInfoLib/Project/GNU/Library/libmediainfo.pc $pkgdir/usr/lib/pkgconfig
+    sed -i -e 's|Version: |Version: '${pkgver}'|g' $pkgdir/usr/lib/pkgconfig/libmediainfo.pc
+}

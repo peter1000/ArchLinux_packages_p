@@ -1,0 +1,41 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+
+# after a .so bump first rebuild dirmngr
+# with sudo testing-x86_64-build -- -I libgcrypt-1.6.0-1-x86_64.pkg.tar.xz
+# then cp /usr/lib/libgcrypt.so.11 /var/lib/archbuild/staging-x86_64/root/usr/lib/ and do staging-x86_64-build
+
+_srcname=libgcrypt
+pkgname=${_srcname}_p
+pkgver=1.6.4
+pkgrel=1
+pkgdesc="General purpose cryptographic library based on the code from GnuPG"
+arch=('x86_64')
+url="http://www.gnupg.org"
+license=('LGPL')
+depends=('libgpg-error>=1.10-2')
+options=('!emptydirs')
+install=$_srcname.install
+# https://www.gnupg.org/download/integrity_check.html
+provides=("libgcrypt=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libgcrypt')
+source=(ftp://ftp.gnupg.org/gcrypt/${_srcname}/${_srcname}-${pkgver}.tar.bz2)
+sha1sums=('ed52add1ce635deeb2f5c6650e52667debd4ec70')
+
+build() {
+    cd ${_srcname}-${pkgver}
+    ./configure --prefix=/usr \
+        --disable-static \
+        --disable-padlock-support
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd ${_srcname}-${pkgver}
+    make ${MAKEFLAGS} check
+}
+
+package() {
+    cd ${_srcname}-${pkgver}
+    make DESTDIR=${pkgdir} install
+}

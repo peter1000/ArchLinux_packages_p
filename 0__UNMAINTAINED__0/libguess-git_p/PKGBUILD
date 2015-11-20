@@ -1,0 +1,42 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: Kemka Andrey <dr.andru@gmail.com>
+
+_srcname=libguess
+pkgname=${_srcname}-git_p
+pkgver=1.2.r42.gb44a240             #commit=b44a240  OK
+pkgrel=1
+pkgdesc='High-speed character set detection library'
+url='http://atheme.org/projects/libguess.html'
+license=('custom')
+arch=('x86_64')
+depends=('glibc')
+conflicts=('libguess' 'libguess-git')
+provides=("libguess=${pkgver}" "${pkgname}=${pkgver}")
+source=("${_srcname}::git+https://github.com/kaniini/${_srcname}.git#commit=b44a240")
+sha256sums=('SKIP')
+
+pkgver() {
+    cd "${srcdir}/${_srcname}"
+    _ver=$(grep AC_INIT configure.ac | cut -d, -f2 | sed 's/[^0-9.]//g')
+    _rev=$(git rev-list --count HEAD)
+    _hash=$(git rev-parse --short HEAD)
+    printf "%s.r%s.g%s" "$_ver" "$_rev" "$_hash"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    autoreconf -fiv
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+	./configure --prefix=/usr
+	make ${MAKEFLAGS}
+}
+
+package() {
+	cd "${srcdir}/${_srcname}"
+	make DESTDIR="${pkgdir}" install
+	install -D COPYING "${pkgdir}"/usr/share/licenses/${pkgname}/COPYING
+}

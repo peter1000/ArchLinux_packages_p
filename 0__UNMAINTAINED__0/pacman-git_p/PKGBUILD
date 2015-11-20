@@ -1,0 +1,94 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Dave Reisner <d@falconindy.com>
+# Contributor: Thomas Dziedzic < gostrc at gmail >
+# Contributor: godane <slaxemulator@gmail.com.com>
+# Contributor: Andres Perera <aepd87@gmail.com>
+
+_srcname=pacman
+pkgname=${_srcname}-git_p
+pkgver=4.2.1.r242.gd8621b9
+pkgrel=1
+pkgdesc="A library-based package manager with dependency support. git version."
+pkgdesc="A library-based package manager with dependency support"
+arch=('x86_64')
+url="http://www.archlinux.org/pacman/"
+license=('GPL')
+groups=('base' 'base-devel')
+depends=('bash' 'curl' 'gpgme' 'libarchive' 'pacman-mirrorlist' 'fakechroot' 'archlinux-keyring')
+makedepends=('git' 'asciidoc')
+checkdepends=('python2' 'fakechroot')
+provides=('libalpm.so' "pacman-contrib=${pkgver}" "pacman=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('pacman-contrib' 'pacman')
+replaces=('pacman-contrib')
+options=('!libtool' '!strip')
+install=pacman.install
+backup=(etc/pacman.conf etc/makepkg.conf)
+source=("${_srcname}::git://projects.archlinux.org/${_srcname}.git#commit=d8621b9 "    #commit=d8621b9  OK
+        'pacman_example.conf'
+        'makepkg_example.conf')
+sha256sums=('SKIP'
+            '6f11575cc4a00e2f4ba3a1ed6c7363fe92345cf6382a61e8d8021528458fe8d5'
+            '53391b7a4a91c0a7974c2350fa9e19eca4d979fbb3761d7945454ecdb5cc1889')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+
+    ./autogen.sh
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+
+    ./configure --prefix=/usr --sysconfdir=/etc \
+        --localstatedir=/var --enable-doc \
+        --with-scriptlet-shell=/usr/bin/bash \
+        --with-ldconfig=/usr/bin/ldconfig \
+        --enable-git-version
+    make ${MAKEFLAGS}
+    make ${MAKEFLAGS} -C contrib
+}
+
+check() {
+  make -C "pacman" check
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+
+    make DESTDIR="$pkgdir" install
+    make DESTDIR="$pkgdir" -C contrib install
+
+    # install Arch specific stuff
+    install -dm755 "$pkgdir/etc"
+    install -m644 "$srcdir/pacman_example.conf" "$pkgdir/etc/pacman_example.conf"
+
+    mycarch="x86_64"
+    mychost="x86_64-unknown-linux-gnu"
+    myflags="-march=x86-64"
+
+    # set things correctly in the default conf file
+    install -m644 "$srcdir/makepkg_example.conf" "$pkgdir/etc/makepkg_example.conf"
+    sed -i "$pkgdir/etc/makepkg_example.conf" \
+        -e "s|@CARCH[@]|$mycarch|g" \
+        -e "s|@CHOST[@]|$mychost|g" \
+        -e "s|@CARCHFLAGS[@]|$myflags|g"
+
+    # put bash_completion in the right location
+    install -dm755 "$pkgdir/usr/share/bash-completion/completions"
+    mv "$pkgdir/etc/bash_completion.d/pacman" "$pkgdir/usr/share/bash-completion/completions"
+    rmdir "$pkgdir/etc/bash_completion.d"
+
+    for f in makepkg pacman-key; do
+    ln -s pacman "$pkgdir/usr/share/bash-completion/completions/$f"
+    done
+
+    install -Dm644 contrib/PKGBUILD.vim "$pkgdir/usr/share/vim/vimfiles/syntax/PKGBUILD.vim"
+}

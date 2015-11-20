@@ -1,0 +1,43 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributer: graysky <graysky AT archlinux DOT us>
+# Contributer: trya <tryagainprod@gmail.com>
+
+_srcname=libva
+pkgname=${_srcname}-git_p
+pkgver=1.6.1.r21.gd3b24b7               #commit=d3b24b7  OK
+pkgrel=1
+pkgdesc='Video Acceleration (VA) API for Linux. Git version.'
+arch=('x86_64')
+url='http://freedesktop.org/wiki/Software/vaapi'
+license=('MIT')
+depends=('libva-vdpau-driver' 'libva-intel-driver')  # namcap? leave 'libva-vdpau-driver' 'libva-intel-driver' as dependency
+makedepends=('git')
+conflicts=('libva' 'libva-git')
+provides=("libva=${pkgver}" "${pkgname}=${pkgver}")
+source=("${_srcname}::git://anongit.freedesktop.org/vaapi/${_srcname}.git#commit=d3b24b7")
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix='libva-'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    autoreconf -fiv
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir" install
+    install -m644 -D COPYING "$pkgdir"/usr/share/licenses/${pkgname}/COPYING
+}

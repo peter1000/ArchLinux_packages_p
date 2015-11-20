@@ -1,0 +1,41 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Angel Velasquez <angvp@archlinux.org>
+# Contributor: Juergen Hoetzel <juergen@archlinux.org>
+
+_srcname=lxmenu-data
+pkgname=${_srcname}-git_p
+pkgver=0.1.4.r3.g4f3a96e                    
+pkgrel=1
+pkgdesc="freedesktop.org desktop menus for LXDE"
+arch=('x86_64')
+license=('GPL2')
+url="http://lxde.org/"
+groups=('lxde')
+makedepends=('intltool')
+source=("${_srcname}::git+https://github.com/lxde/$_srcname.git")    #commit=4f3a96e  OK
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    ./autogen.sh
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+
+    ./configure --prefix=/usr --sysconfdir=/etc
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir" install
+}

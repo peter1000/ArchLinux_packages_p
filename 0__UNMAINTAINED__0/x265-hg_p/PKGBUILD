@@ -1,0 +1,36 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: kfgz <kfgz at interia pl>
+# Contributor: cataphract <mail at geleia dot net>
+# Contributor: lluixhi <lluixhi at gmail dot com>
+
+_srcname=x265
+pkgname=${_srcname}-hg_p
+pkgrel=1
+pkgver=1.8.r60.6563218ce342
+pkgdesc="CLI tools for encoding H265/HEVC video streams."
+arch=('x86_64')
+license=('GPL')
+depends=('gcc-libs')
+makedepends=('yasm' 'cmake' 'ninja' 'mercurial')
+url="https://bitbucket.org/multicoreware/x265"
+provides=('libx265.so' "x265=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('x265' 'x265-hg' 'x265-10bit')
+source=("${_srcname}::hg+https://bitbucket.org/multicoreware/${_srcname}")
+sha512sums=('SKIP')
+
+pkgver() {
+    cd "${srcdir}/${_srcname}"
+    echo "$(hg log -r. --template "{latesttag}").r$(hg log -r. --template "{latesttagdistance}").$(hg log -r. --template "{node|short}")"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"/build/linux
+    [[ $CARCH == x86_64 ]] && LDFLAGS+=',-z,noexecstack'
+    cmake -G Ninja -DCMAKE_INSTALL_PREFIX=/usr ../../source -DHIGH_BIT_DEPTH=1
+    ninja ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"/build/linux
+    DESTDIR="$pkgdir" ninja install
+}

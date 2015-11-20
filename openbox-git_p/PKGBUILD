@@ -1,0 +1,71 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Florian pritz <bluewind@xinu.at>
+# Contributor: Bartłomiej Piotrowski <nospam@bpiotrowski.pl>
+# Contributor: Brad Fanella <bradfanella@archlinux.us>
+# Contributor: Andrea Scarpino <andrea@archlinux.org>
+# Contributor: tobias <tobias@archlinux.org>
+
+_srcname=openbox
+pkgname=${_srcname}-git_p
+pkgver=3.5.2.r76.g9e8813e               
+pkgrel=1
+pkgdesc='Highly configurable and lightweight X11 window manager'
+arch=('x86_64')
+url='http://openbox.org'
+license=('GPL')
+
+depends=('startup-notification' 'libxml2' 'libxinerama' 'libxrandr'
+         'libxcursor' 'pango' 'imlib2' 'librsvg' 'libsm')
+makedepends=('git')
+optdepends=('kdebase-workspace: for the KDE/Openbox xsession'
+            'python2-xdg: for the openbox-xdg-autostart script')
+groups=('lxde' 'lxqt')
+provides=('libobrender.so' "openbox=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('openbox' 'openbox-multihead-git' 'openbox-git')
+backup=('etc/xdg/openbox/menu.xml' 'etc/xdg/openbox/rc.xml'
+        'etc/xdg/openbox/autostart' 'etc/xdg/openbox/environment')
+source=("${_srcname}::git+https://github.com/danakj/${_srcname}.git")		#commit=9e8813e  OK
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix='release.'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+
+    #patch -Np1 -i "$srcdir"/openbox-3.5.0-title-matching.patch  # OB#5277
+    #patch -Np1 -i "$srcdir"/openbox-3.5.0-which-2.20.patch # FS#11455
+
+    sed -i 's|/usr/bin/env python|/usr/bin/env python2|' data/autostart/openbox-xdg-autostart
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    
+    ./bootstrap
+    
+    ./configure --prefix=/usr \
+        --with-x \
+        --enable-startup-notification \
+        --sysconfdir=/etc \
+        --libexecdir=/usr/lib/openbox
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir" install
+
+    # GNOME Panel is no longer available in the official repositories
+    rm -r "$pkgdir"/usr/bin/{gdm-control,gnome-panel-control,openbox-gnome-session} \
+        "$pkgdir"/usr/share/gnome{,-session} \
+        "$pkgdir"/usr/share/man/man1/openbox-gnome-session.1 \
+        "$pkgdir"/usr/share/xsessions/openbox-gnome.desktop
+
+    sed -i 's:startkde:/usr/bin/\0:' "$pkgdir"/usr/share/xsessions/openbox-kde.desktop
+}

@@ -1,0 +1,32 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Maintainer:  Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+
+_srcname=guile
+pkgname=${_srcname}_p
+pkgver=2.0.11
+pkgrel=3
+pkgdesc='Portable, embeddable Scheme implementation written in C'
+url='http://www.gnu.org/software/guile/'
+arch=('x86_64')
+license=('GPL')
+depends=('gmp' 'libltdl' 'ncurses' 'texinfo' 'libunistring' 'gc' 'libffi')
+install=guile.install
+provides=("guile=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('guile')
+source=(ftp://ftp.gnu.org/pub/gnu/$_srcname/$_srcname-$pkgver.tar.gz)
+sha1sums=('3cdd1c4956414bffadea13e5a1ca08949016a802')
+
+build() {
+    cd $_srcname-$pkgver
+    ./configure --prefix=/usr \
+        --disable-static  \
+        --disable-error-on-warning
+    make ${MAKEFLAGS}
+}
+
+package() {
+    make -C $_srcname-$pkgver DESTDIR="$pkgdir" install
+    rm "$pkgdir"/usr/lib/libguile-2.0.so.22.7.2-gdb.scm
+}

@@ -1,0 +1,162 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+#
+# IMPORTANT NOTE on updating this package:
+# * See funtion: <generate_new_source>
+#
+# ATENTION: the Make.user overwrites hte one in the package 
+# * See funtion: <prepare>
+#
+
+_srcname=julia
+pkgbase=${_srcname}_p
+pkgname=('julia_p' 'julia-docs_p')
+pkgver=0.5.0.dev.r28151.g20786d2
+pkgrel=1
+pkgdesc='High-level, high-performance, dynamic programming language'
+arch=('x86_64')
+url="http://julialang.org"
+license=('MIT')
+makedepends=('git' 'python2' 'hicolor-icon-theme' 'xdg-utils' 'gcc-fortran'
+            'llvm'
+            'libunwind'
+            'pcre2'
+            'openlibm'
+            'openspecfun'
+            'openblas-lapack'
+            'fftw'
+            'arpack'
+            'suitesparse'
+            # libuv-git_p: bda29cf could not get it to work: 20151021 see note: https://github.com/JuliaLang/julia/issues/10246#issuecomment-75029026
+            'libutf8proc-julia'
+            'libgit2'
+            'patchelf'
+            )
+options=('!emptydirs')
+backup=('etc/ld.so.conf.d/julia.conf' 'etc/julia/juliarc.jl')
+source=("file:///julia_p-0.5.0.dev.r28151.g20786d2_20151105.tar.xz"
+    'Make.user')
+sha256sums=('ce111e1a820f2264e132369b4413feb00b794bd73835e27d1ba3fb9a6d06f9bb'
+            'b0843775fd030b643654400a1ab9bf792cae3a7c26f766593fb85488e26884bf')
+
+# generate_source
+generate_new_source() {
+	# NOTE on updating this package:
+	# * Run: $ bash -c ". PKGBUILD; generate_new_source"
+	
+	_tmpdir='New_Julia_Source'
+	if [ -d ${_tmpdir} ]; then
+		echo
+		echo "ERROR: Folder <${_tmpdir}> exists"
+		echo
+		exit
+	fi
+	
+	mkdir ${_tmpdir}
+	cd ${_tmpdir}
+	# Get julia git master version
+	git clone git://github.com/JuliaLang/julia.git
+	
+	# copy the Make.user
+	cp --force "../Make.user" "${_tmpdir}/Make.user"
+	
+	
+	# https://github.com/JuliaLang/julia/blob/master/README.md#Required-Build-Tools-External-Libraries
+	# 
+	#	If you need to build Julia in an environment that does not allow access to the outside world, 
+	#	use make -C deps getall to download all the necessary files. Then, copy the julia directory over 
+	#	to the target environment and build with make.
+	cd 'julia'
+	make -C deps getall
+
+    # use the version from VERSION file
+    local _ver="$(git show master:VERSION | sed 's/-/./g')"
+    local _rev="$(git rev-list --count HEAD)"
+    local _g="$(git rev-parse --short HEAD)"
+    local _date="$(date +%Y%m%d)"
+    local _newpkgver="${_ver}.r${_rev}.g${_g}"
+    local _newsrcver="${_newpkgver}_${_date}"
+    
+    #=========================================
+    cd ..
+    echo
+    echo '>>> Compressing downloaded sources ....'
+    tar --create --preserve-permissions --numeric-owner --xz -f "${pkgbase}-${_newsrcver}.tar.xz" "julia"
+    echo "_newpkgver: ${_newpkgver}"
+    echo "_newsrcver: ${_newsrcver}"
+    
+    # copy it to source folder
+    echo
+    echo '=============================='
+    echo
+    echo '1. Copy the new source to your makepkg source folder'
+    echo "2. Change the PKGBUILD pkgver to: <pkgver=${_newpkgver}>"
+    echo "3. Change the PKGBUILD source file to: <${pkgbase}-${_newsrcver}.tar.xz>"
+    echo '4. RUN: $ updpkgsums'
+    echo
+    echo "5. DELETE: the folder <${_tmpdir}>"
+    echo
+    echo '=============================='
+    echo
+    exit
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    # For /etc/ld.so.conf.d/
+    echo '/usr/lib/julia' > julia.conf
+
+	# If one uses an existing source but wants to change the Make.user file
+	#
+	# NOTE: one might need to add new dependencies to the PKGBUILD file
+    cp --force "${srcdir}/Make.user" "${srcdir}/${_srcname}/Make.user"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    # most configurations are in the `Make.user` file
+    export JULIA_CPU_CORES=$(nproc)
+    export JULIA_TESTFULL=0
+
+    export CPPFLAGS="${CPPFLAGS} \
+        -I/usr/include/libutf8proc-julia"
+        
+    make -j "${JULIA_CPU_CORES}" prefix=/usr sysconfdir=/etc
+}
+
+package_julia_p() {
+    install=${_srcname}.install
+	provides=("julia=${pkgver}" "${pkgname}=${pkgver}")
+	conflicts=('julia' 'julia-git' 'julia-git_p')
+
+    cd "${srcdir}/${_srcname}"
+    # most configurations are in the `Make.user` file
+    export JULIA_CPU_CORES=$(nproc)
+    export JULIA_TESTFULL=0
+
+    export CPPFLAGS="${CPPFLAGS} \
+        -I/usr/include/libutf8proc-julia"
+        
+    make DESTDIR="$pkgdir" prefix=/usr sysconfdir=/etc install
+
+    # Remove doc files
+    rm -r "$pkgdir/usr/share/doc/julia"
+    # Install license
+    install -Dm644 LICENSE.md "$pkgdir/usr/share/licenses/${pkgname}/LICENSE.md"
+}
+
+package_julia-docs_p() {
+    pkgdesc='Documentation and examples for Julia'
+    depends=("julia_p=${pkgver}")
+	provides=("julia-docs=${pkgver}" "${pkgname}=${pkgver}")
+	conflicts=('julia-docs' 'julia-docs-git' 'julia-docs-git_p')
+	
+    cd "${srcdir}/${_srcname}"
+
+    install -d "$pkgdir/usr/share/doc/${_srcname}/html"
+
+    cp -dpr --no-preserve=ownership "$srcdir/${_srcname}/doc/_build/html" "$pkgdir/usr/share/doc/${_srcname}/"
+    cp -rv "$srcdir/${_srcname}/examples" "$pkgdir/usr/share/doc/${_srcname}/examples"
+
+    # Install license
+    install -Dm644 LICENSE.md "$pkgdir/usr/share/licenses/${pkgname}/LICENSE.md"
+}

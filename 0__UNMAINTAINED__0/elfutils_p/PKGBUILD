@@ -1,0 +1,52 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Laurent Carlier <lordheavym@gmail.com>
+# Contributor: Stéphane Gaudreault <stephane@archlinux.org>
+# Contributor: Andrej Gelenberg <andrej.gelenberg@udo.edu>
+
+pkgbase=elfutils
+pkgname=('elfutils_p' 'libelf_p')
+pkgver=0.164
+pkgrel=1
+pkgdesc="Utilities to handle ELF object files and DWARF debugging information"
+arch=('x86_64')
+url="https://fedorahosted.org/elfutils/"
+license=('LGPL3' 'GPL' 'GPL3')
+depends=('gcc-libs' 'zlib' 'bzip2' 'xz')
+options=('staticlibs')
+source=(https://fedorahosted.org/releases/e/l/elfutils/${pkgver}/elfutils-${pkgver}.tar.bz2)
+sha1sums=('55a951f909267db76d506f61752508a86589aa37')
+
+build() {
+    cd ${pkgbase}-${pkgver}
+
+    LC_ALL="C"
+    export CFLAGS+=" -g"  # required for test-suite success
+    ./configure --prefix=/usr --program-prefix="eu-" --enable-deterministic-archives 
+
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd ${pkgbase}-${pkgver}
+    make ${MAKEFLAGS} check
+}
+
+package_elfutils_p() {
+    depends=("libelf=$pkgver-$pkgrel")
+    provides=("elfutils=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('elfutils')
+    cd ${pkgbase}-${pkgver}
+
+    make DESTDIR="${pkgdir}" install
+
+    mkdir "${srcdir}"/libelf
+    mv "${pkgdir}"/usr/{lib,include} "${srcdir}/libelf"
+}
+
+package_libelf_p() {
+    pkgdesc="Libraries to handle ELF object files and DWARF debugging information"
+    provides=("libelf=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('libelf')
+
+    mv libelf "${pkgdir}/usr"
+}

@@ -1,0 +1,29 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: schuay <jakob.gruber@gmail.com>
+# Contributor: Michal Hybner <dta081@gmail.com>
+
+_srcname=shntool
+pkgname=${_srcname}_p
+pkgver=3.0.10
+pkgrel=3
+pkgdesc="A multi-purpose WAVE data processing and reporting utility"
+arch=('x86_64')
+url="http://www.etree.org/shnutils/shntool/"
+license=('GPL')
+options=(!emptydirs)
+depends=('glibc')
+optdepends=('mac: Monkey Audio support')
+provides=("shntool=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('shntool')
+source=("http://www.etree.org/shnutils/shntool/dist/src/${_srcname}-${pkgver}.tar.gz")
+sha256sums=('74302eac477ca08fb2b42b9f154cc870593aec8beab308676e4373a5e4ca2102')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    ./configure --prefix=/usr
+    make
+}
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+}

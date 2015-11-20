@@ -1,0 +1,50 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Sébastien "Seblu" Luttringer
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+_srcname=coreutils
+pkgname=${_srcname}_p
+pkgver=8.24
+pkgrel=1
+pkgdesc='The basic file, shell and text manipulation utilities of the GNU operating system'
+arch=('x86_64')
+license=('GPL3')
+url='http://www.gnu.org/software/coreutils'
+groups=('base')
+depends=('glibc' 'acl' 'attr' 'gmp' 'libcap' 'openssl')
+install=$_srcname.install
+provides=("coreutils=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('coreutils')
+source=("ftp://ftp.gnu.org/gnu/$_srcname/$_srcname-$pkgver.tar.xz")
+sha256sums=('a2d75286a4b9ef3a13039c2da3868a61be4ee9f17d8ae380a35a97e506972170')
+
+prepare() {
+	local _p
+	for _p in *.patch; do
+		[[ -e $_p ]] || continue
+		msg2 "Applying $_p"
+		patch -p1 -d $_srcname-$pkgver < "$_p"
+	done
+}
+
+build() {
+	cd $_srcname-$pkgver
+	./configure \
+		--prefix=/usr \
+		--libexecdir=/usr/lib \
+		--with-openssl \
+		--enable-no-install-program=groups,hostname,kill,uptime
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd $_srcname-$pkgver
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd $_srcname-$pkgver
+	make DESTDIR="$pkgdir" install
+}

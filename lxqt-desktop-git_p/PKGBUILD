@@ -1,0 +1,60 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jerome Leclanche <jerome@leclan.ch>
+
+_srcname=lxqt-desktop
+pkgname=${_srcname}-git_p
+pkgver=0.10.0.r5.gcd145a5               
+pkgrel=1
+pkgdesc="The LXQt desktop and some extras."
+arch=('x86_64')
+url="http://lxqt.org"
+license=("GPL2")
+depends=(
+    "pcmanfm-qt-git_p"
+    # components
+    "lxqt-about-git_p"
+    "lxqt-admin-git_p"
+    "lxqt-common-git_p"
+    "lxqt-config-git_p"
+    "lxqt-globalkeys-git_p"
+    "lxqt-notificationd-git_p"
+    "lxqt-openssh-askpass-git_p"
+    "lxqt-panel-git_p"
+    "lxqt-policykit-git_p"
+    "lxqt-powermanagement-git_p"
+    "lxqt-qtplugin-git_p"
+    "lxqt-runner-git_p"
+    "lxqt-session-git_p"
+    "lxqt-sudo-git_p"
+    # optional but pull them in as part of the metapackage
+    'lximage-qt-git_p'
+    'openbox-git_p'
+    'obconf-qt-git_p'
+    'sddm-git_p'
+    'oxygen-icons'
+    'ttf-google-font-git_p'
+    'ttf-monaco_p'
+    'ttf-ms-fonts_p'
+    'spacefm-git_p'   # this is not part of The LXQt desktop but pull it here in
+)
+makedepends=("git")
+provides=("lxqt-desktop=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('lxqt-desktop' 'lxqt-desktop-git')
+source=("$_srcname::git+https://github.com/lxde/lxqt.git")        #commit=cd145a5  OK
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    msg2 "This is a metapackage. Nothing will be built."
+}
+
+package() {
+    msg2 "This is a metapackage. Nothing will be installed."
+}

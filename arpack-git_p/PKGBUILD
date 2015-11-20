@@ -1,0 +1,48 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Alexander Rødseth <rodseth@gmail.com>
+# Contributor: William Rea <sillywilly@gmail.com>
+# Contributor: Stefan Husmann <stefan-husmann@t-online.de>
+
+_srcname=arpack-ng
+pkgname=arpack-git_p
+pkgver=3.3.0.r21.g337ab26           
+pkgrel=1
+arch=('x86_64')
+pkgdesc='Fortran77 subroutines designed to solve large scale eigenvalue problems'
+url='https://github.com/opencollab/arpack-ng'
+license=('BSD')
+depends=('openblas-lapack' 'openmpi')
+makedepends=('gcc-fortran' 'git')
+conflicts=('arpack-ng' 'arpack' 'arpack-git' 'arpack-ng-git')
+provides=("arpack=${pkgver}" "arpack-ng=${pkgver}" "${pkgname}=${pkgver}")
+source=("${_srcname}::git+https://github.com/opencollab/${_srcname}.git")      #commit=337ab26  OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    ./bootstrap
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr --enable-mpi
+
+    make ${MAKEFLAGS} \
+        F77="mpif77" \
+        CFLAGS+=" `pkg-config --cflags ompi` " \
+        LIBS+=" `pkg-config --libs ompi` "
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir" install
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/${pkgname}/COPYING"
+}

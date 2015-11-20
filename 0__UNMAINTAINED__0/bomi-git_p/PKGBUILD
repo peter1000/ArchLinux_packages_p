@@ -1,0 +1,52 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Ben Reedy <breed808 *AT* breed808 *DOT* com>
+# Contributor: xylosper <darklin20@gmail.com>
+
+_srcname=bomi
+pkgname=${_srcname}-git_p
+pkgver=0.9.11.r18.gadb6dac               #commit=xxxx  OK
+pkgrel=1
+pkgdesc="Powerful and easy-to-use GUI multimedia player based on mpv (git version)"
+arch=('x86_64')
+url="http://bomi-player.github.io"
+license=('GPL')
+install=${pkgname}.install
+depends=('qt5-x11extras' 'qt5-quickcontrols' 'qt5-svg' 'libdvdnav'  'smbclient'
+    'libchardet' 'ffmpeg' 'vapoursynth' 'hicolor-icon-theme' 'desktop-file-utils')  # namcap? Keep the 'qt5-quickcontrols' 'qt5-svg' 'vapoursynth' dependencies for now.
+makedepends=('git' 'mesa' 'mesa-vdpau' 'gcc' 'pkg-config' 'python' 'qt5-tools')
+optdepends=('youtube-dl: streaming website support including YouTube'
+    'libaacs: AACS decryption for Blu-ray support'
+    'libbdplus: BD+ decryption for Blu-ray support')
+provides=("bomi=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('cmplayer' 'bomi' 'bomi-git')
+source=("${_srcname}::git+https://github.com/xylosper/${_srcname}.git")
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    # TEMPORARY FIX: remove #include <libavutil/audioconvert.h>: seems it does not exists in new ffmpeg
+
+    sed --in-place '/#include <libavutil\/audioconvert.h>/d' 'src/mpv/audio/out/ao_lavc.c'
+    sed --in-place '/#include <libavutil\/audioconvert.h>/d' 'src/mpv/audio/filter/af_lavrresample.c'
+    sed --in-place '/#include <libavutil\/audioconvert.h>/d' 'src/mpv/audio/filter/af_lavcac3enc.c'
+
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DEST_DIR="$pkgdir" install
+}

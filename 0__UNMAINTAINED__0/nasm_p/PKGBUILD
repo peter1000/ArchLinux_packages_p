@@ -1,0 +1,32 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+
+_srcname=nasm
+pkgname=${_srcname}_p
+pkgver=2.11.08
+pkgrel=1
+pkgdesc="An 80x86 assembler designed for portability and modularity"
+arch=('x86_64')
+url="http://www.nasm.us"
+license=('BSD')
+depends=('glibc')
+install=nasm.install
+provides=("nasm=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('nasm')
+source=(http://www.nasm.us/pub/nasm/releasebuilds/${pkgver}/${_srcname}-${pkgver}.tar.xz)
+sha1sums=('6908296ac437b3ade79fadfaad0efcfd99582f70')
+
+build() {
+    cd ${_srcname}-${pkgver}
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+    make ${MAKEFLAGS} -C doc info
+}
+
+package() {
+    cd ${_srcname}-${pkgver}
+    make INSTALLROOT="${pkgdir}" install install_rdf
+    install -dm755 "${pkgdir}"/usr/share/info
+    install -m644 doc/info/* "${pkgdir}"/usr/share/info/
+    install -D -m644 LICENSE "${pkgdir}"/usr/share/licenses/${pkgname}/LICENSE
+}

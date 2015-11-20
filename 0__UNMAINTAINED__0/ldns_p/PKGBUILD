@@ -1,0 +1,47 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: mathieui <mathieui@mathieui.net>
+# Contributor: jiribb <jiribb@gmail.com>
+
+_srcname=ldns
+pkgname=${_srcname}_p
+pkgver=1.6.17
+pkgrel=3
+pkgdesc='Fast DNS library supporting recent RFCs'
+url='http://www.nlnetlabs.nl/projects/ldns/'
+license=('custom:BSD')
+arch=('x86_64')
+depends=('openssl' 'dnssec-anchors')
+optdepends=('libpcap: ldns-dpa tool')
+makedepends=('libpcap')
+provides=("ldns=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('ldns')
+source=("http://www.nlnetlabs.nl/downloads/${_srcname}/${_srcname}-${pkgver}.tar.gz"
+        'perl-recent.patch')
+sha1sums=('4218897b3c002aadfc7280b3f40cda829e05c9a4'
+          '026b276a360d29b3bd3690293a27178262a0b3dc')
+
+prepare() {
+	cd "${srcdir}/${_srcname}-${pkgver}"
+	patch -p1 -i ../perl-recent.patch
+}
+
+build() {
+	cd "${srcdir}/${_srcname}-${pkgver}"
+	./configure \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--disable-rpath \
+		--with-drill \
+		--with-examples \
+		--with-trust-anchor=/etc/trusted-key.key \
+
+	make ${MAKEFLAGS}
+}
+
+package() {
+	cd "${srcdir}/${_srcname}-${pkgver}"
+	make DESTDIR="${pkgdir}" install
+	install -D -m644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

@@ -1,0 +1,21 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+
+_srcname=pulseaudio-alsa
+pkgname=${_srcname}_p
+pkgver=2
+pkgrel=3
+pkgdesc="ALSA Configuration for PulseAudio"
+arch=(any)
+url="http://www.pulseaudio.org"
+license=(GPL)
+depends=("alsa-plugins>=1.0.25" 'pulseaudio_p')
+backup=(etc/asound.conf)
+provides=("pulseaudio-alsa=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('pulseaudio-alsa')
+source=(asound.conf)
+sha256sums=('c9ef23e348adac1e7bc378571f476deee0a5e4a38bf63ad9e010252296214c87')
+
+package() {
+  install -Dm644 asound.conf "$pkgdir/etc/asound.conf"
+}

@@ -1,0 +1,35 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Giovanni Scafora <giovanni@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Sergej Pupykin <sergej@aur.archlinux.org>
+# Contributor: Robert Stoffers <rob1@ubuntu.com>
+
+_srcname=xmlto
+pkgname=${_srcname}_p
+pkgver=0.0.26
+pkgrel=1
+pkgdesc="Convert xml to many other formats"
+arch=('x86_64')
+url="http://cyberelk.net/tim/software/xmlto/"
+license=('GPL')
+depends=('libxslt')
+makedepends=('docbook-xsl')
+provides=("xmlto=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('xmlto')
+source=("https://fedorahosted.org/releases/x/m/${_srcname}/${_srcname}-${pkgver}.tar.bz2")
+sha256sums=('efb49b2fb3bc27c1a1e24fe34abf19b6bf6cbb40844e6fd58034cdf21c54b5ec')
+
+build() {
+    cd "$srcdir/${_srcname}-${pkgver}"
+
+    ./configure BASH=/bin/bash --prefix=/usr \
+                             --mandir=/usr/share/man
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "$srcdir/${_srcname}-${pkgver}"
+
+    make DESTDIR="${pkgdir}" install
+}

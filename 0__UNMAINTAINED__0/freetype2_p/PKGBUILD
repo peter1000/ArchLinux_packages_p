@@ -1,0 +1,56 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+
+_srcname=freetype2
+pkgname=${_srcname}_p
+pkgver=2.6.1
+pkgrel=1
+pkgdesc="TrueType font rendering library"
+arch=('x86_64')
+license=('GPL')
+url="http://www.freetype.org/"
+# adding harfbuzz for improved OpenType features auto-hinting 
+# introduces a cycle dep to harfbuzz depending on freetype wanted by upstream
+depends=('zlib' 'bzip2' 'sh' 'libpng' 'harfbuzz')
+install=freetype2.install
+conflicts=('freetype2')
+provides=("freetype2=${pkgver}" "${pkgname}=${pkgver}")
+source=('http://download.savannah.gnu.org/releases/freetype/freetype-${pkgver}.tar.bz2'
+        '0001-Enable-table-validation-modules.patch'
+        '0002-Enable-subpixel-rendering.patch'
+        '0003-Enable-subpixel-hinting.patch'
+        '0004-Mask-subpixel-hinting-with-an-env-var.patch')
+sha1sums=('393447fbf64c107b20a1ccc9e9a9a52f39786ae0'
+          '1c7bc438df0428a63f881e7e4343b22c5b09ecb1'
+          'e2d2b8c4847ab9cfd497179c7140835e99ece711'
+          'ebe3d7a6fc41304a77c23cb56e94dc718146d963'
+          'f50c70080f3fbee45b9c4264d8ae37eb4f1ac335')
+
+prepare() {
+    cd "${srcdir}/freetype-${pkgver}"
+    patch -Np1 -i "${srcdir}/0001-Enable-table-validation-modules.patch"
+    patch -Np1 -i "${srcdir}/0002-Enable-subpixel-rendering.patch"
+
+    # https://bugs.archlinux.org/task/35274
+    patch -Np1 -i "${srcdir}/0003-Enable-subpixel-hinting.patch"
+    # Provide a way to enable the above patch at runtime.
+    # Hopefully just a temporary measure until fontconfig picks up
+    # the necessary configurables.
+    patch -Np1 -i "${srcdir}/0004-Mask-subpixel-hinting-with-an-env-var.patch"
+}
+
+build() {
+    cd "${srcdir}/freetype-${pkgver}"
+    ./configure --prefix=/usr --disable-static
+    make
+}
+
+check() {
+    cd "${srcdir}/freetype-${pkgver}"
+    make -k check
+}
+
+package() {
+    cd "${srcdir}/freetype-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+}

@@ -1,0 +1,53 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Ondřej Hošek <ondra.hosek@gmail.com>
+# Contributor: Allan McRae <allan@archlinux.org>
+
+_srcname=isl
+pkgname=${_srcname}-git_p
+pkgver=0.14.r23.g4e0b7e4
+pkgrel=1
+pkgdesc="Library for manipulating sets and relations of integer points bounded by linear constraints (development version)"
+arch=('x86_64')
+url="http://isl.gforge.inria.fr/"
+depends=('gmp')
+license=('MIT')
+options=('!libtool')
+provides=("isl=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('isl' 'isl-git')
+source=("${_srcname}::git://repo.or.cz/${_srcname}.git#commit=4e0b7e4")		#commit=4e0b7e4  is tag 0.14.1  OK  31ccb53 is v.014.0 - commit=b1889c2  OK  but gcc problem src/gcc/gcc/graphite-poly.h:398:43: error: ‘isl_constraint’ has not been declared
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix='isl.'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    ./autogen.sh
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr
+
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd "${srcdir}/${_srcname}"
+    make ${MAKEFLAGS} check
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR=${pkgdir} install
+
+    install -dm755 "${pkgdir}/usr/share/gdb/auto-load/usr/lib/"
+    mv "${pkgdir}"/usr/lib/libisl.so.*-gdb.py "${pkgdir}"/usr/share/gdb/auto-load/usr/lib/
+
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

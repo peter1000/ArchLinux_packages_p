@@ -1,0 +1,44 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jerome Leclanche <jerome@leclan.ch>
+
+_srcname=sddm
+pkgname=${_srcname}-git_p
+pkgver=v0.13.0.r22.g668f7c9
+pkgrel=1
+pkgdesc="The Simple Desktop Display Manager"
+arch=('x86_64')
+url="https://github.com/sddm/sddm"
+license=("GPL")
+depends=("qt5-declarative" "upower")
+makedepends=("git" "cmake" "qt5-tools" "python-docutils" 'ninja')
+provides=('display-manager' "sddm=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('sddm' 'sddm-git' 'display-manager')
+install="sddm.install"
+backup=(etc/sddm.conf usr/share/sddm/scripts/Xsetup)
+source=("${_srcname}::git+https://github.com/sddm/$_srcname.git")     #commit=668f7c9  OK
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    mkdir build
+    cd build
+    cmake -G Ninja "${srcdir}/${_srcname}" \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBEXECDIR=/usr/lib/sddm \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_MAN_PAGES=ON
+    ninja ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}/build"
+    DESTDIR="$pkgdir" ninja install
+}

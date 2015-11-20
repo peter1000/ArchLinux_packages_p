@@ -1,0 +1,65 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Evangelos Foutras <evangelos@foutrelis.com>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+
+_srcname=sudo
+pkgname=${_srcname}_p
+_sudover=1.8.14p3
+pkgver=${_sudover/p/.p}
+pkgrel=2
+pkgdesc="Give certain users the ability to run some commands as root"
+arch=('x86_64')
+url="http://www.sudo.ws/sudo/"
+license=('custom')
+groups=('base-devel')
+depends=('glibc' 'pam' 'libldap')
+backup=('etc/sudoers' 'etc/pam.d/sudo')
+install=$_srcname.install
+provides=("sudo=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('sudo')
+source=(http://www.sudo.ws/sudo/dist/$_srcname-$_sudover.tar.gz
+        sudo.pam)
+sha256sums=('a8a697cbb113859058944850d098464618254804cf97961dee926429f00a1237'
+            'd1738818070684a5d2c9b26224906aad69a4fea77aabd960fc2675aee2df1fa2')
+
+build() {
+	cd "$srcdir/$_srcname-$_sudover"
+
+	./configure \
+		--prefix=/usr \
+		--sbindir=/usr/bin \
+		--libexecdir=/usr/lib \
+		--with-rundir=/run/sudo \
+		--with-vardir=/var/db/sudo \
+		--with-logfac=auth \
+		--enable-tmpfiles.d \
+		--with-pam \
+		--with-sssd \
+		--with-ldap \
+		--with-ldap-conf-file=/etc/openldap/ldap.conf \
+		--with-env-editor \
+		--with-passprompt="[sudo] password for %p: " \
+		--with-all-insults
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd "$srcdir/$_srcname-$_sudover"
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd "$srcdir/$_srcname-$_sudover"
+	make DESTDIR="$pkgdir" install
+
+	# Remove /run/sudo directory from the package; we create it using tmpfiles.d
+	rmdir "$pkgdir/run/sudo"
+	rmdir "$pkgdir/run"
+
+	install -Dm644 "$srcdir/sudo.pam" "$pkgdir/etc/pam.d/sudo"
+
+	install -Dm644 doc/LICENSE "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+}
+
+# vim:set ts=2 sw=2 et:

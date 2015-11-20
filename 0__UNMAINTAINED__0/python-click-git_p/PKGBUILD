@@ -1,0 +1,41 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Carl George < arch at cgtx dot us >
+
+_srcname=click
+pkgname=python-${_srcname}-git_p
+pkgver=5.1.r12.g8e84c1b             #commit=8e84c1b  OK
+pkgrel=1
+pkgdesc="A simple wrapper around optparse for powerful command line utilities."
+arch=("any")
+url="http://click.pocoo.org/"
+license=("BSD")
+makedepends=('git' 'python-setuptools')
+checkdepends=("python-pytest")
+provides=("python-click=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('python-click' 'python-click-git')
+source=("${_srcname}::git+https://github.com/mitsuhiko/${_srcname}.git#commit=8e84c1")
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py build
+}
+
+check() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py test
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py install --skip-build --root="${pkgdir}" --optimize=1
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

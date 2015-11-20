@@ -1,0 +1,35 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Judd Vinet <jvinet@zeroflux.org>
+
+_srcname=pkg-config
+pkgname=${_srcname}_p
+pkgver=0.29
+pkgrel=1
+pkgdesc="A system for managing library compile/link flags"
+arch=('x86_64')
+url="http://pkgconfig.freedesktop.org/wiki/"
+license=('GPL')
+groups=('base-devel')
+depends=('glib2')
+provides=("pkgconfig=${pkgver}" "pkg-config=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('pkgconfig' 'pkg-config')
+replaces=('pkgconfig')
+source=(http://pkgconfig.freedesktop.org/releases/${_srcname}-${pkgver}.tar.gz)
+sha256sums=('c8507705d2a10c67f385d66ca2aae31e81770cc0734b4191eb8c489e864a006b')
+
+build() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+	./configure --prefix=/usr
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+	make DESTDIR=${pkgdir} install
+}

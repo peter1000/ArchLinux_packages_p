@@ -1,0 +1,30 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Sébastien "Seblu" Luttringer <seblu@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+_srcname=less
+pkgname=${_srcname}_p
+pkgver=481
+pkgrel=2
+pkgdesc='A terminal based program for viewing text files'
+license=('GPL3')
+arch=('x86_64')
+url='http://www.greenwoodsoftware.com/less'
+groups=('base')
+depends=('glibc' 'ncurses' 'pcre')
+provides=("less=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('less')
+source=("http://www.greenwoodsoftware.com/$_srcname/$_srcname-$pkgver.tar.gz")
+sha256sums=('3fa38f2cf5e9e040bb44fffaa6c76a84506e379e47f5a04686ab78102090dda5')
+
+build() {
+    cd $_srcname-$pkgver
+    sh configure --prefix=/usr --sysconfdir=/etc --with-regex=pcre
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd $_srcname-$pkgver
+    make DESTDIR="$pkgdir" install
+}

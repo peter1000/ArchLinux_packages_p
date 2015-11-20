@@ -1,0 +1,45 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
+# Contributor: Igor Scabini <furester @ gmail.com>
+
+_srcname=cython
+pkgbase=${_srcname}_p
+pkgname=('cython_p' 'cython2_p')
+pkgver=0.23.4
+pkgrel=1
+pkgdesc="C-Extensions for Python "
+arch=('x86_64')
+url="http://www.cython.org"
+license=('APACHE')
+makedepends=('python-setuptools' 'python2-setuptools')
+source=("http://cython.org/release/Cython-$pkgver.tar.gz"
+	"https://github.com/cython/cython/commit/27916f4ade2c24c7a4ffcad7dbe9adffd03a567e.patch")
+sha1sums=('157df1f69bcec6b56fd97e0f2e057f6e'
+         'e8c0d274154e899efbdf2221a732f473')
+
+prepare() {
+    cd $srcdir/Cython-$pkgver
+    patch -p1 <$srcdir/27916f4ade2c24c7a4ffcad7dbe9adffd03a567e.patch
+}
+
+package_cython_p() {
+    depends=('python' 'python-setuptools')
+    provides=("cython=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('cython')
+    cd $srcdir/Cython-$pkgver
+    python setup.py install --root=$pkgdir
+
+    sed -i 's|#!.*python|#!/usr/bin/python3|' $pkgdir/usr/bin/*
+}
+
+package_cython2_p() {
+    depends=('python2' 'python2-setuptools')
+    provides=("cython2=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('cython2')
+    cd $srcdir/Cython-$pkgver
+    python2 setup.py install --root=$pkgdir
+
+    mv $pkgdir/usr/bin/cygdb $pkgdir/usr/bin/cygdb2
+    mv $pkgdir/usr/bin/cython $pkgdir/usr/bin/cython2
+    mv $pkgdir/usr/bin/cythonize $pkgdir/usr/bin/cythonize2
+}

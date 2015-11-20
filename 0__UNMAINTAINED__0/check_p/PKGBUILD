@@ -1,0 +1,42 @@
+# $Id: PKGBUILD 244425 2015-08-20 10:42:34Z heftig $
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Jaroslav Lichtblau <dragonlord@aur.archlinux.org>
+# Contributor: Jeremy Cowgar <jeremy@cowgar.com>
+
+_srcname=check
+pkgname=${_srcname}_p
+pkgver=0.10.0
+pkgrel=1
+pkgdesc="A unit testing framework for C"
+arch=('x86_64')
+url="http://check.sourceforge.net/"
+license=('LGPL')
+install=$_srcname.install
+depends=('awk')
+provides=("check=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('check')
+source=(http://downloads.sourceforge.net/sourceforge/$_srcname/$_srcname-$pkgver.tar.gz)
+md5sums=('53c5e5c77d090e103a17f3ed7fd7d8b8')
+
+build() {
+	cd $_srcname-$pkgver
+	./configure --prefix=/usr --disable-static
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd $_srcname-$pkgver
+	make ${MAKEFLAGS} -k check
+}
+
+package() {
+	cd $_srcname-$pkgver
+	make DESTDIR="$pkgdir" install
+
+	# get rid of the package's info directory,
+	# install-info adds entries for us at install-time
+	rm "$pkgdir/usr/share/info/dir"
+
+	# svn log file is too big
+	rm "$pkgdir"/usr/share/doc/check/*ChangeLog*
+}

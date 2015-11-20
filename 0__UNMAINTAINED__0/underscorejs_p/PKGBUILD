@@ -1,0 +1,24 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Gavin Costello <gavcos at gmail dot com>
+
+_srcname=underscorejs
+pkgname=${_srcname}_p
+_script=underscore
+pkgver=1.8.3
+pkgrel=2
+pkgdesc="Underscore is a utility-belt library for JavaScript that provides a lot of the functional programming support that you would expect in Prototype.js (or Ruby), but without extending any of the built-in JavaScript objects."
+arch=('any')
+url='http://underscorejs.org'
+license=('MIT')
+provides=("underscorejs=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('underscorejs')
+source=("${url}/${_script}.js" "${url}/${_script}-min.js")
+sha256sums=('4b328e42c558197d5b99d7727cfcc60bac9763fad660651230e8baf93f6067ed'
+            'a1b6400a21ddee090e93d8882ffa629963132785bfa41b0abbea199d278121e9')
+
+package() {
+  cd "${srcdir}"
+  mkdir -p "${pkgdir}/usr/share/${_srcname}"
+  install -Dm644 "${_script}-min.js" "${pkgdir}/usr/share/${_srcname}/${_script}-min.js"
+  install -Dm644 "${_script}.js" "${pkgdir}/usr/share/${_srcname}/${_script}.js"
+}

@@ -1,0 +1,39 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: AndyRTR <andyrtr@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+_srcname=shared-mime-info
+pkgname=${_srcname}_p
+pkgver=1.4
+pkgrel=1
+pkgdesc="Freedesktop.org Shared MIME Info"
+arch=('x86_64')
+license=('GPL2')
+depends=('libxml2' 'glib2')
+makedepends=('intltool' 'pkgconfig')
+install=shared-mime-info.install
+url="http://freedesktop.org/Software/shared-mime-info"
+provides=("shared-mime-info=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('shared-mime-info')
+source=(http://freedesktop.org/~hadess/${_srcname}-${pkgver}.tar.xz)
+sha1sums=('f7a3881acca3df1d9757d670e99d2d56ac9f7bca')
+options=(!makeflags)
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    # https://bugs.archlinux.org/task/38836
+    # https://bugs.freedesktop.org/show_bug.cgi?id=70366
+    export ac_cv_func_fdatasync=no
+    ./configure --prefix=/usr --disable-update-mimedb
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make ${MAKEFLAGS} -k check
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+}

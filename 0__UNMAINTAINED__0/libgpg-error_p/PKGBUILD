@@ -1,0 +1,36 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+_srcname=libgpg-error
+pkgname=${_srcname}_p
+pkgver=1.20
+pkgrel=1
+pkgdesc="Support library for libgcrypt"
+arch=('x86_64')
+url="http://www.gnupg.org"
+license=('LGPL')
+depends=('glibc' 'sh')
+provides=("libgpg-error=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libgpg-error')
+source=(ftp://ftp.gnupg.org/gcrypt/libgpg-error/${_srcname}-${pkgver}.tar.bz2)
+	#ftp://ftp.franken.de/pub/crypt/mirror/ftp.gnupg.org/gcrypt/libgpg-error/${_srcname}-${pkgver}.tar.bz2)
+install=libgpg-error.install
+# https://www.gnupg.org/download/integrity_check.html
+sha1sums=('89c961f63469739fe816a56dcdd86c2e1897cace')
+
+build() {
+    cd ${_srcname}-${pkgver}
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd ${_srcname}-${pkgver}
+    make ${MAKEFLAGS} check
+}
+
+package() {
+    cd ${_srcname}-${pkgver}
+    make DESTDIR="${pkgdir}/" install
+}

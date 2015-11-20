@@ -1,0 +1,36 @@
+# $Id: PKGBUILD 195849 2013-10-02 00:26:48Z thomas $
+# Maintainer: Dave Reisner <dreisner@archlinux.org>
+
+_srcname=pambase
+pkgname=${_srcname}_p
+pkgver=20130928
+pkgrel=1
+pkgdesc="Base PAM configuration for services"
+arch=('any')
+url="http://www.archlinux.org"
+license=('GPL')
+provides=("pambase=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('pambase')
+source=('system-auth'
+        'system-local-login'
+        'system-login'
+        'system-remote-login'
+        'system-services'
+        'other')
+backup=('etc/pam.d/system-auth'
+        'etc/pam.d/system-local-login'
+        'etc/pam.d/system-login'
+        'etc/pam.d/system-remote-login'
+        'etc/pam.d/system-services'
+        'etc/pam.d/other')
+sha1sums=('871902a32c363ad449001058f09213acdb51615c'
+          '0c115b46256be6535d1cd6ca14954cb885084260'
+          'aca9a83c30aae88b5784dce4288136c73586e921'
+          '0c115b46256be6535d1cd6ca14954cb885084260'
+          '6ac5ea6f7fbbbb06d78dbd45df6c4800e73b56ff'
+          '4f686fc807324efca509b3bdf3a5dcc607ada0bf')
+
+package() {
+    install -dm755 "$pkgdir/etc/pam.d"
+    install -m644 -t "$pkgdir/etc/pam.d" "${source[@]}"
+}

@@ -1,0 +1,68 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Robert Mackanics <schnoopay@gmx.com>
+
+_srcname=loudness-scanner
+pkgname=${_srcname}-git_p
+pkgver=0.5.1.r18.g3d333bf              
+pkgrel=1
+pkgdesc="A tool that scans your music files according to the EBU R128 standards."
+arch=('x86_64')
+url="https://github.com/jiixyj/loudness-scanner"
+license=('MIT')
+depends=('gtk2' 'taglib' 'mpg123' 'ffmpeg')
+makedepends=('git' 'cmake' 'ninja')
+provide=('libebur128' 'loudness-scanner' 'loudness-scanner-git' "${pkgname}=${pkgver}")
+conflicts=('libebur128' 'libebur128-git' 'loudness-scanner' 'loudness-scanner-git')
+source=("${_srcname}::git+https://github.com/jiixyj/${_srcname}.git"         #commit=3d333bf  OK
+    "ebur128-git::git+https://github.com/jiixyj/libebur128.git"              #commit=88bdb85  OK      
+    "filewalk-git::git+https://github.com/jiixyj/filewalk.git")              #commit=38422e6  OK 
+sha512sums=('SKIP'
+    'SKIP'
+    'SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare () {
+    cd "${srcdir}/${_srcname}"
+    git submodule init
+    git config submodule."scanner/filetree".url "$srcdir/filewalk-git"
+    git config submodule."ebur128".url "$srcdir/ebur128-git"
+    git submodule update
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    mkdir build
+    cd build
+    cmake -G Ninja -DDISABLE_MPCDEC=ON -DDISABLE_GSTREAMER=ON -DCMAKE_INSTALL_PREFIX=/usr ..
+    ninja ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}/build"
+    DESTDIR="$pkgdir" ninja install
+
+    install -d "$pkgdir/usr/bin/"
+    install -m755 "${srcdir}/${_srcname}/build/loudness" "$pkgdir/usr/bin/"
+
+    for i in [ loudness-drop-gtk loudness-drop-qt ]; do
+        if [ -e "${srcdir}/${_srcname}/build/$i" ]; then
+            install -m755 "${srcdir}/${_srcname}/build/$i" "$pkgdir/usr/bin/"
+        fi
+    done
+
+    for i in [ libinput_ffmpeg.so libinput_gstreamer.so libinput_mpcdec.so libinput_mpg123.so libinput_sndfile.so ]; do
+        if [ -e "${srcdir}/${_srcname}/build/$i" ]; then
+            install -m755 "${srcdir}/${_srcname}/build/$i" "$pkgdir/usr/lib/"
+        fi
+    done
+
+    install -d -m755 "$pkgdir/usr/share/licenses/${pkgname}/"
+    install -m644 "${srcdir}/${_srcname}/COPYING" "$pkgdir/usr/share/licenses/${pkgname}/"
+}

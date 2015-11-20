@@ -1,0 +1,47 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Kyle <kyle@gmx.ca>
+
+_srcname=opus
+pkgname=${_srcname}-git_p
+pkgver=1.1.r3404.g699b643               
+pkgrel=1
+pkgdesc="codec designed for interactive speech and audio transmission over the Internet (git master)"
+arch=('x86_64')
+url="http://www.opus-codec.org/"
+license=('BSD')
+depends=('glibc')
+makedepends=('git')
+provides=("opus=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('opus' 'opus-git')
+options=('!libtool')
+source=("${_srcname}::git+https://git.xiph.org/${_srcname}.git#commit=699b643")			#commit=699b643  OK
+sha512sums=('SKIP')
+
+pkgver() {
+    cd "${srcdir}/${_srcname}"
+    local _tag=$(grep 'PACKAGE_VERSION' version.mk | cut -d' ' -f3 | cut -c2-4)
+    printf "${_tag}.r%s.g%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    ./autogen.sh
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr --enable-custom-modes --disable-static
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd "${srcdir}/${_srcname}"
+    make check
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir/" install
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+}

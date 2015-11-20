@@ -1,0 +1,61 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Dan McGee <dan@archlinux.org>
+
+_srcname=libarchive
+pkgname=${_srcname}_p
+pkgver=3.1.2
+pkgrel=8
+pkgdesc="library that can create and read several streaming archive formats"
+arch=('x86_64')
+url="http://libarchive.org/"
+license=('BSD')
+depends=('acl' 'attr' 'bzip2' 'expat' 'lzo' 'openssl' 'xz' 'zlib')
+options=('strip' 'debug' 'libtool')
+provides=('libarchive.so' "libarchive=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libarchive')
+source=("http://libarchive.org/downloads/$_srcname-$pkgver.tar.gz"
+        '0001-mtree-fix-line-filename-length-calculation.patch'
+        '0001-Limit-write-requests-to-at-most-INT_MAX.patch'
+        'libarchive-3.1.2-acl.patch'
+        'libarchive-3.1.2-sparce-mtree.patch')
+sha1sums=('6a991777ecb0f890be931cec4aec856d1a195489'
+          'ea76448da4cae1f9c8f22618b6a05beed21385ca'
+          'c4e1e2a5c7ee4392e01b49ea2dfd991b205278bc'
+          'cae4299528adefdc44f4903cf93531dd775db53b'
+          '385981e847a422098365217ddc58c39491be2f4d')
+
+prepare() {
+  cd "$_srcname-$pkgver"
+
+  # https://code.google.com/p/libarchive/issues/detail?id=301
+  # upstream commit e65bf287f0133426b26611fe3e80b51267987106
+  patch -Np1 -i "$srcdir/0001-mtree-fix-line-filename-length-calculation.patch"
+
+  # https://code.google.com/p/libarchive/issues/detail?id=329
+  patch -Np1 -i "$srcdir/libarchive-3.1.2-acl.patch"
+
+  # CVE-2013-0211
+  patch -Np1 -i "$srcdir/0001-Limit-write-requests-to-at-most-INT_MAX.patch"
+
+  # upstream commit 977bf2a4 - improved mtree support
+  patch -p1 -i $srcdir/libarchive-3.1.2-sparce-mtree.patch
+}
+
+build() {
+  cd "$_srcname-$pkgver"
+  ./configure --prefix=/usr --without-xml2
+  make ${MAKEFLAGS}
+}
+
+check() {
+  cd "$_srcname-$pkgver"
+
+  make ${MAKEFLAGS} check
+}
+
+package() {
+  cd "$_srcname-$pkgver"
+  make DESTDIR="$pkgdir" install
+
+  install -D -m644 COPYING "$pkgdir"/usr/share/licenses/${pkgname}/COPYING
+}

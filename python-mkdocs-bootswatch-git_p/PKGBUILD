@@ -1,0 +1,37 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Richard Stromer <noxan@byteweaver.org>
+# Contributor: Carl George < arch at cgtx dot us >
+
+_srcname=mkdocs-bootswatch
+pkgname=python-${_srcname}-git_p
+pkgver=0.1.0.r3.gff13f2f               
+pkgrel=1
+pkgdesc='Bootswatch theme for MkDocs'
+url="https://github.com/mkdocs/mkdocs-bootswatch"
+license=('BSD')
+arch=('any')
+depends=('python')
+makedepends=('git' 'python-setuptools')
+provides=("python-mkdocs-bootswatch=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('python-mkdocs-bootswatch' 'python-mkdocs-bootswatch-git')
+source=("${_srcname}::git+https://github.com/mkdocs/${_srcname}.git")         #commit=ff13f2f  OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py build
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py install --skip-build --root="${pkgdir}" --optimize=1
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

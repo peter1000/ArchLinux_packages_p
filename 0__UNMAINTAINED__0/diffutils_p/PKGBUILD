@@ -1,0 +1,36 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Sébastien Luttringer <seblu@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+
+_srcname=diffutils
+pkgname=${_srcname}_p
+pkgver=3.3
+pkgrel=2
+pkgdesc='Utility programs used for creating patch files'
+arch=('x86_64')
+url='http://www.gnu.org/software/diffutils'
+license=('GPL3')
+groups=('base')
+depends=('glibc' 'bash')
+install=diffutils.install
+provides=("diffutils=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('diffutils')
+source=("ftp://ftp.gnu.org/gnu/$_srcname/$_srcname-$pkgver.tar.xz")
+sha256sums=('a25e89a8ab65fded1731e4186be1bb25cda967834b6df973599cdcd5abdfc19c')
+
+build() {
+	cd $_srcname-$pkgver
+	./configure --prefix=/usr
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd $_srcname-$pkgver
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd $_srcname-$pkgver
+	make DESTDIR="$pkgdir" install
+}

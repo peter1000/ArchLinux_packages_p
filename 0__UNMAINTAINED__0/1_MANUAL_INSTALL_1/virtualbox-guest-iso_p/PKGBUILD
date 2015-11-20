@@ -1,0 +1,32 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Sébastien Luttringer
+# Contributor: Jonathan Steel <mail at jsteel dot org>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+# Contributor: Geoffroy Carrier <geoffroy.carrier@aur.archlinux.org>
+# Contributor: Andrea Scarpino <andrea@archlinux.org>
+# Contributor: Roman Kyrylych <roman@archlinux.org>
+
+_srcname=virtualbox-guest-iso
+pkgname=${_srcname}_p
+pkgver=5.0.10
+pkgrel=1
+pkgdesc='The official VirtualBox Guest Additions ISO image'
+arch=('any')
+url='http://www.virtualbox.org'
+license=('custom:PUEL')
+install=virtualbox-guest-iso.install
+provides=("virtualbox-guest-iso=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('virtualbox-additions' 'virtualbox-iso-additions' 'virtualbox-guest-iso')
+replaces=('virtualbox-additions' 'virtualbox-iso-additions')
+source=("http://download.virtualbox.org/virtualbox/$pkgver/VBoxGuestAdditions_${pkgver}.iso"
+        'license')
+noextract=(VBoxGuestAdditions_${pkgver}.iso)
+sha512sums=('95080cc991f99d11aea771088b980faa42c9f0d33ee31afc53de758d49cb62db0275bd5907ff2bf29382194e6227e965986ccdbec7bf50e254e178689e291b65'
+            '8170bc7596095a274c3cc7bb2bd678670cae87fa4aeb167c4dd817b446ae8f2e7c428134e3efd21a2bfe8bc3b60479412e342b8181c6772bf2b1fdcb79ec0e53')
+
+package() {
+    install -Dm 644 VBoxGuestAdditions_${pkgver}.iso \
+        "$pkgdir/usr/lib/virtualbox/additions/VBoxGuestAdditions.iso"
+    install -Dm 644 "$srcdir/license" \
+        "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+}

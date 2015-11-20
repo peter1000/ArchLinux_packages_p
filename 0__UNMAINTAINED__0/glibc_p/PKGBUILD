@@ -1,0 +1,175 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Allan McRae <allan@archlinux.org>
+
+# toolchain build order: linux-api-headers->glibc->binutils->gcc->binutils->glibc
+# NOTE: valgrind requires rebuilt with each major glibc version
+
+# NOTE: adjust version in install script when locale files are updated
+
+_srcname=glibc
+pkgname=${_srcname}_p
+pkgver=2.22
+pkgrel=3
+pkgdesc="GNU C Library"
+arch=('x86_64')
+url="http://www.gnu.org/software/libc"
+license=('GPL' 'LGPL')
+groups=('base')
+depends=('linux-api-headers>=4.2.0' 'tzdata' 'filesystem_p')
+makedepends=('gcc>=5.2')
+backup=(etc/gai.conf
+        etc/locale.gen
+        etc/nscd.conf)
+options=('!strip' 'staticlibs')
+install=glibc.install
+provides=("glibc=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('glibc')
+source=(http://ftp.gnu.org/gnu/libc/${_srcname}-${pkgver}.tar.xz
+        glibc-2.22-roundup.patch
+        locale.gen.txt
+        locale-gen)
+sha256sums=('eb731406903befef1d8f878a46be75ef862b9056ab0cde1626d08a7a05328948'
+            'debffa52e2659949f225195b7646ce5d004814541711a18a783f97f3c2ae6248'
+            'd42648cea552ba5353a32e264686e992263289d5cc86207314dffc54ab514981'
+            '83f108f915863c7ed0338e2d3e8f2e071a531a090ef8f8b2eb3a956a3c4f04d7')
+
+prepare() {
+    cd ${srcdir}/${_srcname}-${pkgver}
+
+    # glibc-2.21..01b07c70
+    patch -p1 -i $srcdir/glibc-2.22-roundup.patch
+
+    mkdir ${srcdir}/glibc-build
+}
+
+build() {
+    cd ${srcdir}/glibc-build
+
+    echo "slibdir=/usr/lib" >> configparms
+    echo "rtlddir=/usr/lib" >> configparms
+    echo "sbindir=/usr/bin" >> configparms
+    echo "rootsbindir=/usr/bin" >> configparms
+
+    # remove hardening options for building libraries
+    CFLAGS=${CFLAGS/-fstack-protector-strong/}
+    CPPFLAGS=${CPPFLAGS/-D_FORTIFY_SOURCE=2/}
+
+    ${srcdir}/${_srcname}-${pkgver}/configure --prefix=/usr \
+        --libdir=/usr/lib --libexecdir=/usr/lib \
+        --with-headers=/usr/include \
+        --with-bugurl=https://bugs.archlinux.org/ \
+        --enable-add-ons \
+        --enable-obsolete-rpc \
+        --enable-kernel=4.2.0 \
+        --enable-bind-now --disable-profile \
+        --enable-stackguard-randomization \
+        --enable-lock-elision \
+        --enable-multi-arch \
+        --disable-werror
+
+    # build libraries with hardening disabled
+    echo
+    echo '========================================='
+    echo
+    echo '>>> build libraries with hardening disabled'
+    echo
+    echo '========================================='
+    echo
+    
+    echo "build-programs=no" >> configparms
+    make -j 1
+
+    # re-enable hardening for programs
+    echo
+    echo '========================================='
+    echo
+    echo '>>> re-enable hardening for programs'
+    echo
+    echo '========================================='
+    echo
+    
+    sed -i "/build-programs=/s#no#yes#" configparms
+    echo "CC += -fstack-protector-strong -D_FORTIFY_SOURCE=2" >> configparms
+    echo "CXX += -fstack-protector-strong -D_FORTIFY_SOURCE=2" >> configparms
+    make -j 1
+
+    # remove harding in preparation to run test-suite
+    echo
+    echo '========================================='
+    echo
+    echo '>>> remove harding in preparation to run test-suite'
+    echo
+    echo '========================================='
+    echo
+    
+    sed -i '5,7d' configparms
+}
+
+check() {
+    cd ${srcdir}/glibc-build
+
+    # some failures are "expected"
+    echo
+    echo '========================================='
+    echo
+    echo '>>> some failures are "expected"'
+    echo
+    echo '========================================='
+    echo
+    make check || true
+}
+
+package() {
+    cd ${srcdir}/glibc-build
+
+    install -dm755 ${pkgdir}/etc
+    touch ${pkgdir}/etc/ld.so.conf
+
+    make install_root=${pkgdir} install
+
+    rm -f ${pkgdir}/etc/ld.so.{cache,conf}
+
+    install -dm755 ${pkgdir}/usr/lib/{locale,systemd/system,tmpfiles.d}
+
+    install -m644 ${srcdir}/${_srcname}-${pkgver}/nscd/nscd.conf ${pkgdir}/etc/nscd.conf
+    install -m644 ${srcdir}/${_srcname}-${pkgver}/nscd/nscd.service ${pkgdir}/usr/lib/systemd/system
+    install -m644 ${srcdir}/${_srcname}-${pkgver}/nscd/nscd.tmpfiles ${pkgdir}/usr/lib/tmpfiles.d/nscd.conf
+
+    install -m644 ${srcdir}/${_srcname}-${pkgver}/posix/gai.conf ${pkgdir}/etc/gai.conf
+
+    install -m755 ${srcdir}/locale-gen ${pkgdir}/usr/bin
+
+    # create /etc/locale.gen
+    install -m644 ${srcdir}/locale.gen.txt ${pkgdir}/etc/locale.gen
+    sed -e '1,3d' -e 's|/| |g' -e 's|\\| |g' -e 's|^|#|g' \
+    ${srcdir}/${_srcname}-${pkgver}/localedata/SUPPORTED >> ${pkgdir}/etc/locale.gen
+
+    # remove the static libraries that have a shared counterpart
+    # libc, libdl, libm and libpthread are required for toolchain testsuites
+    # in addition libcrypt appears widely required
+    rm $pkgdir/usr/lib/lib{anl,BrokenLocale,nsl,resolv,rt,util}.a
+    rm $pkgdir/usr/lib/libmvec.a
+
+    # Do not strip the following files for improved debugging support
+    # ("improved" as in not breaking gdb and valgrind...):
+    #   ld-${pkgver}.so
+    #   libc-${pkgver}.so
+    #   libpthread-${pkgver}.so
+    #   libthread_db-1.0.so
+
+    cd $pkgdir
+    strip $STRIP_BINARIES usr/bin/{gencat,getconf,getent,iconv,iconvconfig} \
+                        usr/bin/{ldconfig,locale,localedef,nscd,makedb} \
+                        usr/bin/{pcprofiledump,pldd,rpcgen,sln,sprof} \
+                        usr/lib/getconf/*
+
+    strip $STRIP_STATIC usr/lib/*.a
+
+    strip $STRIP_SHARED usr/lib/lib{anl,BrokenLocale,cidn,crypt}-*.so \
+                      usr/lib/libnss_{compat,db,dns,files,hesiod,nis,nisplus}-*.so \
+                      usr/lib/lib{dl,m,nsl,resolv,rt,util}-*.so \
+                      usr/lib/lib{memusage,pcprofile,SegFault}.so \
+                      usr/lib/{audit,gconv}/*.so || true
+
+    strip $STRIP_SHARED usr/lib/libmvec-*.so
+}

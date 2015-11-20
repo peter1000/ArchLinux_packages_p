@@ -1,0 +1,36 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Arthur Zamarin <arthurzam@gmail.com>
+
+_srcname=openlibm
+pkgname=${_srcname}-git_p
+pkgver=0.4.1.r122.ge102501              
+pkgrel=1
+pkgdesc="Portable libm library containing elementary math functions."
+arch=('x86_64')
+url="https://github.com/JuliaLang/openlibm"
+license=('BSD')
+depends=('glibc')
+options=('!emptydirs')
+provides=("openlibm=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('openlibm' 'openlibm-git')
+source=("${_srcname}::git+https://github.com/JuliaLang/${_srcname}.git")    #commit=e102501   OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    make ${MAKEFLAGS} USEGCC=1 ARCH=${CARCH} prefix=/usr bindir=/usr/bin libdir=/usr/lib includedir=/usr/include/${_srcname}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir" prefix=/usr bindir=/usr/bin libdir=/usr/lib includedir=/usr/include/${_srcname} install
+	install -Dm644 LICENSE.md "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

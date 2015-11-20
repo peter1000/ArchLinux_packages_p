@@ -1,0 +1,41 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Eric Belanger <eric@archlinux.org>
+# Contributor: John Proctor <jproctor@prium.net>
+
+_srcname=libxslt
+pkgname=${_srcname}_p
+pkgver=1.1.28
+pkgrel=3
+pkgdesc="XML stylesheet transformation library"
+arch=('x86_64')
+url="http://xmlsoft.org/XSLT/"
+license=('custom')
+depends=('libxml2' 'libgcrypt')
+makedepends=('python2')
+checkdepends=('docbook-xml')
+provides=("libxslt=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libxslt')
+source=(ftp://xmlsoft.org/libxslt/${_srcname}-${pkgver}.tar.gz)
+sha256sums=('5fc7151a57b89c03d7b825df5a0fae0a8d5f05674c0e7cf2937ecec4d54a028c')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    sed -e 's|/usr/bin/python -u|/usr/bin/python2 -u|g' -e 's|/usr/bin/python$|/usr/bin/python2|g' -i python/tests/*.py
+    ./configure --prefix=/usr --with-python=/usr/bin/python2
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make ${MAKEFLAGS} check
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+
+    install -d "${pkgdir}/usr/share/licenses/${pkgname}"
+    install -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/"
+
+    rm -f "${pkgdir}"/usr/lib/python*/site-packages/*.a
+}

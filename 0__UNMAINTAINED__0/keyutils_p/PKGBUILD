@@ -1,0 +1,36 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Stéphane Gaudreault <stephane@archlinux.org>
+# Contributor: Tobias Powalowski <tpowa@archlinux.org>
+
+_srcname=keyutils
+pkgname=${_srcname}_p
+pkgver=1.5.9
+pkgrel=1
+pkgdesc="Linux Key Management Utilities"
+arch=('x86_64')
+url="http://www.kernel.org"
+license=('GPL2' 'LGPL2.1')
+depends=('glibc' 'sh')
+backup=('etc/request-key.conf')
+provides=("keyutils=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('keyutils')
+source=(http://people.redhat.com/~dhowells/${_srcname}/${_srcname}-${pkgver}.tar.bz2
+        request-key.conf.patch)
+sha256sums=('4da2c5552c688b65ab14d4fd40fbdf720c8b396d8ece643e040cf6e707e083ae'
+            '203c602c61ed94ccd423a0a453d74143d678c641a9a4486367576ee8af2cb8d6')
+
+prepare() {
+    cd ${_srcname}-${pkgver}
+    # fix paths of binaries in /etc/request-key.conf
+    patch -Np0 -i ../request-key.conf.patch
+}
+
+build() {
+    cd ${_srcname}-${pkgver}
+    make ${MAKEFLAGS} CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" SBINDIR='/usr/bin' BINDIR='/usr/bin'
+}
+
+package() {
+    cd ${_srcname}-${pkgver}
+    make DESTDIR="${pkgdir}" SBINDIR='/usr/bin' BINDIR='/usr/bin' LIBDIR='/usr/lib' USRLIBDIR='/usr/lib'  install
+}

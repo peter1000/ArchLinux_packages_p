@@ -1,0 +1,37 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Sébastien Luttringer <seblu@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+_srcname=patch
+pkgname=${_srcname}_p
+pkgver=2.7.5
+pkgrel=1
+pkgdesc='A utility to apply patch files to original sources'
+arch=('x86_64')
+url='http://www.gnu.org/software/patch/patch.html'
+license=('GPL')
+groups=('base-devel')
+depends=('glibc' 'attr')
+makedepends=('ed')
+optdepends=('ed: for patch -e functionality')
+provides=("patch=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('patch')
+source=("ftp://ftp.gnu.org/gnu/$_srcname/${_srcname}-${pkgver}.tar.xz")
+sha256sums=('fd95153655d6b95567e623843a0e77b81612d502ecf78a489a4aed7867caa299')
+
+build() {
+	cd "${_srcname}-${pkgver}"
+	./configure --prefix=/usr
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd "${_srcname}-${pkgver}"
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd "${_srcname}-${pkgver}"
+	make DESTDIR="$pkgdir" install
+}

@@ -1,0 +1,44 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Maxime Gauduin <alucryd@archlinux.org>
+# Contributor: PelPix <kylebloss@pelpix.info>
+
+_srcname=fdkaac
+pkgname=${_srcname}-git_p
+pkgver=0.6.2.r9.gfd2a1e7               
+pkgrel=1
+pkgdesc='Command line encoder frontend for lib/fdk-aac'
+arch=('x86_64')
+url="https://github.com/nu774/${_srcname}"
+license=('custom')
+depends=('libfdk-aac')
+makedepends=('git')
+provides=("fdkaac=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('fdkaac' 'fdkaac-git')
+license=('GPL' 'custom:UNREDISTRIBUTABLE')
+source=("${_srcname}::git+https://github.com/nu774/${_srcname}.git")    #commit=fd2a1e7  OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    autoreconf -fiv
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure  --prefix=/usr --disable-rpath
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="${pkgdir}" install
+    install -Dm644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}

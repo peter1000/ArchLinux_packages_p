@@ -1,0 +1,49 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
+# Contributor: Angel 'angvp' Velasquez <angvp[at]archlinux.com.ve>
+# Contributor: Frank Ickstadt (frank dot ickstadt at gmail dot com)
+
+_srcname=jbigkit
+pkgname=${_srcname}_p
+pkgver=2.1
+pkgrel=2
+pkgdesc="Data compression library/utilities for bi-level high-resolution images"
+arch=('x86_64')
+url="http://www.cl.cam.ac.uk/~mgk25/jbigkit/"
+license=('GPL')
+depends=()
+options=('staticlibs')
+provides=("jbigkit=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('jbigkit')
+source=(http://www.cl.cam.ac.uk/~mgk25/download/jbigkit-$pkgver.tar.gz)
+sha1sums=('4864646df004e8331d19f2fa103ed731fdb6c099')
+
+build() {
+  cd $srcdir/$_srcname-$pkgver
+  
+  # Seems to fix that: jbgtopbm.c:11:18: fatal error: jbig.h: No such file or directory
+  unset CPPFLAGS
+  make ${MAKEFLAGS}
+}
+
+package() {
+    cd $srcdir/$_srcname-$pkgver
+
+    install -D -m644 libjbig/libjbig.a $pkgdir/usr/lib/libjbig.a
+    install -D -m644 libjbig/libjbig85.a $pkgdir/usr/lib/libjbig85.a
+    install -D -m644 libjbig/jbig.h $pkgdir/usr/include/jbig.h
+    install -D -m644 libjbig/jbig_ar.h $pkgdir/usr/include/jbig_ar.h
+    install -D -m644 libjbig/jbig85.h $pkgdir/usr/include/jbig85.h
+
+    install -d -m755 $pkgdir/usr/share/man/man1
+    #  install -d -m755 $pkgdir/usr/share/man/man5
+    install -m644 pbmtools/*.1* $pkgdir/usr/share/man/man1
+    #  install -m644 pbmtools/*.5* $pkgdir/usr/share/man/man5
+
+    install -D -m755 pbmtools/jbgtopbm $pkgdir/usr/bin/jbgtopbm
+    install -D -m755 pbmtools/pbmtojbg $pkgdir/usr/bin/pbmtojbg
+    install -D -m755 pbmtools/jbgtopbm85 $pkgdir/usr/bin/jbgtopbm85
+    install -D -m755 pbmtools/pbmtojbg85 $pkgdir/usr/bin/pbmtojbg85
+
+    rm -f $pkgdir/usr/share/man/man5/p{b,g}m.5*
+}

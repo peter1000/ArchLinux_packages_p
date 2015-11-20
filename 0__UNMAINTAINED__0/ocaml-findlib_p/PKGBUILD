@@ -1,0 +1,41 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Lukas Fleischer <lfleischer@archlinux.org>
+# Contributor: Thomas S Hatch <thatch45 at gmail dot com>
+# Contributor: Sebastian Wiesner <lunaryorn googlemail com>
+# Contributor: Benjamin Andresen <benny(at)klapmuetz(dot)org>
+# Contributor: scj <scj archlinux us>
+
+_srcname=findlib
+pkgname=ocaml-findlib_p
+pkgver=1.5.5
+pkgrel=3
+pkgdesc='Objective Caml (OCaml) package manager'
+license=('MIT')
+arch=('x86_64')
+url='http://projects.camlcity.org/projects/findlib.html'
+depends=('ocaml-git_p')
+provides=("ocaml-findlib=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('ocaml-findlib')
+source=("http://download.camlcity.org/download/${_srcname}-${pkgver}.tar.gz")
+options=('staticlibs' '!strip' 'zipman' '!makeflags') # otherwise the bytecode gets broken
+sha256sums=('aafaba4f7453c38347ff5269c6fd4f4c243ae2bceeeb5e10b9dab89329905946')
+
+build() {
+	cd "$srcdir/${_srcname}-${pkgver}"
+
+	./configure -config /etc/findlib.conf -sitelib /usr/lib/ocaml -mandir /usr/share/man
+	make ${MAKEFLAGS} all opt
+}
+
+package () {
+	cd "$srcdir/${_srcname}-${pkgver}"
+
+	make prefix="$pkgdir" install 
+
+	# add the old site-lib to the path to maintain compatibility with old style packages
+	sed -i 's/path=\"\/usr\/lib\/ocaml\"/path="\/usr\/lib\/ocaml:\/usr\/lib\/ocaml\/site-lib"/' \
+		"${pkgdir}/etc/findlib.conf"
+
+	install -m755 src/findlib/ocamlfind_opt "$pkgdir/usr/bin/"
+	install -Dm644 LICENSE "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+}

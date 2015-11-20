@@ -1,0 +1,35 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+
+_srcname=m4
+pkgname=${_srcname}_p
+pkgver=1.4.17
+pkgrel=1
+pkgdesc="The GNU macro processor"
+arch=('x86_64')
+url="http://www.gnu.org/software/m4"
+license=('GPL3')
+groups=('base-devel')
+depends=('glibc' 'bash')
+install=m4.install
+provides=("m4=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('m4')
+source=(ftp://ftp.gnu.org/gnu/m4/${_srcname}-${pkgver}.tar.xz)
+sha256sums=('f0543c3beb51fa6b3337d8025331591e0e18d8ec2886ed391f1aade43477d508')
+
+build() {
+	cd ${srcdir}/${_srcname}-${pkgver}  
+	./configure --prefix=/usr
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+	make prefix=${pkgdir}/usr install
+}

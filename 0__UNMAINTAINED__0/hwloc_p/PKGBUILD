@@ -1,0 +1,37 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor:Stéphane Gaudreault <stephane@archlinux.org>
+# Contributor: Sylvain HENRY <hsyl20@yahoo.fr>
+# Contributor: Hervé YVIQUEL <elldekaa@gmail.com>
+
+_srcname=hwloc
+pkgname=${_srcname}_p
+pkgver=1.11.1
+pkgrel=1
+pkgdesc="Portable Hardware Locality is a portable abstraction of hierarchical architectures"
+arch=('x86_64')
+url="http://www.open-mpi.org/projects/hwloc/"
+license=('BSD')
+depends=('sh' 'pciutils' 'cairo' 'libxml2')
+options=('!docs')
+provides=("hwloc=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('hwloc')
+source=(http://www.open-mpi.org/software/hwloc/v1.11/downloads/${_srcname}-${pkgver}.tar.bz2)
+sha1sums=('f08db5ccd59f443a725df3c386528b9f17f43a9e')
+
+build() {
+   cd ${_srcname}-${pkgver}
+   ./configure --prefix=/usr
+   make ${MAKEFLAGS}
+}
+
+check() {
+   cd ${_srcname}-${pkgver}
+   make ${MAKEFLAGS} check
+}
+
+package() {
+   cd ${_srcname}-${pkgver}
+   make DESTDIR="${pkgdir}" install
+
+   install -Dm644 COPYING "${pkgdir}"/usr/share/licenses/${pkgname}/LICENSE
+}

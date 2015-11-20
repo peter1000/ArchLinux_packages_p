@@ -1,0 +1,71 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Tom Gundersen <teg@jklm.no>
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+# Contributor: Link Dupont <link@subpop.net>
+
+_srcname=dbus
+pkgbase=${_srcname}_p
+pkgname=('dbus_p' 'libdbus_p')
+pkgver=1.10.2
+pkgrel=1
+pkgdesc="Freedesktop.org message bus system"
+url="http://www.freedesktop.org/Software/dbus"
+arch=('x86_64')
+license=('GPL' 'custom')
+makedepends=('libx11' 'systemd' 'xmlto' 'docbook-xsl')
+source=(http://dbus.freedesktop.org/releases/dbus/dbus-$pkgver.tar.gz)
+sha1sums=('a7bb0e44bb3551b2e607c5a1f927244bec5b8f0a')
+
+prepare() {
+    cd dbus-$pkgver
+}
+
+build() {
+    cd dbus-$pkgver
+    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+        --libexecdir=/usr/lib/dbus-1.0 --with-dbus-user=dbus \
+        --with-system-pid-file=/run/dbus/pid \
+        --with-system-socket=/run/dbus/system_bus_socket \
+        --with-console-auth-dir=/run/console/ \
+        --enable-inotify \
+        --disable-verbose-mode --disable-static \
+        --disable-tests --disable-asserts \
+        --with-systemdsystemunitdir=/usr/lib/systemd/system \
+        --enable-systemd --enable-user-session
+    make ${MAKEFLAGS}
+}
+
+package_dbus_p(){
+    depends=('libdbus' 'expat')
+    optdepends=('libx11: dbus-launch support')
+
+    provides=('dbus-core' "dbus=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('dbus-core' 'dbus')
+    replaces=('dbus-core')
+    
+    cd dbus-$pkgver
+
+    # Disable installation of libdbus
+    sed -i -e 's/^SUBDIRS = dbus/SUBDIRS =/' Makefile
+
+    make DESTDIR="$pkgdir" install
+
+    rm -r "${pkgdir}/var/run"
+    rm -r "${pkgdir}/usr/lib/pkgconfig"
+
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/${pkgname}/COPYING"
+}
+
+package_libdbus_p(){
+    pkgdesc="DBus library"
+    depends=('libsystemd')
+
+    provides=("libdbus=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('libdbus')
+
+    cd dbus-$pkgver
+    make DESTDIR="$pkgdir" -C dbus install
+    make DESTDIR="$pkgdir" install-data-am
+    install -Dm644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}
+

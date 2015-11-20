@@ -1,0 +1,103 @@
+# $Id: PKGBUILD 249488 2015-10-18 17:15:25Z andyrtr $
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+
+_srcname=sqlite
+pkgbase=${_srcname}_p
+pkgname=('sqlite_p' 'sqlite-tcl_p' 'sqlite-doc_p') 
+_srcver=3090100
+_docver=${_srcver}
+pkgver=3.9.1
+pkgrel=1
+pkgdesc="A C library that implements an SQL database engine"
+arch=('x86_64')
+license=('custom:Public Domain')
+url="http://www.sqlite.org/"
+makedepends=('tcl' 'readline')
+source=(http://www.sqlite.org/2015/sqlite-src-${_srcver}.zip
+        http://www.sqlite.org/2015/sqlite-doc-${_docver}.zip
+        license.txt)
+options=('!emptydirs' '!makeflags')
+sha1sums=('7711364f78dae9110a7c8b62eba27c37aacb4205'
+          '4546fc4304427621c49b99f71fc938890f1e7a72'
+          'f34f6daa4ab3073d74e774aad21d66878cf26853')
+
+prepare() {
+    cd "$srcdir"/sqlite-src-$_srcver
+    autoreconf -vfi
+}
+
+build() {
+    export CFLAGS="$CFLAGS -DSQLITE_ENABLE_FTS3=1 \
+                         -DSQLITE_ENABLE_COLUMN_METADATA=1 \
+                         -DSQLITE_ENABLE_UNLOCK_NOTIFY \
+                         -DSQLITE_ENABLE_DBSTAT_VTAB=1 \
+                         -DSQLITE_ENABLE_RTREE=1 \
+                         -DSQLITE_SECURE_DELETE"
+
+    # build sqlite
+    cd "$srcdir"/sqlite-src-$_srcver
+    ./configure --prefix=/usr \
+		--disable-static \
+		TCLLIBDIR=/usr/lib/sqlite$pkgver
+    make ${MAKEFLAGS}
+    # build additional tools
+    make ${MAKEFLAGS} showdb showjournal showstat4 showwal sqldiff
+}
+
+package_sqlite_p() {
+
+    pkgdesc="A C library that implements an SQL database engine"
+    depends=('readline')
+    provides=("sqlite3=$pkgver" "sqlite=${pkgver}" "sqlite3_p=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('sqlite' 'sqlite3')
+    replaces=('sqlite3')
+
+    cd ${srcdir}/sqlite-src-$_srcver
+    make DESTDIR=${pkgdir} install
+
+    install -m755 showdb showjournal showstat4 showwal sqldiff ${pkgdir}/usr/bin/
+
+    # install manpage
+    install -m755 -d ${pkgdir}/usr/share/man/man1
+    install -m644 sqlite3.1 ${pkgdir}/usr/share/man/man1/
+
+    # license - no linking required because _srcname=pkgname
+    install -D -m644 ${srcdir}/license.txt ${pkgdir}/usr/share/licenses/${pkgname}/license.txt
+
+    # split out tcl extension
+    mkdir $srcdir/tcl
+    mv $pkgdir/usr/lib/sqlite* $srcdir/tcl
+}
+
+package_sqlite-tcl_p() {
+
+    pkgdesc="sqlite Tcl Extension Architecture (TEA)"
+    provides=("sqlite3-tcl=$pkgver" "sqlite-tcl=${pkgver}" "sqlite3-tcl_p=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('sqlite-tcl' 'sqlite3-tcl')
+    replaces=('sqlite3-tcl')
+    
+    install -m755 -d ${pkgdir}/usr/lib
+    mv $srcdir/tcl/* ${pkgdir}/usr/lib
+
+    # install manpage
+    install -m755 -d ${pkgdir}/usr/share/man/mann
+    install -m644 ${srcdir}/sqlite-src-$_srcver/autoconf/tea/doc/sqlite3.n ${pkgdir}/usr/share/man/mann/
+
+    # link license
+    install -m755 -d ${pkgdir}/usr/share/licenses
+    ln -sf /usr/share/licenses/${_srcname} "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+package_sqlite-doc_p() {
+
+    pkgdesc="most of the static HTML files that comprise this website, including all of the SQL Syntax and the C/C++ interface specs and other miscellaneous documentation"
+    #arch=('any') - not yet supported
+    provides=("sqlite3-doc=$pkgver" "sqlite-doc=${pkgver}" "sqlite3-doc_p=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('sqlite-doc' 'sqlite3-doc')
+    replaces=('sqlite3-doc')
+    #cd ${srcdir}/sqlite-doc-${_amalgamationver}
+    cd ${srcdir}/sqlite-doc-${_docver}
+    mkdir -p ${pkgdir}/usr/share/doc/${_srcname}
+    cp -R *  ${pkgdir}/usr/share/doc/${_srcname}/
+}

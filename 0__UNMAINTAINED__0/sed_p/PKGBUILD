@@ -1,0 +1,36 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+_srcname=sed
+pkgname=${_srcname}_p
+pkgver=4.2.2
+pkgrel=3
+pkgdesc="GNU stream editor"
+arch=('x86_64')
+url="http://www.gnu.org/software/sed"
+license=('GPL3')
+groups=('base' 'base-devel')
+depends=('acl' 'sh')
+makedepends=('gettext')
+install=sed.install
+provides=("sed=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('sed')
+source=(ftp://ftp.gnu.org/pub/gnu/sed/${_srcname}-${pkgver}.tar.gz)
+sha256sums=('fea0a94d4b605894f3e2d5572e3f96e4413bcad3a085aae7367c2cf07908b2ff')
+
+build() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+	./configure --prefix=/usr
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+	make DESTDIR=${pkgdir} install
+}

@@ -1,0 +1,33 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Tom Gundersen <teg@jklm.no>
+
+_srcname=hwids
+pkgname=${_srcname}-git_p
+pkgver=.20150717.r0.g137be75
+pkgrel=1
+pkgdesc="hardware identification databases"
+makedepends=('git')
+url=https://github.com/gentoo/hwids
+license=('GPL2')
+arch=('any')
+provides=("hwids=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('hwids')
+source=("${_srcname}::git+https://github.com/gentoo/hwids.git#commit=137be75")               #commit=137be75  OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='hwids'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+
+    for ids in pci.ids usb.ids; do
+        install -Dm644 "$ids" "${pkgdir}/usr/share/hwdata/${ids}"
+    done
+}
+

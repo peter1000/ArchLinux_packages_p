@@ -1,0 +1,33 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: nut543 <kfs1@online.no>
+# Contributor: Dale Blount <dale@archlinux.org>
+
+_srcname=re2c
+pkgname=${_srcname}_p
+pkgver=0.14.3
+pkgrel=1
+arch=('x86_64')
+depends=(gcc-libs)
+pkgdesc='A tool for generating C-based recognizers from regular expressions'
+url='http://re2c.sourceforge.net/'
+license=(GPL)
+provides=("re2c=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('re2c')
+source=(http://downloads.sourceforge.net/$_srcname/$_srcname-$pkgver.tar.gz)
+sha1sums=('d0394658ffcd6164de8cfb27e003bae5cd881af8')
+
+build() {
+    cd $_srcname-$pkgver
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd $_srcname-$pkgver
+    make ${MAKEFLAGS} tests
+}
+
+package() {
+    cd $_srcname-$pkgver
+    make DESTDIR="$pkgdir" install
+}

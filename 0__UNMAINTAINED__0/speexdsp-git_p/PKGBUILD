@@ -1,0 +1,44 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+
+_srcname=speexdsp
+pkgname=${_srcname}-git_p
+_tag=1.2rc1
+pkgver=1.2rc1.r1991.gcc4110d                #commit=cc4110d  OK
+pkgrel=1
+pkgdesc="DSP library derived from Speex"
+arch=('x86_64')
+url="http://www.speex.org/"
+license=('BSD')
+depends=('glibc')
+provides=("speexdsp=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('speexdsp' 'speexdsp-git')
+source=("${_srcname}::git+https://git.xiph.org/speexdsp.git#commit=cc4110d")
+sha256sums=('SKIP')
+
+pkgver() {
+    cd "${srcdir}/${_srcname}"
+    printf "${_tag}.r%s.g%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    autoreconf -fiv
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd "${srcdir}/${_srcname}"
+    make -k check
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir" install
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+}

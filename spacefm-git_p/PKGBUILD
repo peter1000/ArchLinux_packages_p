@@ -1,0 +1,52 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: flu
+# Contributor: IgnorantGuru http://igurublog.wordpress.com/contact-ignorantguru/
+
+_srcname=spacefm
+pkgname=${_srcname}-git_p
+pkgver=1.0.4.r0.g16e3c62
+pkgrel=1
+pkgdesc="A multi-panel tabbed file manager - git branch"
+arch=('x86_64')
+url=("https://github.com/IgnorantGuru/spacefm")
+license=('GPL3')
+provides=("spacefm=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('spacefm' 'spacefm-git')
+install=spacefm.install
+makedepends=('intltool' 'gettext')
+depends=('shared-mime-info' 'hicolor-icon-theme' 'desktop-file-utils' 'udevil' 'ffmpegthumbnailer' 'gtk3')
+optdepends=('lsof: device processes'
+            'eject: eject media'
+            'wget: plugin download'
+            'gksu: perform as root functionality'
+            'pmount: mount as non-root user'
+            'udisks2: mount as non-root user'
+            'startup-notification'
+            'spacefm-plugin-clamav')
+
+source=("${_srcname}::git+https://github.com/IgnorantGuru/${_srcname}.git")    #commit=16e3c62  OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    ./autogen.sh --prefix=/usr --with-gtk3
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    make ${MAKEFLAGS}
+
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir" install
+}

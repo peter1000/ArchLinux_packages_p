@@ -1,0 +1,42 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Tom Gundersen <teg@jklm.no>
+# Contributor: Hugo Doria <hugo@archlinux.org>
+# Contributor: Sarah Hay <sarah@archlinux.org>
+# Contributor: dorphell <dorphell@archlinux.org>
+
+_srcname=faac
+pkgname=${_srcname}_p
+pkgver=1.28
+pkgrel=5
+pkgdesc="An AAC audio encoder"
+arch=('x86_64')
+url="http://www.audiocoding.com/"
+license=('GPL' 'custom')
+depends=('libmp4v2')
+provides=("faac=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('faac')
+source=("http://downloads.sourceforge.net/${_srcname}/${_srcname}-${pkgver}.tar.gz"
+    'altivec.patch'
+    'mp4v2-1.9.patch'
+    'mp4v2-2.0.0.patch')
+sha256sums=('c5141199f4cfb17d749c36ba8cfe4b25f838da67c22f0fec40228b6b9c3d19df'
+            '36647018413fd0804762ec6dfad1c4c26566ce67130a5052172639d3d5c68a03'
+            '8e0bfe501acb7f31a701ab2c797c2ace539ccd60e5f5b3c0ae538bcd5719c1df'
+            '30033c5427b0d8f77c57eb22261a69e764399e9b67802245ca555f46bdcfff79')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    patch -p1 -i ../mp4v2-1.9.patch
+    patch -p0 -i ../mp4v2-2.0.0.patch
+    patch -p0 -i ../altivec.patch
+    find . -type f -print0 | xargs -0 sed -i 's/\r//g'
+    ./bootstrap
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+    install -Dm644 "${srcdir}"/${_srcname}-${pkgver}/libfaac/kiss_fft/COPYING  "${pkgdir}"/usr/share/licenses/${pkgname}/LICENSE
+}

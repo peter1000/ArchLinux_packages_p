@@ -1,0 +1,26 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Sergio Conde <skgsergio@gmail.com>
+
+_srcname=notify2
+pkgname=python-${_srcname}
+pkgver=0.3
+pkgrel=1
+pkgdesc='Python interface to DBus notifications'
+arch=('any')
+url='https://pypi.python.org/pypi/notify2/'
+license=('BSD')
+depends=('python' 'python-dbus')
+provides=("python-notify2=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('python-notify2')
+source=("https://pypi.python.org/packages/source/n/notify2/${_srcname}-${pkgver}.tar.gz")
+sha256sums=('684281f91c51fc60bc7909a35bd21d043a2a421f4e269de1ed1f13845d1d6321')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    python setup.py build
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    python setup.py install --skip-build --root="${pkgdir}" --optimize=1
+}

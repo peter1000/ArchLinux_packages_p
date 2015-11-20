@@ -1,0 +1,57 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Aaron Griffin <aaron@archlinux.org>
+
+_srcname=fakechroot
+pkgname=${_srcname}-git_p
+pkgver=2.17.2.r58.g450fe79              
+pkgrel=1
+pkgdesc="Gives a fake chroot environment"
+arch=('x86_64')
+url="https://github.com/dex4er/fakechroot/wiki"
+license=('LGPL')
+depends=('glibc' 'filesystem' 'sed' 'util-linux' 'sh')
+provides=("fakechroot=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('fakechroot' 'fakechroot-git')
+install=fakechroot.install
+source=("${_srcname}::git+https://github.com/dex4er/${_srcname}.git#commit=450fe79"   #commit=450fe79 OK: Note with the next commit pacman did not compile: check failed: 20151025
+    'remove_man.patch')
+sha256sums=('SKIP'
+            '5401bc8f8452ddfc50dbb40f8c77e372d825092458b326ad45637db288a4a69d')
+
+pkgver() {
+    cur_prefix='master\/'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    # Remove SUBDIRS: man from Makefile.am (had given problems)
+    patch -p0 < "${srcdir}/remove_man.patch"
+
+    ./autogen.sh
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr --sbindir=/usr/bin \
+        --libdir=/usr/lib/libfakeroot --sysconfdir=/etc
+
+    make ${MAKEFLAGS}
+}
+
+#check() {
+    #cd "${srcdir}/${_srcname}"
+    #make check  # Attention some test failed with 2.17.2.r5.gd7a6124
+#}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR=${pkgdir} install
+
+    install -dm755 ${pkgdir}/etc/ld.so.conf.d/
+    echo '/usr/lib/libfakeroot/fakechroot/' > ${pkgdir}/etc/ld.so.conf.d/fakechroot.conf
+}

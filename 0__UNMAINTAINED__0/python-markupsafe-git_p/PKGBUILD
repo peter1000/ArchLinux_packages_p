@@ -1,0 +1,43 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Felix Yan <felixonmars@archlinux.org>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+# Contributor: Alex Anthony <alex.anthony28991@gmail.com>
+
+_srcname=markupsafe
+pkgname=python-${_srcname}-git_p
+pkgver=0.23.r1.gff1e1bf               #commit=ff1e1bf  OK
+pkgrel=1
+pkgdesc="Implements a XML/HTML/XHTML Markup safe string for Python"
+arch=("any")
+url="http://click.pocoo.org/"
+license=("custom")
+makedepends=('git' 'python-setuptools')
+checkdepends=("python-pytest")
+provides=("python-markupsafe=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('python-markupsafe' 'python-markupsafe-git')
+source=("${_srcname}::git+https://github.com/mitsuhiko/${_srcname}.git#commit=ff1e1bf")
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py build
+}
+
+check() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py test
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py install --skip-build --root="${pkgdir}" --optimize=1
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

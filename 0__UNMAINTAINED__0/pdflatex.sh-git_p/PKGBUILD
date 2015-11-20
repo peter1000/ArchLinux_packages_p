@@ -1,0 +1,36 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Dariusz Dwornikowski <dariusz.dwornikowski@gmail.com>
+
+_srcname=pdflatex.sh
+pkgname=${_srcname}-git_p
+pkgver=20120111               #commit=xxxx  OK
+pkgrel=1
+pkgdesc="A bash script to simplify TeX, LaTeX, and XeLaTeX files compilations and more."
+arch=('x86_64')
+url="https://github.com/mkalewski/pdflatex.sh"
+license=('MIT')
+depends=('texlive-bin' 'texlive-core')   # namcap?  still keep 'texlive-bin' 'texlive-core'
+makedepends=('git')
+optdepends=('dia: required to perform conversion from dia files'
+    'inkscape: required to convert svg to pdf'
+    'aspell: spell checking'
+    'texlive-latexextra: for ps2pdf convertion'
+    )
+provides=("pdflatex.sh=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('pdflatex.sh' 'pdflatex.sh-git')
+source=("${_srcname}::git+https://github.com/mkalewski/pdflatex.sh.git")
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    install -Dm755 "$srcdir/$_srcname/pdflatex.sh" "$pkgdir/usr/bin/pdflatex.sh"
+    install -Dm644 LICENSE.txt "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE.txt"
+}

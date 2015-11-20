@@ -1,0 +1,46 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Jason Chu <jason@archlinux.org>
+
+_srcname=speex
+pkgname=${_srcname}-git_p
+_tag=1.2rc1
+pkgver=1.2rc1.r1958.g9172c7e                #commit=9172c7e  OK
+pkgrel=1
+pkgdesc="A free codec for free speech"
+arch=('x86_64')
+url="http://www.speex.org/"
+license=(BSD)
+depends=('libogg' 'speexdsp')
+provides=("speex=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('speex' 'speex-git')
+source=("${_srcname}::git+https://git.xiph.org/speex.git#commit=9172c7e")
+sha256sums=('SKIP')
+
+pkgver() {
+    cd "${srcdir}/${_srcname}"
+    printf "${_tag}.r%s.g%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    autoreconf -fiv
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-static \
+        --enable-binaries # Must be given or configure won't use pkg-config correctly
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd "${srcdir}/${_srcname}"
+    make -k check
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir" install
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+}

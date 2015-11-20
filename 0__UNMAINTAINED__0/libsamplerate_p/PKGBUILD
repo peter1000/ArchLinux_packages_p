@@ -1,0 +1,32 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+
+_srcname=libsamplerate
+pkgname=${_srcname}_p
+pkgver=0.1.8
+pkgrel=3
+pkgdesc="Secret Rabbit Code - aka Sample Rate Converter for audio"
+arch=('x86_64')
+url="http://www.mega-nerd.com/SRC/index.html"
+license=('GPL')
+depends=('libsndfile')
+provides=("libsamplerate=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libsamplerate')
+source=("http://www.mega-nerd.com/SRC/libsamplerate-${pkgver}.tar.gz")
+sha256sums=('93b54bdf46d5e6d2354b7034395fe329c222a966790de34520702bb9642f1c06')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make check
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+}

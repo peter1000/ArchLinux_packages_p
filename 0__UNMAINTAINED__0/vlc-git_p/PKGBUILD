@@ -1,0 +1,231 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor : Andrew Crerar <andrew (dot) crerar at gmail>
+# Contributor: Rob McCathie <korrode at gmail>
+# Contributor: Giovanni Scafora <giovanni@archlinux.org>
+# Contributor: Sarah Hay <sarahhay@mb.sympatico.ca>
+# Contributor: Martin Sandsmark <martin.sandsmark@kde.org>
+# Contributor: heaven <aheaven87 at gmail dot com>
+# Contributor: graysky <graysky at archlinux dot us>
+# Contributor: Arkham <arkham at archlinux dot us>
+# Contributor: MacWolf <macwolf at archlinux dot de>
+
+_srcname=vlc
+pkgname=${_srcname}-git_p
+pkgver=2.2.0.4177.g48b9915               #commit=xxx  OK
+pkgrel=1
+pkgdesc="A multi-platform MPEG, VCD/DVD, and DivX player (GIT Version)"
+arch=('x86_64')
+url="http://www.videolan.org/vlc/"
+license=('LGPL2.1' 'GPL2')
+makedepends=('git')
+optdepends=('avahi: for service discovery using bonjour protocol')
+depends=(
+    # see: https://wiki.videolan.org/Contrib_Status
+
+    # ========== Other from PKGBUILDS and namcap output
+    'mpg123'
+    'libarchive'
+    'aalib'
+    'kdebase-runtime'
+    'libsamplerate'
+    'avahi'
+    'smbclient'
+    'libva-intel-driver'
+    'libva-vdpau-driver'
+    'ncurses'
+    'ttf-dejavu'
+    'ttf-freefont'
+    'phonon-qt4-vlc'
+    'qt5-x11extras'
+    'xosd'
+    'mesa'
+    'opencv'
+    'live-media'
+    'lirc'
+    'lirc-utils'
+    'librsvg'
+    'libssh2'
+    'libnotify'
+    'libmtp'
+    'gst-plugins-base-libs'
+    'libdc1394'
+    'xcb-util-keysyms'
+    'lua-socket'
+    'lua'
+    'qt5-base'
+    'libavc1394'
+    'libgoom2'
+    'libxinerama'
+    'libproxy'
+    'chromaprint'
+    'libtar'
+    'fdkaac'
+    'fluidsynth'
+    'gnome-vfs'
+    'libtiger'
+    'kdelibs'
+    'libgme'
+    'libxpm'
+
+    # ========== Codecs: https://wiki.videolan.org/Contrib_Status
+    'libvorbis'
+    'libogg'
+    'libtheora'
+    'speex'
+    'flac'
+    'x264'
+    'a52dec'
+    'libmpeg2'
+    'faad2'
+    'faac'
+    'lame'
+    'ffmpeg'
+    'libmad'
+    'orc'
+    'schroedinger'
+    'libdca'
+    'twolame'
+    'libmpcdec'
+    # Tremor
+    'libass'
+    'gsm'
+    'zvbi'
+    # mfx_dispatch
+    'opus'
+
+    # ========== Demuxers and Muxers
+    'libebml'
+    'libmatroska'
+    'libdvbpsi'
+    'libmodplug'
+    # GME
+
+    # ========== Access
+    'libshout'
+    'libdvdcss'
+    'libdvdread'
+    'libdvdnav'
+    'libbluray'
+    # livedotcom
+    'libcddb'
+    'libcdio'
+    'vcdimager'
+    'libgpg-error'
+    'libgcrypt'
+    'gnutls'
+    # Opendaap
+    'libxml2'
+    # VNCServer: not using vnc could do: libvncserver
+
+    # ========== Images
+    'libpng'
+    'libjpeg-turbo'
+    'libtiff'
+    'sdl'
+    'sdl_image'
+
+    # ========== Tools
+    'autoconf'
+    'automake'
+    'pkg-config'
+    'libtool'
+    # libiconv: got some related erors in other programs
+    'gettext'
+    'zlib'
+    'freetype2'
+    'fribidi'
+    'fontconfig'
+
+    # ========== Others
+    'taglib'
+    # goom2k4
+    'projectm'
+    'libcaca'
+    'qt4'
+    'portaudio-svn'
+    'libupnp'
+    'expat'
+    'yasm'
+    'sqlite'
+
+    'libvdpau-va-gl'
+)
+conflicts=('vlc' 'vlc-git' 'vlc-dev' 'vlc-plugin' 'vlc-stable-git')
+provides=("vlc=${pkgver}" "${pkgname}=${pkgver}")
+replaces=('vlc-plugin')
+backup=('usr/share/vlc/lua/http/.hosts'
+        'usr/share/vlc/lua/http/dialogs/.hosts')
+options=('!emptydirs')
+install="${_srcname}.install"
+source=("${_srcname}::git://git.videolan.org/vlc.git")
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='r'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    sed -i -e 's:truetype/ttf-dejavu:TTF:g' modules/visualization/projectm.cpp
+
+    ./bootstrap
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+
+    CFLAGS+=" -I/usr/include/samba-4.0" CPPFLAGS+=" -I/usr/include/samba-4.0"
+    ./configure --prefix=/usr \
+        --sysconfdir=/etc \
+        \
+        --disable-rpath \
+        --disable-nls \
+        --disable-vnc \
+        --disable-freerdp \
+        --disable-quicktime \
+        --disable-tremor \
+        --disable-daala \
+        --disable-x262 \
+        --disable-x26410b \
+        --disable-telx \
+        --disable-oss \
+        --disable-vcdx \
+        \
+        --enable-run-as-root \
+        --enable-sse \
+        --enable-faad \
+        --enable-lirc \
+        --enable-ncurses \
+        --enable-realrtsp \
+        --enable-aa \
+        --enable-upnp \
+        --enable-opus \
+        --enable-sftp \
+        --enable-mkv \
+        --enable-fdkaac \
+        --enable-x264 \
+        --enable-vdpau \
+        --enable-zvbi \
+        --enable-samplerate \
+        --enable-chromaprint \
+        --enable-qt \
+        --enable-vlc \
+        LUAC=/usr/bin/luac  LUA_LIBS="`pkg-config --libs lua`" \
+        RCC=/usr/bin/rcc-qt4
+
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+
+    make DESTDIR="${pkgdir}" install
+
+    for res in 16 32 48 128; do
+    install -D -m644 "${srcdir}/${_srcname}/share/icons/${res}x${res}/vlc.png" "${pkgdir}/usr/share/icons/hicolor/${res}x${res}/apps/vlc.png"
+    done
+}

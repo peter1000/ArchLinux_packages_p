@@ -1,0 +1,35 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Eric Belanger <eric@archlinux.org>
+
+_srcname=bison
+pkgname=${_srcname}_p
+pkgver=3.0.4
+pkgrel=1
+pkgdesc="The GNU general-purpose parser generator"
+arch=('x86_64')
+license=('GPL3')
+url="http://www.gnu.org/software/bison/bison.html"
+depends=('glibc' 'm4' 'sh')
+groups=('base-devel')
+install=bison.install
+provides=("bison=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('bison')
+source=(ftp://ftp.gnu.org/gnu/bison/${_srcname}-${pkgver}.tar.xz)
+sha256sums=('a72428c7917bdf9fa93cb8181c971b6e22834125848cf1d03ce10b1bb0716fe1')
+
+build() {
+	cd ${srcdir}/${_srcname}-${pkgver}  
+	./configure --prefix=/usr --datadir=/usr/share
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+	make DESTDIR=${pkgdir} install
+}

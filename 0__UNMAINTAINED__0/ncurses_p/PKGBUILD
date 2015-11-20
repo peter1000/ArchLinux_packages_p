@@ -1,0 +1,60 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+_srcname=ncurses
+pkgname=${_srcname}_p
+pkgver=6.0
+pkgrel=3
+pkgdesc='System V Release 4.0 curses emulation library'
+arch=('x86_64')
+url='http://invisible-island.net/ncurses/ncurses.html'
+license=('MIT')
+depends=('glibc' 'gcc-libs')
+provides=('libncurses++w.so' 'libformw.so' 'libmenuw.so' 'libpanelw.so'
+          'libncursesw.so' "ncurses=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('ncurses')
+source=(ftp://invisible-island.net/ncurses/ncurses-${pkgver/_/-}.tar.gz)
+sha256sums=('f551c24b30ce8bfb6e96d9f59b42fbea30fa3a6123384172f9e7284bcf647260')
+
+build() {
+	cd $_srcname-${pkgver/_/-}
+
+    # NOTES: taken from gentoo:
+    # ncurses is dumb and doesn't install .pc files unless pkg-config
+    # is also installed.  Force the tests to go our way.  Note that it
+    # doesn't actually use pkg-config ... it just looks for set vars.
+    # --enable-pc-files
+    # --with-pkg-config="$(tc-getPKG_CONFIG)"
+    # This path is used to control where the .pc files are installed.
+    # --with-pkg-config-libdir="${EPREFIX}/usr/$(get_libdir)/pkgconfig"
+        
+	./configure --prefix=/usr --mandir=/usr/share/man \
+		--with-shared --with-normal --without-debug --without-ada \
+		--enable-widec --enable-pc-files --with-cxx-binding --with-cxx-shared \
+		--enable-ext-colors --enable-ext-mouse \
+        --enable-pc-files \
+        --with-pkg-config-libdir="/usr/lib/pkgconfig"
+        
+	make ${MAKEFLAGS}
+}
+
+package() {
+	cd $_srcname-${pkgver/_/-}
+	make DESTDIR="$pkgdir" install
+
+	# fool packages looking to link to non-wide-character ncurses libraries
+	for lib in ncurses ncurses++ form panel menu; do
+		echo "INPUT(-l${lib}w)" > "$pkgdir"/usr/lib/lib${lib}.so
+        ln -s ${lib}w.pc "$pkgdir"/usr/lib/pkgconfig/${lib}.pc
+	done
+
+	# some packages look for -lcurses during build
+	echo "INPUT(-lncursesw)" > "$pkgdir"/usr/lib/libcursesw.so
+	ln -s libncurses.so "$pkgdir"/usr/lib/libcurses.so
+
+	# install license, rip it from the readme
+	install -d "$pkgdir"/usr/share/licenses/${pkgname}
+	grep -B 100 '$Id' README > "$pkgdir"/usr/share/licenses/${pkgname}/LICENSE
+}

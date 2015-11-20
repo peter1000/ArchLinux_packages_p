@@ -1,0 +1,33 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Allan McRae <allan@archlinux.org>
+
+_srcname=dejagnu
+pkgname=${_srcname}_p
+pkgver=1.5.3
+pkgrel=1
+pkgdesc="Framework for testing other programs"
+arch=('any')
+url="http://www.gnu.org/software/dejagnu/"
+license=('GPL')
+depends=('sh' 'expect')
+install=dejagnu.install
+provides=("dejagnu=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('dejagnu')
+source=(http://ftp.gnu.org/gnu/dejagnu/${_srcname}-${pkgver}.tar.gz)
+sha256sums=('099b8e364ca1d6248f8e1d32168c4b12677abff4253bbbb4a8ac8cdd321e3f19')
+
+build() {
+	cd $srcdir/$_srcname-$pkgver
+	./configure --prefix=/usr
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd $srcdir/$_srcname-$pkgver
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd $srcdir/$_srcname-$pkgver
+	make DESTDIR=$pkgdir/ install
+}

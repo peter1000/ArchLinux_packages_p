@@ -1,0 +1,47 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Maintainer: Ionut Biru <ibiru@archlinux.org>
+
+_srcname=orc
+pkgname=${_srcname}-git_p
+pkgver=0.4.24.r8.gd58514b
+pkgrel=1
+pkgdesc="The Oil Runtime Compiler"
+arch=('x86_64')
+license=('custom')
+url="http://code.entropywave.com/projects/orc/"
+depends=('glibc')
+makedepends=('valgrind')
+provides=("orc=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('orc' 'orc-git')
+source=("${_srcname}::git+http://cgit.freedesktop.org/gstreamer/orc/")
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='orc-'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    autoreconf -fiv
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr --disable-static
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd "${srcdir}/${_srcname}"
+    make check
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir" install
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/${pkgname}/COPYING"
+}

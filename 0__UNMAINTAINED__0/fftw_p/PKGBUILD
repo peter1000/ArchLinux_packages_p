@@ -1,0 +1,76 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Ronald van Haren <ronald.archlinux.org>
+# Contributor: damir <damir@archlinux.org>
+
+_srcname=fftw
+pkgname=${_srcname}_p
+pkgver=3.3.4
+pkgrel=1
+pkgdesc="A library for computing the discrete Fourier transform (DFT)"
+arch=('x86_64')
+license=('GPL2')
+url="http://www.fftw.org/"
+depends=('bash' 'gcc-libs')
+makedepends=('gcc-fortran')
+provides=("fftw=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('fftw')
+source=("http://www.fftw.org/${_srcname}-${pkgver}.tar.gz")
+install=fftw.install
+sha256sums=('8f0cde90929bc05587c3368d2f15cd0530a60b8a9912a8e2979a72dbe5af0982')
+
+# notes:
+# http://www.fftw.org/fftw2_doc/fftw_6.html#SEC69
+# http://www.fftw.org/faq/section2.html#singleprec
+# http://www.fftw.org/fftw3_doc/Precision.html#Precision
+
+
+build() {
+    cd ${srcdir}
+
+    cp -a ${_srcname}-${pkgver} ${_srcname}-${pkgver}-single
+    cp -a ${_srcname}-${pkgver} ${_srcname}-${pkgver}-double
+    mv ${_srcname}-${pkgver} ${_srcname}-${pkgver}-long-double
+
+
+    # use upstream default CFLAGS while keeping our -march/-mtune
+    CFLAGS+=" -O3 -fomit-frame-pointer -malign-double -fstrict-aliasing -ffast-math"
+
+    CONFIGURE="./configure F77=gfortran --prefix=/usr \
+                    --enable-shared --enable-threads \
+                    --enable-openmp"
+
+    # build single precision (float)
+    cd ${srcdir}/${_srcname}-single
+    echo
+    echo '...BUILDING: build single precision...'
+    echo
+    $CONFIGURE --enable-float --enable-sse --enable-avx 
+    make ${MAKEFLAGS}
+    
+    # build double precision
+    cd ${srcdir}/${_srcname}-double
+    echo
+    echo '...BUILDING: build double precision...'
+    echo
+    $CONFIGURE --enable-sse2 --enable-avx
+    make ${MAKEFLAGS}
+
+    # build long double precission
+    cd ${srcdir}/${_srcname}-long-double
+    echo
+    echo '...BUILDING: build long-double precision...'
+    echo
+    $CONFIGURE --enable-long-double
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd ${srcdir}/${_srcname}-${pkgver}-single
+    make DESTDIR=${pkgdir} install
+    
+    cd ${srcdir}/${_srcname}-${pkgver}-double
+    make DESTDIR=${pkgdir} install
+
+    cd ${srcdir}/${_srcname}-${pkgver}-long-double
+    make DESTDIR=${pkgdir} install
+}

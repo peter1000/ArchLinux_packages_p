@@ -1,0 +1,206 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Luchesar V. ILIEV <luchesar%2eiliev%40gmail%2ecom>
+# Contributor: Anders Bergh <anders@archlinuxppc.org>
+# Contributor: Armin K. <krejzi at email dot com>
+# Contributor: Christian Babeux <christian.babeux@0x80.ca>
+# Contributor: Evangelos Foutras <evangelos@foutrelis.com>
+# Contributor: Roberto Alsina <ralsina@kde.org>
+# Contributor: Thomas Dziedzic < gostrc at gmail >
+# Contributor: Tomas Lindquist Olsen <tomas@famolsen.dk>
+# Contributor: Tomas Wilhelmsson <tomas.wilhelmsson@gmail.com>
+
+_srcname=llvm
+pkgname=${_srcname}-svn_p
+_tag=3.8.0
+pkgver=3.8.0.r252295
+pkgrel=1
+_ocamlver=4.02.3.r10912.ge88b2fb                              # Set the installed OCaml package version
+pkgdesc='The LLVM Compiler Infrastructure'
+arch=('x86_64')
+url='http://llvm.org/'
+license=('custom:University of Illinois')
+makedepends=(
+    'cmake'
+    'ninja'
+    'libffi'
+    "ocaml=${_ocamlver}"
+    'ocaml-ctypes'
+    'ocaml-findlib'
+    'python2'
+    'python2-sphinx'
+    'subversion'
+)
+
+# this is always the latest svn so debug info can be useful
+options=('staticlibs' '!strip')
+
+groups=('llvm-toolchain-svn')
+provides=("llvm=${pkgver}" "llvm-svn_p=${pkgver}"
+    "llvm-libs=${pkgver}" "llvm-libs-svn_p=${pkgver}"
+    "llvm-ocaml=${pkgver}" "llvm-ocaml-svn_p=${pkgver}"
+    "clang=${pkgver}" "clang-svn_p=${pkgver}"
+    "clang-analyzer=${pkgver}" "clang-analyzer-svn_p=${pkgver}"
+    "clang-compiler-rt=${pkgver}" "clang-compiler-rt-svn_p=${pkgver}"
+    )
+conflicts=('llvm' 'llvm-svn'
+    'llvm-libs' 'llvm-libs-svn'
+    'llvm-ocaml' 'llvm-ocaml-svn'
+    'clang' 'clang-svn'
+    'clang-analyzer' 'clang-analyzer-svn'
+    'clang-compiler-rt' 'clang-compiler-rt-svn'
+    )
+replaces=('llvm'
+    'llvm-libs'
+    'llvm-ocaml'
+    'clang'
+    'clang-analyzer'
+    'clang-compiler-rt'
+    )
+
+_revision='252295'            # _revision='252295'  OK:  Set to empty string '' to get trunk
+source=(
+    "${_srcname}::svn+http://llvm.org/svn/llvm-project/${_srcname}/trunk${_revision}"    #revision=252277   NOT OK  without nijina   #revision=252158   old OK 20151105
+    #"clang::svn+http://llvm.org/svn/llvm-project/cfe/trunk${_revision}"
+    #"clang-tools-extra::svn+http://llvm.org/svn/llvm-project/clang-tools-extra/trunk${_revision}"
+    #"compiler-rt::svn+http://llvm.org/svn/llvm-project/compiler-rt/trunk${_revision}"
+    'llvm-Config-llvm-config.h'
+)
+
+sha256sums=(
+    'SKIP'
+   # 'SKIP'
+    #'SKIP'
+    #'SKIP'
+    '597dc5968c695bbdbb0eac9e8eb5117fcd2773bc91edf5ec103ecffffab8bc48'
+)
+
+pkgver() {
+    cd "${srcdir}/${_srcname}"
+    local ver="$(svnversion)"
+    printf "${_tag}.r%s" "${ver//[[:alpha:]]}"
+}
+
+#
+# BEGIN INTERNAL VARIABLES AND FUNCTIONS
+#
+
+# Python site-packages dir (relative to ${pkgdir})
+_py_sitepkg_dir="/usr/lib/python2.7/site-packages"
+
+# Fix the Python interpreter path in .py files to point to python2
+# Arguments: py_file_to_patch [py_file_to_patch ...]
+_fix_python_exec_path() {
+    sed -i \
+        -e 's|^#!/usr/bin/python$|&2|' \
+        -e 's|^#!/usr/bin/env python$|&2|' \
+        ${@}
+}
+
+# Compile the Python files in a directory
+# Arguments: directory_to_operate_on
+_compile_python_files() {
+    python2 -m compileall "${1}"
+    python2 -O -m compileall "${1}"
+}
+
+# Install the Python bindings of a package
+# Arguments: source_directory_to_install_from
+_install_python_bindings() {
+    install -m 0755 -d "${pkgdir}${_py_sitepkg_dir}"
+    cp -r "${1}" "${pkgdir}${_py_sitepkg_dir}/"
+    _compile_python_files "${pkgdir}${_py_sitepkg_dir}/${1##*/}"
+}
+
+
+#
+# END INTERNAL VARIABLES AND FUNCTIONS
+#
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+
+    #svn export --force "${srcdir}/clang" tools/clang
+    #svn export --force "${srcdir}/clang-tools-extra" tools/clang/tools/extra
+    #svn export --force "${srcdir}/compiler-rt" projects/compiler-rt
+
+    # Fix docs installation directory
+    sed -e 's|^\([[:blank:]]*DESTINATION[[:blank:]]\+\)docs/html|\1share/doc|' \
+        -e 's|^\([[:blank:]]*DESTINATION[[:blank:]]\+\)docs/ocaml/html|\1share/doc/ocaml|' \
+        -i docs/CMakeLists.txt
+
+    mkdir -p "${srcdir}/build"
+}
+
+build() {
+    cd "${srcdir}/build"
+
+    # LLVM_BUILD_LLVM_DYLIB: Build the dynamic runtime libraries (e.g. libLLVM.so).
+    # LLVM_LINK_LLVM_DYLIB:  Link our own tools against the libLLVM dynamic library, too.
+    # LLVM_BINUTILS_INCDIR:  Set to binutils' plugin-api.h location in order to build LLVMgold.
+
+    ## remove hardening options: TODO: maybe remove it
+    #export CPPFLAGS=""
+    #export CFLAGS="-march=native -fPIC -O2"
+    #export CXXFLAGS="${CFLAGS}"
+    
+    cmake -G Ninja  \
+        -DCMAKE_BUILD_TYPE:STRING=Release \
+        -DCMAKE_INSTALL_PREFIX:PATH=/usr \
+        -DLLVM_APPEND_VC_REV:BOOL=ON \
+        -DLLVM_ENABLE_RTTI:BOOL=ON \
+        -DLLVM_ENABLE_FFI:BOOL=ON \
+        -DFFI_INCLUDE_DIR:PATH="$(pkg-config --variable=includedir libffi)" \
+        -DFFI_LIBRARY_DIR:PATH="$(pkg-config --variable=libdir libffi)" \
+        -DLLVM_BUILD_DOCS:BOOL=ON \
+        -DLLVM_ENABLE_SPHINX:BOOL=ON \
+        -DSPHINX_OUTPUT_HTML:BOOL=ON \
+        -DSPHINX_OUTPUT_MAN:BOOL=ON \
+        -DSPHINX_WARNINGS_AS_ERRORS:BOOL=OFF \
+        -DLLVM_BUILD_LLVM_DYLIB:BOOL=ON \
+        -DLLVM_LINK_LLVM_DYLIB:BOOL=ON \
+        -DLLVM_BINUTILS_INCDIR:PATH=/usr/include \
+        "../${_srcname}"
+
+    # Must run this target independently, or else docs/cmake_install.cmake will fail.
+    # Also, we must check that there isn't an incompatible llvm-ocaml package installed,
+    # or else the build will fail with "inconsistent assumptions over interface" errors.
+    [[ $(ocamlfind query -format %v llvm 2>/dev/null | tr - _) =~ (${pkgver}|^$) ]] || {
+        error 'Incompatible LLVM OCaml bindings installed.'
+        plain 'Please either uninstall any currently installed llvm-ocaml* package before building,'
+        plain 'or, __preferably__, build in a clean chroot, as described on the Arch Linux wiki:'
+        plain 'https://wiki.archlinux.org/index.php/DeveloperWiki:Building_in_a_Clean_Chroot'
+        exit 1
+    }
+
+    ninja ${MAKEFLAGS} ocaml_doc
+    ninja ${MAKEFLAGS}
+}
+
+package_llvm-svn_p() {
+
+    cd "${srcdir}/build"
+
+    DESTDIR="$pkgdir" ninja install
+
+    
+    # Get rid of example Hello transformation
+    rm -f "${pkgdir}"/usr/lib/*LLVMHello.*
+
+    if [[ "${CARCH}" == "x86_64" ]]; then
+        # Needed for multilib (https://bugs.archlinux.org/task/29951)
+        # Header stubs are taken from Fedora
+        mv "${pkgdir}/usr/include/llvm/Config/llvm-config"{,-64}.h
+        cp "${srcdir}/llvm-Config-llvm-config.h" "${pkgdir}/usr/include/llvm/Config/llvm-config.h"
+    fi
+
+    # Clean up documentation
+    rm -rf "${pkgdir}/usr/share/doc/llvm/html/_sources"
+
+    _install_python_bindings "${srcdir}/llvm/bindings/python/llvm"
+
+
+    install -D -m 0644 "${srcdir}/${_srcname}/LICENSE.TXT" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+
+
+}
+

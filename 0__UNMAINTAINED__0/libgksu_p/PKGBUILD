@@ -1,0 +1,61 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+_srcname=libgksu
+pkgname=${_srcname}_p
+pkgver=2.0.12
+pkgrel=6
+pkgdesc="gksu authorization library"
+arch=('x86_64')
+url="http://www.nongnu.org/gksu/index.html"
+license=(GPL)
+depends=('gconf' 'gtk2' 'libgnome-keyring' 'libgtop' 'startup-notification')
+makedepends=('intltool' 'gtk-doc')
+options=('!emptydirs')
+install=libgksu.install
+provides=("libgksu=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libgksu')
+source=(http://people.debian.org/~kov/gksu/${_srcname}-${pkgver}.tar.gz
+        libgksu-2.0.0-fbsd.patch
+        libgksu-2.0.12-automake-1.11.2.patch
+        libgksu-2.0.12-fix-make-3.82.patch
+        libgksu-2.0.12-notests.patch
+        libgksu-2.0.12-revert-forkpty.patch
+        libgksu-2.0.7-libs.patch
+        libgksu-2.0.7-polinguas.patch)
+sha1sums=('81a541ccfe9ea278dd3e2a80b3287f02f6eb88f8'
+          'd32f24f03a728903de2f3b0a449d7787561fa622'
+          '0ce8c11f323436521d2f6e714aa6634a92e68059'
+          '82e4b3db63d80211c7caaba3456542f449ed9707'
+          'ea24e5c3edf0caac9363a9dfb9e0e00af0653d44'
+          'cfdf41006e2ba5054aec17f85bdcf3777e62c16f'
+          '8cb3c4f814c5799b828a202c4200673344ed0df8'
+          'c1281e894e42646f2b337a222137275cc4b4b487')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    patch -Np1 -i "${srcdir}/libgksu-2.0.0-fbsd.patch"
+    patch -Np1 -i "${srcdir}/libgksu-2.0.7-libs.patch"
+    patch -Np1 -i "${srcdir}/libgksu-2.0.7-polinguas.patch"
+    patch -Np1 -i "${srcdir}/libgksu-2.0.12-revert-forkpty.patch"
+    patch -Np0 -i "${srcdir}/libgksu-2.0.12-fix-make-3.82.patch"
+    patch -Np1 -i "${srcdir}/libgksu-2.0.12-notests.patch"
+    patch -Np1 -i "${srcdir}/libgksu-2.0.12-automake-1.11.2.patch"
+
+    touch NEWS README
+
+    intltoolize --force --copy --automake
+    autoreconf -fi
+    ./configure --prefix=/usr --sysconfdir=/etc \
+        --localstatedir=/var --disable-static --disable-schemas-install
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL=1 DESTDIR="${pkgdir}" install
+    rm -f ${pkgdir}/usr/lib/*.a
+    install -m755 -d "${pkgdir}/usr/share/gconf/schemas"
+    gconf-merge-schema "${pkgdir}/usr/share/gconf/schemas/${_srcname}.schemas" --domain libgksu ${pkgdir}/etc/gconf/schemas/*.schemas
+    rm -f ${pkgdir}/etc/gconf/schemas/*.schemas
+}

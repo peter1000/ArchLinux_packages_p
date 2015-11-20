@@ -1,0 +1,41 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Andrea Scarpino <andrea@archlinux.org>
+# Contributor: Jonahtan Schaeffer <joschaeffer@gmail.com>
+# COntributor: Drake Arconis <lightdrake@gmail.com>
+
+_srcname=jsoncpp
+pkgname=${_srcname}_p
+pkgver=1.6.5
+pkgrel=1
+pkgdesc='A C++ library for interacting with JSON'
+url='https://github.com/open-source-parsers/jsoncpp'
+license=('MIT' 'custom:Public_Domain')
+arch=('x86_64')
+depends=('gcc-libs')
+makedepends=('cmake')
+provides=("jsoncpp=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('jsoncpp')
+source=(${_srcname}-${pkgver}.tar.gz::"https://github.com/open-source-parsers/${_srcname}/archive/${pkgver}.tar.gz")
+sha256sums=('a2b121eaff56ec88cfd034d17685821a908d0d87bc319329b04f91a6552c1ac2')
+
+build() {
+  cd ${_srcname}-${pkgver}
+  cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DBUILD_SHARED_LIBS=ON \
+        -DBUILD_STATIC_LIBS=OFF
+  make ${MAKEFLAGS}
+}
+
+check() {
+  cd ${_srcname}-${pkgver}
+  make ${MAKEFLAGS} test
+}
+
+package() {
+  cd  ${_srcname}-${pkgver}
+  make DESTDIR="${pkgdir}" install
+  install -Dm644 LICENSE "${pkgdir}"/usr/share/licenses/${pkgname}/LICENSE
+}
+

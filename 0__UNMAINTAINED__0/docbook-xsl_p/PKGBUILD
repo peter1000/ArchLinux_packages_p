@@ -1,0 +1,38 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Tom Gundersen <teg@jklm.no>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Sean Middleditch <elanthis@awesomeplay.com>
+# Contributor: Daniel J Griffiths <ghost1227@archlinux.us>
+
+_srcname=docbook-xsl
+pkgname=${_srcname}_p
+pkgver=1.78.1
+pkgrel=1
+pkgdesc='XML stylesheets for Docbook-xml transformations'
+arch=('any')
+license=('custom')
+url='http://docbook.sourceforge.net/'
+depends=('libxml2' 'libxslt' 'docbook-xml')
+install="$_srcname.install"
+provides=("docbook-xsl=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('docbook-xsl')
+source=("http://downloads.sourceforge.net/docbook/${_srcname}-${pkgver}.tar.bz2")
+sha256sums=('c98f7296ab5c8ccd2e0bc07634976a37f50847df2d8a59bdb1e157664700b467')
+
+package() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+
+	_pkgroot=${pkgdir}/usr/share/xml/docbook/xsl-stylesheets-${pkgver}
+
+        install -dm755 ${_pkgroot}
+	install -m644 VERSION VERSION.xsl ${_pkgroot}
+
+	for fn in assembly common eclipse epub epub3 fo highlighting html htmlhelp javahelp lib \
+                  manpages params profiling roundtrip template website xhtml xhtml-1_1 xhtml5; do
+		install -dm755 ${_pkgroot}/${fn}
+		install -m644 ${fn}/*.{xml,xsl,dtd,ent} ${_pkgroot}/${fn} || true  # ignore missing files
+	done
+
+	install -dm755 ${pkgdir}/etc/xml
+	install -Dm644 COPYING ${pkgdir}/usr/share/licenses/${pkgname}/LICENSE
+}

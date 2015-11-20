@@ -1,0 +1,42 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jerome Leclanche <jerome at leclan dot ch>
+
+_srcname=libsysstat
+pkgname=${_srcname}-git_p
+pkgver=0.3.1.r0.g7b173f3
+pkgrel=1
+pkgdesc="Library to query system statistics (net, resource usage, ...)"
+arch=('x86_64')
+url="http://lxqt.org"
+license=("LGPL2.1")
+depends=("qt5-base")
+makedepends=("git" "cmake" 'ninja')
+provides=("$_srcname" "$_srcname-qt5" "$_srcname-qt5-git")
+provides=("libsysstat=${pkgver}" "libsysstat-qt5=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=("libsysstat"'libsysstat-git' "libsysstat-qt5" "libsysstat-qt5-git")
+source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")          #commit=7b173f3  OK
+sha512sums=('SKIP')
+
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    mkdir build
+    cd build
+    cmake -G Ninja "${srcdir}/${_srcname}" \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib
+    ninja ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}/build"
+    DESTDIR="$pkgdir" ninja install
+}

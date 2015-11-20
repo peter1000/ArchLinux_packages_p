@@ -1,0 +1,52 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jerome Leclanche <jerome@leclan.ch>
+
+_srcname=libfm
+pkgname=${_srcname}-git_p
+pkgver=1.2.3.r60.g9f3315d            
+pkgrel=1
+pkgdesc='Library for file management'
+arch=('x86_64')
+url="http://www.lxde.org"
+license=("GPL2")
+depends=('menu-cache' 'libexif')
+makedepends=("git" "vala" 'intltool' 'gtk-doc' "libfm-extra-git_p=${pkgver}")   # force same version for: libfm-extra-git_p - keep this dependency
+provides=("libfm=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libfm' 'libfm-git')
+source=("${_srcname}::git+https://github.com/lxde/$_srcname.git")        #commit=9f3315d  OK
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+
+    ./autogen.sh
+    ./configure \
+        --without-gtk \
+        --disable-gtk-doc \
+        --disable-udisks \
+        --enable-actions \
+        --prefix="/usr" \
+        --sysconfdir="/etc"
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir" install
+
+    # Remove files which are in the libfm-extra package
+    rm -f "$pkgdir"/usr/include/libfm/fm-{extra,version,xml-file}.h \
+        "$pkgdir"/usr/lib/libfm-extra.so* \
+        "$pkgdir"/usr/lib/pkgconfig/libfm-extra.pc
+
+    # Remove the link which are in the libfm-extra package
+    rm -rf "$pkgdir"/usr/include/libfm
+}

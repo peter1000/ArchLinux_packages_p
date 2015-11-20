@@ -1,0 +1,37 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Thomas Bächler <thomas@archlinux.org>
+
+_srcname=attr
+pkgname=${_srcname}_p
+pkgver=2.4.47
+pkgrel=1
+pkgdesc="Extended attribute support library for ACL support"
+arch=('x86_64')
+url="http://savannah.nongnu.org/projects/attr"
+license=('LGPL')
+depends=('glibc') 
+makedepends=('gettext')
+provides=('xfsattr' "attr=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('attr' 'xfsattr')
+replaces=('xfsattr')
+source=("http://download.savannah.gnu.org/releases/$_srcname/$_srcname-$pkgver.src.tar.gz")
+sha256sums=('25772f653ac5b2e3ceeb89df50e4688891e21f723c460636548971652af0a859')
+
+build() {
+    cd "$_srcname-$pkgver"
+
+    export INSTALL_USER=root INSTALL_GROUP=root
+    ./configure --prefix=/usr --libdir=/usr/lib --libexecdir=/usr/lib
+    make ${MAKEFLAGS}
+}
+
+package() {
+    make -C "$_srcname-$pkgver" DIST_ROOT="$pkgdir" install install-lib install-dev
+
+    # tidy up
+    rm -f "$pkgdir"/usr/lib/libattr.a
+    chmod 0755 "$pkgdir"/usr/lib/libattr.so.*.*.*
+
+    # remove conflicting manpages
+    rm -rf "$pkgdir"/usr/share/man/man2
+}

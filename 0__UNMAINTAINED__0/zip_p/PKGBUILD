@@ -1,0 +1,37 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: dorphell <dorphell@archlinux.org>
+
+pkgname=zip
+pkgver=3.0
+_pkgver=${pkgver/./}
+pkgrel=6
+pkgdesc='Compressor/archiver for creating and modifying zipfiles'
+url='http://www.info-zip.org/Zip.html'
+arch=('x86_64')
+license=('custom')
+depends=('bzip2')
+options=('!makeflags')
+provides=("zip=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('zip')
+source=("http://downloads.sourceforge.net/infozip/${pkgname}${_pkgver}.tar.gz")
+sha1sums=('c9f4099ecf2772b53c2dd4a8e508064ce015d182')
+
+prepare() {
+	cd "${srcdir}/${pkgname}${_pkgver}"
+	sed -e "/^CFLAGS_NOOPT =/s/\$/ $CPPFLAGS $CFLAGS/" -i unix/Makefile
+	sed -e "s/^LFLAGS1=''/LFLAGS1=$LDFLAGS/" -i unix/configure
+}
+
+build() {
+	cd "${srcdir}/${pkgname}${_pkgver}"
+	make ${MAKEFLAGS} -f unix/Makefile prefix=/usr generic_gcc
+}
+
+package() {
+	cd "${srcdir}/${pkgname}${_pkgver}"
+	make -f unix/Makefile prefix="${pkgdir}"/usr \
+		MANDIR=${pkgdir}/usr/share/man/man1 \
+		install
+	install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

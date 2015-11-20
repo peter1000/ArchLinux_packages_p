@@ -1,0 +1,33 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Beej <beej@beej.us>
+# Contributor: Ivan c00kiemon5ter Kanakarakis <ivan.kanak@gmail.com>
+
+_srcname=termcap
+pkgname=${_srcname}_p
+pkgver="1.3.1"
+pkgrel=4
+pkgdesc="Enables programs to use display computer terminals in a device-independent manner"
+arch=('x86_64')
+url="http://www.catb.org/~esr/terminfo/"
+license=("GPL")
+provides=("termcap=${pkgver}" "${_srcname}=${pkgver}")
+conflicts=('termcap')
+source=("http://ftp.gnu.org/gnu/${_srcname}/${_srcname}-${pkgver}.tar.gz")
+sha256sums=('91a0e22e5387ca4467b5bcb18edf1c51b930262fd466d5fda396dd9d26719100')
+
+build() {
+    gcc -fPIC -c "${srcdir}/${_srcname}-${pkgver}/${_srcname}.c" \
+        -o "${srcdir}"/"${_srcname}.o" \
+        -DHAVE_STRING_H=1 -DHAVE_UNISTD_H=1 -DSTDC_HEADERS=1 || return 1
+    gcc -shared -Wl,-soname,"lib${_srcname}.so" \
+        -o "${srcdir}/lib${_srcname}.so.${pkgver}" "${srcdir}/${_srcname}.o" || return 1
+}
+
+package() {
+    install -D -m755 "${srcdir}/lib${_srcname}.so.${pkgver}" "${pkgdir}/usr/lib/lib${_srcname}.so.${pkgver}"
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    for infofile in termcap.info*
+        do install -D -m644 "${srcdir}/${_srcname}-${pkgver}/${infofile}" "${pkgdir}/usr/share/info/${infofile}"
+    done
+}
+

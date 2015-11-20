@@ -1,0 +1,36 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Hugo Doria <hugo@archlinux.org>
+
+_srcname=libcap
+pkgname=${_srcname}_p
+pkgver=2.24
+pkgrel=2
+pkgdesc='POSIX 1003.1e capabilities'
+arch=('x86_64')
+url='http://sites.google.com/site/fullycapable/'
+license=('GPL2')
+depends=('glibc' 'attr')
+makedepends=('linux-api-headers')
+provides=("libcap=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libcap')
+source=(https://kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-$pkgver.tar.xz)
+sha256sums=('cee4568f78dc851d726fc93f25f4ed91cc223b1fe8259daa4a77158d174e6c65')
+
+prepare() {
+    cd $_srcname-$pkgver
+    sed -i "/SBINDIR/s#sbin#bin#" Make.Rules
+}
+
+build() {
+    make ${MAKEFLAGS} -C $_srcname-$pkgver KERNEL_HEADERS=/usr/include
+}
+
+package() {
+    cd $_srcname-$pkgver
+    make prefix=/usr lib=/lib DESTDIR="$pkgdir" RAISE_SETFCAP=no install
+
+    install -Dm644 pam_cap/capability.conf \
+        "$pkgdir"/usr/share/doc/$_srcname/capability.conf.example
+}

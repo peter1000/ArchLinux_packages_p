@@ -1,0 +1,35 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Tom Gundersen <teg@jklm.no>
+# Contributor: Judd <jvinet@zeroflux.org>
+
+_srcname=libevent
+pkgname=${_srcname}_p
+pkgver=2.0.22
+pkgrel=1
+pkgdesc="An event notification library"
+arch=('i686' 'x86_64')
+url="http://www.monkey.org/~provos/libevent/"
+license=('BSD')
+depends=('openssl')
+optdepends=('python2: to use event_rpcgen.py')
+provides=("libevent=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libevent')
+source=(http://sourceforge.net/projects/levent/files/libevent/libevent-${pkgver%.*}/${_srcname}-$pkgver-stable.tar.gz)
+sha1sums=('a586882bc93a208318c70fc7077ed8fca9862864')
+
+build() {
+    cd ${_srcname}-${pkgver}-stable
+    ./configure --prefix=/usr --sysconfdir=/etc
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd ${_srcname}-${pkgver}-stable
+    make ${MAKEFLAGS} check
+}
+
+package() {
+    cd ${_srcname}-${pkgver}-stable
+    make DESTDIR="${pkgdir}" install
+    install -Dm 644 LICENSE "${pkgdir}"/usr/share/licenses/libevent/LICENSE
+}

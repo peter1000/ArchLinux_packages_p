@@ -1,0 +1,28 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
+# Contributor: Gerardo Exequiel Pozzi <vmlinuz386@yahoo.com.ar>
+
+_srcname=chrpath
+pkgname=${_srcname}_p
+pkgver=0.16
+pkgrel=1
+pkgdesc="Change or delete the rpath or runpath in ELF files"
+arch=('x86_64')
+url="http://directory.fsf.org/project/chrpath/"
+license=('GPL2')
+depends=('glibc')
+provides=("chrpath=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('chrpath')
+source=("https://alioth.debian.org/frs/download.php/latestfile/813/chrpath-$pkgver.tar.gz")
+sha1sums=('174bb38c899229f4c928734b20e730f61191795a')
+
+build() {
+    cd "${srcdir}"/$_srcname-$pkgver
+    ./configure --prefix=/usr --mandir=/usr/share/man
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}"/$_srcname-$pkgver
+    make DESTDIR="${pkgdir}" docdir=/usr/share/doc/chrpath install
+}

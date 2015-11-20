@@ -1,0 +1,41 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Patryk Kowalczyk < patryk at kowalczyk dot ws>
+
+_srcname=libseccomp
+pkgname=${_srcname}-git_p
+pkgver=2.2.0.r74.g7f3ae6e
+pkgrel=1
+pkgdesc='Enhanced seccomp library'
+arch=('x86_64')
+license=('LGPL2.1')
+url="http://sourceforge.net/projects/libseccomp/"
+depends=('glibc')
+provides=("libseccomp=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libseccomp')
+source=("${_srcname}::git+https://github.com/seccomp/${_srcname}.git#commit=7f3ae6e")          #commit=7f3ae6e  OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    autoreconf -fiv
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir" install
+}

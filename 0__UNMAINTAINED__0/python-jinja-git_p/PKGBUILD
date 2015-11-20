@@ -1,0 +1,36 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Evangelos Foutras <evangelos@foutrelis.com>
+# Contributor: Peter Baldwin <bald_pete@hotmail.com>
+
+_srcname=jinja2
+pkgname=python-jinja-git_p
+pkgver=2.8.r11.g9b4b20a               #commit=9b4b20a  OK
+pkgrel=1
+pkgdesc="A simple pythonic template language written in Python"
+arch=('any')
+url="http://jinja.pocoo.org/"
+license=('BSD')
+makedepends=('git' 'python-setuptools' 'python-markupsafe')
+provides=("python-jinja=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('python-jinja' 'python-jinja-git')
+source=("${_srcname}::git+https://github.com/mitsuhiko/${_srcname}.git#commit=9b4b20a")
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py build
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py install --skip-build --root="${pkgdir}" --optimize=1
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

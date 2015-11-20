@@ -1,0 +1,40 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Dave Reisner <dreisner@archlinux.org>
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+
+_srcname=ed
+pkgname=${_srcname}_p
+pkgver=1.12
+pkgrel=1
+pkgdesc="A POSIX-compliant line-oriented text editor"
+arch=('x86_64')
+license=('GPL')
+url="http://www.gnu.org/software/ed/ed.html"
+depends=('glibc' 'sh')
+options=('!emptydirs')
+install='ed.install'
+provides=("ed=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('ed')
+source=("ftp://ftp.gnu.org/gnu/ed/$_srcname-$pkgver.tar.lz")
+sha1sums=('095760399ea0e54fdfb4e17f5f7f093fbccb2f33')
+
+build() {
+    cd "$_srcname-$pkgver"
+
+    ./configure --prefix=/ \
+              --bindir=/usr/bin \
+              --mandir=/usr/share/man \
+              --infodir=/usr/share/info \
+              "CFLAGS=$CFLAGS" \
+              "LDFLAGS=$LDFLAGS"
+
+    make ${MAKEFLAGS}
+}
+
+check() {
+    make ${MAKEFLAGS} -C "$_srcname-$pkgver" check
+}
+
+package() {
+    make -C "$_srcname-$pkgver" "DESTDIR=$pkgdir" install
+}

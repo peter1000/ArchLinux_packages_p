@@ -1,0 +1,46 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jerome Leclanche <jerome@leclan.ch>
+
+_srcname=libfm
+pkgname=${_srcname}-extra-git_p
+pkgver=1.2.3.r60.g9f3315d          
+pkgrel=1
+pkgdesc='Library for file management. (Libfm-extra only)'
+arch=('x86_64')
+url="http://www.lxde.org"
+license=("GPL2")
+depends=('libexif')
+makedepends=("git" "vala" 'intltool' 'gtk-doc')
+provides=("libfm-extra=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libfm-extra' 'libfm-git')
+source=("${_srcname}::git+https://github.com/lxde/$_srcname.git")        #commit=9f3315d  OK
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+
+    ./autogen.sh
+    ./configure \
+        --without-gtk \
+        --disable-gtk-doc \
+        --disable-udisks \
+        --enable-actions \
+        --with-extra-only \
+        --prefix="/usr" \
+        --sysconfdir="/etc"
+        
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir" install
+}

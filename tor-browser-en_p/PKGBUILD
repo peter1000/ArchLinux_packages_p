@@ -1,0 +1,62 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Yardena Cohen <yardenack at gmail dot com>
+# Contributor: Max Roder <maxroder@web.de>
+
+# To port this PKGBUILD to another language of tor-browser you 
+# have to change $_srcname, $_language, $pkgdesc and $url in PKGBUILD
+# AND (!) the first line in the .install file!
+
+_srcname=tor-browser-en
+pkgname=${_srcname}_p
+pkgver='5.0.4'
+_language='en-US'
+pkgrel=2
+pkgdesc='Tor Browser Bundle: Anonymous browsing using firefox and tor'
+url='https://www.torproject.org/projects/torbrowser.html.en'
+arch=('x86_64')
+license=('GPL')
+depends=('gtk2' 'mozilla-common' 'libxt' 'startup-notification' 'mime-types'
+         'dbus-glib' 'alsa-lib' 'desktop-file-utils' 'hicolor-icon-theme'
+         'libvpx' 'icu' 'libevent' 'nss' 'hunspell' 'sqlite')
+optdepends=('zenity: simple dialog boxes'
+            'kdebase-kdialog: KDE dialog boxes'
+            'gst-plugins-good: h.264 video'
+            'gst-libav: h.264 video'
+            'libpulse: PulseAudio audio driver'
+            'libnotify: Gnome dialog boxes')
+install="${_srcname}.install"
+provides=("tor-browser-en=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('tor-browser-en')
+source=("https://dist.torproject.org/torbrowser/${pkgver}/tor-browser-linux64-${pkgver}_${_language}.tar.xz"
+        "${_srcname}.desktop"
+         "${_srcname}.png"
+         "${_srcname}.sh")
+
+sha256sums=('96f5c041682b9d2228b2a51c99124eb4fbb3ffd1d8c768dae726bf3b270f760f'
+            '3d5fc01f2cfbae0a00b7117b0b0a24028d1686e6f81a347809f74de2d8522ff7'
+            '17fc2f5784d080233aca16e788d62ab6fe3e57cf781b123cfe32767de97d6d3b'
+            '89ed1cda6611abcbfdafef9aec78ada146643455d6675b22b72319ae286ea67e')
+
+noextract_x86_64=("tor-browser-linux64-${pkgver}_${_language}.tar.xz")
+
+package() {
+   cd "${srcdir}"
+
+   sed -i "s/REPL_NAME/${_srcname}/g"       ${_srcname}.sh
+   sed -i "s/REPL_VERSION/${pkgver}/g"	    ${_srcname}.sh
+   sed -i "s/REPL_LANGUAGE/${_language}/g" ${_srcname}.sh
+
+   sed -i "s/REPL_NAME/${_srcname}/g"       ${_srcname}.desktop
+   sed -i "s/REPL_LANGUAGE/${_language}/g" ${_srcname}.desktop
+   sed -i "s/REPL_COMMENT/${pkgdesc}/g"    ${_srcname}.desktop
+
+   install -Dm 644 ${_srcname}.desktop      ${pkgdir}/usr/share/applications/${_srcname}.desktop
+   install -Dm 644 ${_srcname}.png          ${pkgdir}/usr/share/pixmaps/${_srcname}.png
+   install -Dm 755 ${_srcname}.sh           ${pkgdir}/usr/bin/${_srcname}
+
+   if [[ "$CARCH" == 'i686' ]]; then
+      install -Dm 644 tor-browser-linux32-${pkgver}_${_language}.tar.xz ${pkgdir}/opt/${_srcname}/tor-browser-linux32-${pkgver}_${_language}.tar.xz
+   else
+      install -Dm 644 tor-browser-linux64-${pkgver}_${_language}.tar.xz ${pkgdir}/opt/${_srcname}/tor-browser-linux64-${pkgver}_${_language}.tar.xz
+   fi
+}

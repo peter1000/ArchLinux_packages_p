@@ -1,0 +1,35 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Dave Reisner <dreisner@archlinux.org>
+# Contributor: Angel Velasquez <angvp@archlinux.org> 
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
+# Contributor: Andrea Scarpino <andrea@archlinux.org>
+# Contributor: ice-man <icemanf@gmail.com>
+
+_srcname=libssh2
+pkgname=${_srcname}_p
+pkgver=1.6.0
+pkgrel=1
+pkgdesc="A library implementing the SSH2 protocol as defined by Internet Drafts"
+url="http://www.libssh2.org/"
+arch=('x86_64')
+license=('BSD')
+depends=('openssl')
+makedepends=('zlib')
+provides=('libssh2.so' "libssh2=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libssh2')
+source=("http://www.libssh2.org/download/$_srcname-$pkgver.tar.gz")
+sha256sums=('5a202943a34a1d82a1c31f74094f2453c207bf9936093867f41414968c8e8215')
+
+build() {
+    cd "$_srcname-$pkgver"
+
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "$_srcname-$pkgver"
+
+    make DESTDIR="$pkgdir" install
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+}

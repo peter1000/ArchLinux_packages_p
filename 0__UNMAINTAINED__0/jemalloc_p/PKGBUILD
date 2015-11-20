@@ -1,0 +1,32 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Massimiliano Torromeo <massimiliano.torromeo@gmail.com>
+# Contributor: Kovivchak Evgen <oneonfire@gmail.com>
+
+_srcname=jemalloc
+pkgname=${_srcname}_p
+pkgver=4.0.4
+pkgrel=1
+pkgdesc='General-purpose scalable concurrent malloc implementation'
+arch=('x86_64')
+license=('BSD')
+url='http://www.canonware.com/jemalloc/'
+depends=('glibc')
+optdepends=('perl: for jeprof')
+provides=('libjemalloc.so' "jemalloc=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('jemalloc')
+source=(http://www.canonware.com/download/jemalloc/$_srcname-$pkgver.tar.bz2)
+sha256sums=('3fda8d8d7fcd041aa0bebbecd45c46b28873cf37bd36c56bf44961b36d0f42d0')
+
+build() {
+    cd $_srcname-$pkgver
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd $_srcname-$pkgver
+    make DESTDIR="$pkgdir" install
+    find "$pkgdir" -name \*.a -type f -exec chmod 644 '{}' \;
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/${pkgname}/COPYING"
+}

@@ -1,0 +1,41 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+
+_srcname=perl-xml-parser
+pkgname=${_srcname}_p
+pkgver=2.44
+pkgrel=2
+pkgdesc="Expat-based XML parser module for perl"
+arch=('x86_64')
+license=('GPL' 'PerlArtistic')
+url="http://search.cpan.org/dist/XML-Parser/"
+depends=('perl' 'expat')
+options=('!emptydirs')
+provides=("perl-xml-parser=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('perl-xml-parser')
+source=("http://search.cpan.org/CPAN/authors/id/T/TO/TODDR/XML-Parser-${pkgver}.tar.gz")
+sha1sums=('0ab6b932713ec1f9927a1b1c619b6889a5c12849')
+
+build() {
+    cd XML-Parser-${pkgver}
+    perl Makefile.PL INSTALLDIRS=vendor
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd XML-Parser-${pkgver}
+    make ${MAKEFLAGS} test
+}
+
+package() {
+    cd XML-Parser-${pkgver}
+    make DESTDIR="${pkgdir}" install
+
+    # template start; name=perl-binary-module-dependency; version=1;
+    if [[ $(find "$pkgdir/usr/lib/perl5/" -name "*.so") ]]; then
+        _perlver_min=$(perl -e '$v = $^V->{version}; print $v->[0].".".($v->[1]);')
+        _perlver_max=$(perl -e '$v = $^V->{version}; print $v->[0].".".($v->[1]+1);')
+        depends+=("perl>=$_perlver_min" "perl<$_perlver_max")
+    fi
+    # template end;
+}

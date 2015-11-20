@@ -1,0 +1,32 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Dan McGee <dan@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+
+_srcname=valgrind
+pkgname=${_srcname}_p
+pkgver=3.11.0
+pkgrel=1
+pkgdesc='A tool to help find memory-management problems in programs'
+arch=('x86_64')
+license=('GPL')
+url='http://valgrind.org/'
+depends=('glibc>=2.22' 'glibc<2.23' 'perl')
+makedepends=('gdb' 'openmpi')
+optdepends=('openmpi: MPI support')
+# valgrind does not like stack protector flags
+options=(!emptydirs !buildflags)
+provides=("valgrind=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('valgrind')
+source=(http://valgrind.org/downloads/$_srcname-$pkgver.tar.bz2)
+sha1sums=('340757e91d9e83591158fe8bb985c6b11bc53de5')
+
+build() {
+    cd $_srcname-$pkgver
+    ./configure --prefix=/usr --mandir=/usr/share/man --with-mpicc=mpicc
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd $_srcname-$pkgver
+    make DESTDIR="$pkgdir" install
+}

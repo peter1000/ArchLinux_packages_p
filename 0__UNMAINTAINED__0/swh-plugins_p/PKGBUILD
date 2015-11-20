@@ -1,0 +1,43 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Maintainer: Ray Rashif <schiv@archlinux.org>
+# Contributor: Damir Perisa <damir.perisa@bluewin.ch>
+# Contributor: Robert Emil Berge
+
+# move to github source?  https://github.com/swh/ladspa
+
+_srcname=swh-plugins
+pkgname=${_srcname}_p
+pkgver=0.4.15
+pkgrel=6
+pkgdesc="Steve Harris' LADSPA plug-ins suite"
+arch=('x86_64')
+url="http://plugin.org.uk/"
+license=('GPL')
+depends=('fftw' 'ladspa')   # namcap? Keep dependency ladspa
+makedepends=('libxml2' 'perl-xml-parser')
+groups=('ladspa-plugins')
+conflicts=('swh-plugins')
+provides=("swh-plugins=${pkgver}" "${pkgname}=${pkgver}")
+source=("http://plugin.org.uk/releases/${pkgver}/${_srcname}-${pkgver}.tar.gz"
+    'mbeq_crash_fix.patch')
+md5sums=('2fbdccef2462ea553901acd429fa3573'
+    'a60422c8dea95bee6f9adcdc70dff7e0')
+
+prepare() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+
+    # fix Firefox crash on x64 when plugin is in use by ALSA;
+    # see https://bugs.archlinux.org/task/24579
+    patch -Np1 -i "$srcdir/mbeq_crash_fix.patch"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR="$pkgdir/" install
+}

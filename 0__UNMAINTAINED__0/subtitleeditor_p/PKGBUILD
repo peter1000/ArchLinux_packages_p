@@ -1,0 +1,31 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jaroslav Lichtblau <svetlemodry@archlinux.org>
+
+_srcname=subtitleeditor
+pkgname=${_srcname}_p
+pkgver=0.52.1
+pkgrel=1
+pkgdesc="A GTK+3 tool to edit subtitles for GNU/Linux/*BSD"
+arch=('x86_64')
+url="http://home.gna.org/subtitleeditor/"
+license=('GPL3')
+depends=('desktop-file-utils' 'enchant' 'gst-plugins-base' 'gstreamermm' 'gst-libav'
+         'gtkmm3' 'libxml++' 'xdg-utils')
+makedepends=('intltool')
+install=${_srcname}.install
+changelog=${_srcname}.changelog
+provides=("subtitleeditor=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('subtitleeditor')
+source=(http://download.gna.org/${_srcname}/0.52/${_srcname}-${pkgver}.tar.gz)
+sha256sums=('5b3e5fc1f12bcf0d4bcf5014249b6832181bd3b513ac04ee665ec979441412d5')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+package () {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+}

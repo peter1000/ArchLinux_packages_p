@@ -1,0 +1,53 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Maxime Gauduin <alucryd@archlinux.org>
+# Contributor: sl1pkn07 <sl1pkn07@gmail.com>
+# Contributor: jackoneill <cantabile.desu@gmail.com>
+
+_srcname=vapoursynth
+pkgname=${_srcname}-git_p
+pkgver=28.r15.g866f72a
+pkgrel=1
+pkgdesc='A video processing framework with the future in mind'
+arch=('i686' 'x86_64')
+url='http://www.vapoursynth.com/'
+license=('LGPL2.1' 'custom:OFL')
+depends=('ffmpeg' 'python' 'shared-mime-info' 'tesseract')
+makedepends=('git' 'cython' 'python-sphinx' 'yasm')
+install=${_srcname}.install
+provides=("vapoursynth=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('vapoursynth' 'vapoursynth-git')
+source=("${_srcname}::git+https://github.com/vapoursynth/${_srcname}.git"
+        'vapoursynth.xml')
+sha256sums=('SKIP'
+            '8e51579547d20cd7cb9618a47b3ac508423d09d76649bf038d0ab9acb850b068')
+
+pkgver() {
+    cur_prefix='R'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    mkdir -p vapoursynth/doc/_static
+    cd "${srcdir}/${_srcname}"
+    ./autogen.sh
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix="/usr"
+    make ${MAKEFLAGS}
+    make -C doc man
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+
+    make DESTDIR="${pkgdir}" install
+    install -Dm644 doc/_build/man/vapoursynth.3 "${pkgdir}/usr/share/man/man3/vapoursynth.3"
+    install -Dm644 doc/_build/man/vspipe.1 "${pkgdir}/usr/share/man/man1/vspipe.1"
+    install -Dm644 ../vapoursynth.xml "${pkgdir}/usr/share/mime/packages/vapoursynth.xml"
+    install -Dm644 ofl.txt "${pkgdir}/usr/share/licenses/${pkgname}/ofl.txt"
+}

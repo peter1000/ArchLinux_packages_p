@@ -1,0 +1,45 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: birdflesh <antkoul at gmail dot com>
+# Contributor: Army <uli.armbruster@gmail.com>
+# Contributor: Thayer Williams <thayer@archlinux.org>
+# Contributor: dale <dale@archlinux.org>
+
+_srcname=ttf-ms-fonts
+pkgname=${_srcname}_p
+pkgver=2.0
+pkgrel=10
+pkgdesc="Core TTF Fonts from Microsoft"
+arch=('any')
+url="http://corefonts.sourceforge.net/"
+license=('custom:microsoft')
+depends=('fontconfig' 'xorg-fonts-encodings' 'xorg-font-utils')
+makedepends=('libarchive>=3.0.2')
+provides=("ttf-ms-fonts=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('ttf-ms-fonts')
+install=$_srcname.install
+_sfpath="http://downloads.sourceforge.net/corefonts"
+source=($_sfpath/andale32.exe $_sfpath/arial32.exe  $_sfpath/arialb32.exe
+        $_sfpath/comic32.exe  $_sfpath/courie32.exe $_sfpath/georgi32.exe
+        $_sfpath/impact32.exe $_sfpath/times32.exe  $_sfpath/trebuc32.exe
+        $_sfpath/verdan32.exe $_sfpath/webdin32.exe)
+sha1sums=('c4db8cbe42c566d12468f5fdad38c43721844c69'
+          '6d75f8436f39ab2da5c31ce651b7443b4ad2916e'
+          'd45cdab84b7f4c1efd6d1b369f50ed0390e3d344'
+          '2371d0327683dcc5ec1684fe7c275a8de1ef9a51'
+          '06a745023c034f88b4135f5e294fece1a3c1b057'
+          '90e4070cb356f1d811acb943080bf97e419a8f1e'
+          '86b34d650cfbbe5d3512d49d2545f7509a55aad2'
+          '20b79e65cdef4e2d7195f84da202499e3aa83060'
+          '50aab0988423efcc9cf21fac7d64d534d6d0a34a'
+          'f5b93cedf500edc67502f116578123618c64a42a'
+          '2fb4a42c53e50bc70707a7b3c57baf62ba58398f')
+
+package() { 
+    install -dm755 "$pkgdir/usr/share/fonts/TTF"
+
+    for font in *.{ttf,TTF}; do
+    install -m644 $font "$pkgdir/usr/share/fonts/TTF/$(echo $font|tr A-Z a-z)"
+    done
+
+    install -Dm644 Licen.TXT "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+}

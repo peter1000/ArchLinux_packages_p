@@ -1,0 +1,56 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+
+_srcname=p11-kit
+pkgname=${_srcname}_p
+pkgver=0.23.1
+pkgrel=3
+pkgdesc="Library to work with PKCS#11 modules"
+arch=('x86_64')
+url="http://p11-glue.freedesktop.org"
+license=('BSD')
+depends=('glibc' 'libtasn1' 'libffi')
+makedepends=('gtk-doc')
+provides=("p11-kit=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('p11-kit')
+source=($url/releases/$_srcname-$pkgver.tar.gz
+        libnssckbi-compat.patch)
+sha256sums=('e57371669f3b157141b86c429bd9c29741994b2f5ff115fcb8a03e751b0f6ac4'
+            '8f763cdbc6c0ca6c5a7898f9fd6f3018b7ac5b1aca36f67c6c813343c2962962')
+
+prepare() {
+    cd $_srcname-$pkgver
+
+    # Build and install an additional library (libnssckbi-p11-kit.so) which
+    # is a copy of p11-kit-trust.so but uses the same label for root certs as
+    # libnssckbi.so ("Builtin Object Token" instead of "Default Trust")
+    # https://bugs.freedesktop.org/show_bug.cgi?id=66161
+    patch -Np1 -i ../libnssckbi-compat.patch
+
+    autoreconf -vi
+}
+
+build() {
+    cd $_srcname-$pkgver
+
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --enable-doc \
+        --with-module-path=/usr/lib/pkcs11 \
+        --with-trust-paths=/etc/ca-certificates/trust-source:/usr/share/ca-certificates/trust-source
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd $_srcname-$pkgver
+    make ${MAKEFLAGS} check
+}
+
+package() {
+    cd  $_srcname-$pkgver
+    make DESTDIR="$pkgdir" install
+    install -Dm644 COPYING $pkgdir/usr/share/licenses/${pkgname}/COPYING
+
+    ln -srf "$pkgdir/usr/bin/update-ca-trust" "$pkgdir/usr/lib/p11-kit/trust-extract-compat"
+}

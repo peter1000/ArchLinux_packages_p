@@ -1,0 +1,34 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Judd Vinet <jvinet@zeroflux.org>
+
+_srcname=expat
+pkgname=${_srcname}_p
+pkgver=2.1.0
+pkgrel=4
+pkgdesc='An XML parser library'
+arch=('x86_64')
+url='http://expat.sourceforge.net/'
+license=('custom')
+depends=('glibc')
+provides=("expat=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('expat')
+source=(http://downloads.sourceforge.net/sourceforge/expat/$_srcname-$pkgver.tar.gz)
+sha256sums=('823705472f816df21c8f6aa026dd162b280806838bb55b3432b0fb1fcca7eb86')
+
+build() {
+    cd $_srcname-$pkgver
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+check() {
+    make ${MAKEFLAGS} -C $_srcname-$pkgver check
+}
+
+package() {
+    cd $_srcname-$pkgver
+    make DESTDIR="$pkgdir" install
+    install -Dm644 COPYING "$pkgdir"/usr/share/licenses/${pkgname}/COPYING
+}

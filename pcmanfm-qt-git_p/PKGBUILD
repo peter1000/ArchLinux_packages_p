@@ -1,0 +1,40 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jerome Leclanche <jerome@leclan.ch>
+
+_srcname=pcmanfm-qt
+pkgname=${_srcname}-git_p
+pkgver=0.10.0.r21.g4af5a3e               
+pkgrel=1
+pkgdesc="The LXQt file manager, Qt port of PCManFM"
+arch=('x86_64')
+url="http://lxqt.org"
+license=("GPL2")
+depends=('liblxqt-git_p' "libfm-git_p" "lxmenu-data-git_p" "qt5-x11extras")
+provides=("pcmanfm-qt=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('pcmanfm-qt' 'pcmanfm-qt-git')
+install="$_srcname.install"
+source=("${_srcname}::git+https://github.com/lxde/$_srcname.git")        #commit=4af5a3e   OK
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    mkdir build
+    cd build
+    cmake -G Ninja "${srcdir}/${_srcname}" \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib
+    ninja ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}/build"
+    DESTDIR="$pkgdir" ninja install
+}

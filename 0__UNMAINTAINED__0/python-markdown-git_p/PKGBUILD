@@ -1,0 +1,41 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Kyle Keen <keenerd@gmail.com>
+# Contributor: Angel Velasquez <angvp@archlinux.org>
+# Contributor: Andrew Antle <andrew dot antle at gmail dot com>
+# Contributor: Thomas Dziedzic < gostrc at gmail >
+# Contributor: Chaiwat Suttipongsakul <cwt at bashell dot com>
+
+
+_srcname=Python-Markdown
+pkgname=python-markdown-git_p
+pkgver=2.6.2.final.r19.gf3a68fa             #commit=f3a68fa  OK
+pkgrel=1
+pkgdesc="Python implementation of John Gruber's Markdown."
+arch=('any')
+url='http://pypi.python.org/pypi/Markdown'
+license=('BSD')
+makedepends=('python')
+makedepends=('git' 'python-setuptools')
+provides=("python-markdown=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('python-markdown' 'python-markdown-git')
+source=("${_srcname}::git+https://github.com/waylan/${_srcname}.git#commit=f3a68fa")
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py build
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py install --skip-build --root="${pkgdir}" --optimize=1
+    install -Dm644 LICENSE.md "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE.md"
+}

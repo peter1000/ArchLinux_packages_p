@@ -1,0 +1,45 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+
+_srcname=wget
+pkgname=${_srcname}_p
+pkgver=1.16.3
+pkgrel=1
+pkgdesc="A network utility to retrieve files from the Web"
+arch=('x86_64')
+url="http://www.gnu.org/software/wget/wget.html"
+license=('GPL3')
+depends=('openssl' 'libidn' 'libutil-linux')
+checkdepends=('perl-http-daemon' 'perl-io-socket-ssl' 'python')
+optdepends=('ca-certificates: HTTPS downloads')
+backup=('etc/wgetrc')
+install=wget.install
+provides=("wget=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('wget')
+source=(ftp://ftp.gnu.org/gnu/${_srcname}/${_srcname}-${pkgver}.tar.xz)
+sha1sums=('a7d24a8512720893b0a8c5c436f324e9ed43874d')
+
+prepare() {
+    cd ${_srcname}-${pkgver}
+    cat >> doc/sample.wgetrc <<EOF
+
+# default root certs location
+ca_certificate=/etc/ssl/certs/ca-certificates.crt
+EOF
+}
+
+build() {
+    cd ${_srcname}-${pkgver}
+    ./configure --prefix=/usr --sysconfdir=/etc --enable-nls --with-ssl=openssl
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd ${_srcname}-${pkgver}
+    make ${MAKEFLAGS} check
+}
+
+package() {
+    cd ${_srcname}-${pkgver}
+    make DESTDIR="${pkgdir}" install
+}

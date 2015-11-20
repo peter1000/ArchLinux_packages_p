@@ -1,0 +1,78 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: Tom Gundersen <teg@jklm.no>
+# Contributor : Rémy Oudompheng <remy@archlinux.org>
+# Contributor: Morgan LEFIEUX <comete@archlinuxfr.org>
+
+_srcname=hplip
+pkgname=${_srcname}_p
+pkgver=3.15.9
+pkgrel=2
+pkgdesc="Drivers for HP DeskJet, OfficeJet, Photosmart, Business Inkjet and some LaserJet"
+arch=('x86_64')
+url="http://hplipopensource.com"
+license=('GPL')
+depends=('python' 'python-pyqt4' 'python-gobject' 'ghostscript>=8.64-6' 'net-snmp>=5.7.1' 'wget' 'foomatic-db-engine'
+    'sane' 'rpcbind' 'cups' 'libusb')
+optdepends=('python-dbus: for dbus support'
+            'python-pillow: for commandline scanning support'
+            'python-reportlab: for pdf output in hp-scan'
+            'hplip-plugin: binary blobs for specific devices (AUR) or run hp-setup to download the plugin')
+install=hplip.install
+provides=("hplip=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('hplip')
+source=("http://downloads.sourceforge.net/${_srcname}/${_srcname}-${pkgver}.tar.gz"
+        'disable_upgrade.patch')
+sha1sums=('564a37d39269fee9c938b7fe9f2b31c4f9c4db06'
+          '2348bcbca0c52dc09cceb47ed13281a4ccb9d83e')
+
+prepare() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+
+    # disable insecure update - https://bugs.archlinux.org/task/38083
+    patch -Np0 -i ${srcdir}/disable_upgrade.patch
+
+    # https://bugs.archlinux.org/task/30085 - hack found in Gentoo
+    # Use system foomatic-rip for hpijs driver instead of foomatic-rip-hplip
+    # The hpcups driver does not use foomatic-rip
+    local i
+    for i in ppd/hpijs/*.ppd.gz ; do
+        rm -f ${i}.temp
+        gunzip -c ${i} | sed 's/foomatic-rip-hplip/foomatic-rip/g' | \
+            gzip > ${i}.temp || return 1
+        mv ${i}.temp ${i}
+    done
+
+    export AUTOMAKE='automake --foreign'
+    autoreconf --force --install
+}
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    ./configure --prefix=/usr \
+             --enable-qt4 \
+             --disable-foomatic-rip-hplip-install \
+             --enable-foomatic-ppd-install \
+             --enable-hpcups-install \
+             --enable-new-hpcups \
+             --enable-cups-ppd-install \
+             --enable-cups-drv-install \
+             --enable-hpijs-install \
+             --enable-foomatic-drv-install \
+             --enable-pp-build #--help
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${_srcname}-${pkgver}"
+    make -j1 rulesdir=/usr/lib/udev/rules.d DESTDIR="$pkgdir/" install
+
+    # remove config provided by sane and autostart of hp-daemon
+    rm -rf "$pkgdir"/etc/{sane.d,xdg}
+
+    # remove HAL .fdi file because HAL is no longer used
+    rm -vrf "$pkgdir"/usr/share/hal
+
+    # remove rc script
+    rm -vrf "$pkgdir"/etc/init.d
+}

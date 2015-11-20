@@ -1,0 +1,28 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Ray Rashif <schiv@archlinux.org>
+# Contributor: Felipe Machado aka arch_audio <machado.felipe@gmail.com>
+
+_srcname=rubberband
+pkgname=${_srcname}_p
+pkgver=1.8.1
+pkgrel=2
+pkgdesc="Time-stretching and pitch-shifting audio library and utility"
+arch=('x86_64')
+url="http://www.breakfastquay.com/rubberband/"
+license=('GPL')
+depends=('libsamplerate_p' 'fftw' 'vamp-plugin-sdk')
+makedepends=('ladspa')
+source=("http://code.breakfastquay.com/attachments/download/34/${_srcname}-${pkgver}.tar.bz2")
+sha256sums=('ff0c63b0b5ce41f937a8a3bc560f27918c5fe0b90c6bc1cb70829b86ada82b75')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR="$pkgdir" install
+}

@@ -1,0 +1,29 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+_srcname=zenity
+pkgname=${_srcname}_p
+pkgver=3.18.1.1
+pkgrel=1
+pkgdesc="Display graphical dialog boxes from shell scripts"
+arch=('x86_64')
+license=('LGPL')
+depends=('webkit2gtk' 'libnotify')
+makedepends=('itstool' 'yelp-tools' 'gettext')
+url="http://www.gnome.org"
+provides=("zenity=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('zenity')
+source=(http://ftp.gnome.org/pub/GNOME/sources/$_srcname/${pkgver:0:4}/$_srcname-$pkgver.tar.xz)
+sha256sums=('e6317a03f58b528e2e3330fef5acea39506ec08a7c2aeec5c4f1e7505d43a80a')
+
+build() {
+    cd $_srcname-$pkgver
+    ./configure --prefix=/usr --sysconfdir=/etc \
+        --localstatedir=/var
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd $_srcname-$pkgver
+    make DESTDIR="${pkgdir}" install
+}

@@ -1,0 +1,43 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Ronald van Haren <ronald.archlinux.org>
+# Contributor: eric <eric@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+ 
+_srcname=psutils
+pkgname=${_srcname}_p
+pkgver=1.17
+pkgrel=5
+arch=('x86_64')
+pkgdesc="A set of postscript utilities"
+url="http://knackered.org/angus/psutils/"
+license=('custom')
+depends=('glibc' 'ghostscript')
+provides=('psutils-lprng' "psutils=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('psutils' 'psutils-lprng')
+replaces=('psutils-lprng')
+options=('!makeflags')
+source=("https://sources.archlinux.org/other/psutils/${_srcname}-${pkgver}.tar.gz"
+        'psutils-1.17.diff')
+sha1sums=('6f1ecb5846cffb644826a02bd9153fe5d6387a9b'
+          '1ae9a30340e2218915540432535b94b821e3ec60')
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    patch -Np1 -i "${srcdir}/psutils-1.17.diff"
+    make ${MAKEFLAGS} -f Makefile.unix BINDIR=/usr/bin \
+        INCLUDEDIR=/usr/include/psutils PERL=/usr/bin/perl \
+        MANDIR=/usr/share/man/man1 \
+        CFLAGS="$CFLAGS -DPAPER=\\\"letter\\\" -DUNIX -Wall" \
+        CCFLAGS="$LDFLAGS"
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    install -d -m755 "${pkgdir}/usr/include"
+    install -d -m755 "${pkgdir}/usr/share/man"
+    make -f Makefile.unix BINDIR="${pkgdir}/usr/bin" \
+        INCLUDEDIR="${pkgdir}/usr/include/psutils" PERL=/usr/bin/perl \
+        MANDIR="${pkgdir}/usr/share/man/man1" install
+    install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+    install -m644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/"
+}

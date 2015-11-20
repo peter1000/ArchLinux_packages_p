@@ -1,0 +1,39 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Thomas Baechler <thomas@archlinux.org>
+# Contributor: Sarah Hay <sarahhay@mb.sympatico.ca>
+
+_srcname=a52dec
+pkgname=${_srcname}_p
+pkgver=0.7.4
+pkgrel=8
+pkgdesc="A free library for decoding ATSC A/52 streams"
+url="http://liba52.sourceforge.net/"
+arch=('x86_64')
+license=('GPL2')
+depends=('glibc')
+provides=("a52dec=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('a52dec')
+source=("http://liba52.sourceforge.net/files/${_srcname}-${pkgver}.tar.gz"
+    'a52dec-0.7.4-build.patch')
+sha256sums=('a21d724ab3b3933330194353687df82c475b5dfb997513eef4c25de6c865ec33'
+    '00a094d6178cd21bfc2303ff2ac91ce656810e6fef50e77ab30e18d0f4d4a650')
+
+prepare() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    patch -Np1 -i ../a52dec-0.7.4-build.patch
+    sed -i 's/AM_CONFIG_HEADER/AC_CONFIG_HEADERS/' configure.in
+    mv configure.in configure.ac
+    ./bootstrap
+}
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    ./configure --prefix=/usr --enable-shared
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+    install -m644 liba52/a52_internal.h "${pkgdir}/usr/include/${_srcname}/"
+}

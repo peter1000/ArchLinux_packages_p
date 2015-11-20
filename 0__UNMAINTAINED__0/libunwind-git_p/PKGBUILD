@@ -1,0 +1,50 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Moritz Lipp <mlq@pwmt.org>
+# Contributor: Sébastien Luttringer
+# Contributor: Lawrence Lee <valheru@facticius.net>
+# Contributor: Phillip Marvin <phillip.marvin@gmail.com>
+# Contributor: keystone <phillip.marvin@gmail.com>
+
+_srcname=libunwind
+pkgname=${_srcname}-git_p
+pkgver=1.1.r62.g8afc33c            
+pkgrel=1
+pkgdesc="Portable and efficient C programming interface (API) to determine the call-chain of a program"
+arch=('x86_64')
+url="http://www.nongnu.org/libunwind/"
+license=('GPL')
+depends=('xz')
+makedepends=('git')
+provides=("libunwind=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libunwind' 'libunwind-git')
+source=("${_srcname}::git://git.sv.gnu.org/libunwind.git#commit=8afc33c")        #commit=8afc33c  OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    autoreconf -fiv
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure CFLAGS="$CFLAGS -U_FORTIFY_SOURCE" --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd "${srcdir}/${_srcname}"
+    PATH=/usr/bin:$PATH make check || return 0
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir/" install
+}

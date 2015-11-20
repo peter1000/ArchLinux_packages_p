@@ -1,0 +1,45 @@
+# --- START ---
+
+
+override USE_SYSTEM_LLVM=1
+override USE_SYSTEM_LIBUNWIND=1
+override USE_SYSTEM_PCRE=1
+override USE_SYSTEM_LIBM=0
+override USE_SYSTEM_OPENLIBM=1
+override UNTRUSTED_SYSTEM_LIBM=0
+override USE_SYSTEM_OPENSPECFUN=1
+override USE_SYSTEM_DSFMT=0
+override USE_SYSTEM_BLAS=1
+override USE_SYSTEM_LAPACK=1
+override USE_SYSTEM_FFTW=1
+override USE_SYSTEM_GMP=1
+override USE_SYSTEM_MPFR=1
+override USE_SYSTEM_ARPACK=1
+override USE_SYSTEM_SUITESPARSE=1
+override USE_SYSTEM_LIBUV=0
+override USE_SYSTEM_UTF8PROC=1
+override USE_SYSTEM_LIBGIT2=1
+override USE_SYSTEM_PATCHELF=1
+#==============================
+
+## Settings for various Intel tools
+override USE_INTEL_MKL=0
+override USE_INTEL_MKL_FFT=0
+override USE_INTEL_LIBM=0
+override USE_INTEL_JITEVENTS=0
+override USEICC=0
+override USEIFC=0
+
+override USE_BLAS64=64
+#override USE_LLVM_SHLIB=0
+
+override LIBBLASNAME=libopenblas
+override LIBBLAS=-lopenblas
+override LIBLAPACKNAME=libopenblas
+override LIBLAPACK=-lopenblas
+override OPENBLAS_DYNAMIC_ARCH=0
+
+override MARCH=native
+
+
+# --- END ---

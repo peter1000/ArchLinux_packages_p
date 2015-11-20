@@ -1,0 +1,57 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Giovanni Scafora <giovanni@archlinux.org>
+# Contributor: dorphell <dorphell@gmx.net>
+
+_srcname=unrar
+pkgbase=${_srcname}_p
+pkgname=('unrar_p' 'libunrar_p')
+pkgver=5.3.4
+pkgrel=1
+epoch=1
+arch=('x86_64')
+url="http://www.rarlab.com/rar_add.htm"
+license=('custom')
+#makedepends=('hardening-wrapper')
+source=("http://www.rarlab.com/rar/unrarsrc-${pkgver}.tar.gz"
+        'unrar-5.3.4-soname.patch')
+sha1sums=('67a744b08c2ecf1d893bf0b0a7a51d486affb9a2'
+          'e1daf83f6b1af547641dc714f6e6b22491c4a93a')
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    patch -Np1 -i "${srcdir}/unrar-5.3.4-soname.patch"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    cp -a ${srcdir}/unrar ${srcdir}/libunrar
+    make ${MAKEFLAGS} -C "${srcdir}"/libunrar lib libversion=${pkgver}
+    make ${MAKEFLAGS} STRIP="true"
+}
+
+package_unrar_p() {
+    pkgdesc="The RAR uncompression program"
+    depends=('gcc-libs')
+    provides=("unrar=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('unrar')
+
+    cd "${srcdir}/${_srcname}"
+    install -Dm755 unrar "${pkgdir}/usr/bin/unrar"
+    # install license
+    install -Dm644 license.txt "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
+
+package_libunrar_p() {
+    pkgdesc="Library and header file for applications that use libunrar"
+    depends=('gcc-libs')
+    provides=("libunrar=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('libunrar')
+    
+    cd "${srcdir}/libunrar"
+    install -Dm755 libunrar.so.${pkgver} "${pkgdir}/usr/lib/libunrar.so.${pkgver}"
+    install -Dm644 dll.hpp "${pkgdir}/usr/include/unrar/dll.hpp"
+    ln -s libunrar.so.${pkgver} "${pkgdir}/usr/lib/libunrar.so.5"
+    ln -s libunrar.so.${pkgver} "${pkgdir}/usr/lib/libunrar.so"
+    # install license
+    install -Dm644 license.txt "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

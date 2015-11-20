@@ -1,0 +1,42 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: sxe <sxxe@gmx.de>
+ 
+_srcname=qupzilla
+pkgname=${_srcname}-git_p
+pkgver=1.8.0.r315.g94d89e4
+pkgrel=1
+pkgdesc="A new and very fast open source browser based on WebKit core, written in Qt Framework."
+arch=('x86_64')
+url="http://www.qupzilla.com"
+license=('GPL')
+depends=( 'qt5-base' 'qt5-script' 'qt5-tools' 'qt5-webengine' 'qt5-x11extras')
+makedepends=('git')
+provides=("qupzilla=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('qupzilla' 'qupzilla-git')
+source=("${_srcname}::git+https://github.com/QupZilla/${_srcname}.git#branch=qt5.5")
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+
+    export USE_WEBGL="true"
+    export KDE_INTEGRATION="true"
+    export QUPZILLA_PREFIX="/usr/"
+
+    qmake-qt5
+    make clean
+    make
+}
+ 
+package() {
+    cd "${srcdir}/${_srcname}"
+    make INSTALL_ROOT="${pkgdir}" install
+} 

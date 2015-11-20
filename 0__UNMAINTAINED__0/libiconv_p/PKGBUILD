@@ -1,0 +1,38 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Arthur Darcet <arthur.darcet at m4x.org>
+# Contributor: Techlive Zheng <techlivezheng at gmail.com>
+
+_srcname=libiconv
+pkgname=${_srcname}_p
+pkgver=1.14
+pkgrel=2
+pkgdesc='Provides GNU libiconv.so and libcharset.so'
+arch=('x86_64')
+url='http://www.gnu.org/software/libiconv/'
+license=('LGPL')
+options=(!libtool)
+conflicts=('libiconv')
+provides=("libiconv=${pkgver}" "${pkgname}=${pkgver}")
+source=("http://ftp.gnu.org/pub/gnu/${_srcname}/${_srcname}-${pkgver}.tar.gz")
+sha256sums=('72b24ded17d687193c3366d0ebe7cde1e6b18f0df8c55438ac95be39e8a30613')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    sed '/LD_RUN_PATH/d' -i Makefile.in
+    ./configure --prefix=/usr
+    cp -f /usr/include/stdio.h srclib/stdio.in.h
+    make
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR=${pkgdir} LIBDIR=/usr/lib install
+    mv ${pkgdir}/usr/include/{iconv.h,libiconv.h}
+    mv ${pkgdir}/usr/bin/{iconv,libiconv}
+    mv ${pkgdir}/usr/share/man/man1/{,lib}iconv.1
+    mv ${pkgdir}/usr/share/man/man3/{,libiconv_}iconv.3
+    mv ${pkgdir}/usr/share/man/man3/{,libiconv_}iconvctl.3
+    mv ${pkgdir}/usr/share/man/man3/{,libiconv_}iconv_open.3
+    mv ${pkgdir}/usr/share/man/man3/{,libiconv_}iconv_close.3
+    mv ${pkgdir}/usr/share/man/man3/{,libiconv_}iconv_open_into.3
+}

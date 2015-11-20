@@ -1,0 +1,51 @@
+# ADDED 20151031: Colored makepkg-like functions =======================
+msg_blue() {
+    printf "${blue}==>${bold} $1${all_off}\n"
+}
+
+note() {
+    printf "${blue}==>${yellow} NOTE$1:${bold} $2${all_off}\n"
+}
+
+all_off="$(tput sgr0)"
+bold="${all_off}$(tput bold)"
+blue="${bold}$(tput setaf 4)"
+yellow="${bold}$(tput setaf 3)"
+
+# ======================================================================
+
+
+_update() {
+    msg_blue " Moving new sddm.conf: mv -f /etc/sddm.conf /etc/sddm.conf.example.txt"
+    mv -f /etc/sddm.conf /etc/sddm.conf.example.txt
+    
+    msg_blue " Copying saved sddm.conf: cp -f /etc/sddm.conf.pacorig /etc/sddm.conf"
+    cp -f /etc/sddm.conf.pacorig /etc/sddm.conf
+}
+
+post_install() {
+    if ! getent group sddm > /dev/null; then
+        groupadd --system sddm
+    fi
+    if ! getent passwd sddm > /dev/null; then
+        useradd -c "Simple Desktop Display Manager" --system -d /var/lib/sddm -s /usr/bin/nologin -g sddm sddm
+        passwd -l sddm > /dev/null
+    fi
+    mkdir -p /var/lib/sddm
+    chown -R sddm:sddm /var/lib/sddm > /dev/null
+    
+    _update
+}
+
+post_upgrade() {
+    post_install $1
+}
+
+post_remove() {
+    if getent passwd sddm >/dev/null; then
+        userdel sddm
+    fi
+    if getent group sddm >/dev/null; then
+        groupdel sddm
+    fi
+}

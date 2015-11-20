@@ -1,0 +1,114 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Alexandre Arnt <https://github.com/aarnt/octopi>
+
+_srcname=octopi
+pkgbase=${_srcname}-git_p
+pkgname=('octopi-git_p' 'octopi-notifier-git_p' 'octopi-repoeditor-git_p' 'octopi-cachecleaner-git_p')
+pkgver=0.7.0.r78.g55f63bc
+pkgrel=1
+pkgdesc="A powerful Pacman frontend using Qt libs"
+arch=('x86_64')
+url='http://octopiproject.wordpress.com'
+license=('GPL2')
+install=${_srcname}.install
+depends=('xterm' 'yaourt' 'gksu' 'kdesu' 'gist' 'gnome-keyring' 'qt5-quickcontrols')
+makedepends=('git' 'libnotify' 'knotifications' 'qt5-declarative')
+optdepends=('pkgfile: to view uninstalled pkg contents in ArchLinux')
+source=("${_srcname}::git+https://github.com/aarnt/octopi.git#commit=55f63bc"  #commit=55f63bc  OK
+    'octopi-repoeditor.desktop'
+    'qt55.patch')
+sha256sums=('SKIP'
+    '131f16745df685430db55e54ede6da66aed9b02ca00d6d873a002b2a3e1c90ef'
+    '459f924eba5bc780cb3a0cb955e9d7c634fe77d7e9f7b1a44d86c827535acbe3')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    qmake-qt5 ${_srcname}.pro \
+        QMAKE_CFLAGS_RELEASE="${CFLAGS}"\
+        QMAKE_CXXFLAGS_RELEASE="${CXXFLAGS}"
+    make ${MAKEFLAGS}
+
+    cd "${srcdir}/${_srcname}"/notifier/pacmanhelper
+    qmake-qt5 pacmanhelper.pro \
+        QMAKE_CFLAGS_RELEASE="${CFLAGS}"\
+        QMAKE_CXXFLAGS_RELEASE="${CXXFLAGS}"
+    make ${MAKEFLAGS}
+
+    cd "${srcdir}/${_srcname}"/notifier/octopi-notifier
+    qmake-qt5 octopi-notifier.pro \
+        QMAKE_CFLAGS_RELEASE="${CFLAGS}"\
+        QMAKE_CXXFLAGS_RELEASE="${CXXFLAGS}"
+    make ${MAKEFLAGS}
+
+    cd "${srcdir}/${_srcname}"/repoeditor
+    qmake-qt5 octopi-repoeditor.pro \
+        QMAKE_CFLAGS_RELEASE="${CFLAGS}"\
+        QMAKE_CXXFLAGS_RELEASE="${CXXFLAGS}"
+    make ${MAKEFLAGS}
+
+    cd "${srcdir}/${_srcname}"/cachecleaner
+    qmake-qt5 octopi-cachecleaner.pro \
+        QMAKE_CFLAGS_RELEASE="${CFLAGS}"\
+        QMAKE_CXXFLAGS_RELEASE="${CXXFLAGS}"
+    make ${MAKEFLAGS}
+}
+
+package_octopi-git_p() {
+    conflicts=('octopi' 'octopi-git')
+    provides=('octopi=${pkgver}' "${pkgname}=${pkgver}")
+    #Octopi main files
+    install -D -m755 ${srcdir}/${_srcname}/bin/${_srcname} ${pkgdir}/usr/bin/${_srcname}
+    install -D -m644 ${srcdir}/${_srcname}/${_srcname}.desktop ${pkgdir}/usr/share/applications/${_srcname}.desktop
+    install -D -m644 ${srcdir}/${_srcname}/resources/images/${_srcname}_green.png ${pkgdir}/usr/share/icons/${_srcname}.png
+    install -D -m644 ${srcdir}/${_srcname}/resources/images/${_srcname}_green.png ${pkgdir}/usr/share/icons/gnome/32x32/apps/${_srcname}.png
+    install -D -m644 ${srcdir}/${_srcname}/resources/images/${_srcname}_red.png ${pkgdir}/usr/share/icons/${_srcname}_red.png
+    install -D -m644 ${srcdir}/${_srcname}/resources/images/${_srcname}_yellow.png ${pkgdir}/usr/share/icons/${_srcname}_yellow.png
+
+    #speedup files
+    install -D -m755 ${srcdir}/${_srcname}/speedup/speedup-octopi.sh ${pkgdir}/usr/bin/speedup-octopi.sh
+    install -D -m644 ${srcdir}/${_srcname}/speedup/${_srcname}.service ${pkgdir}/etc/systemd/system/${_srcname}.service
+}
+
+package_octopi-notifier-git_p() {
+    pkgdesc="Notifier for Octopi"
+    depends=('libnotify' 'octopi=${pkgver}')
+    optdepends=('xfce4-notifyd: for notifications in XFCE')
+    conflicts=('octopi-notifier' 'octopi-notifier-git')
+    provides=('octopi-notifier=${pkgver}' "${pkgname}=${pkgver}")
+    #Pacmanhelper service files
+    install -D -m755 ${srcdir}/${_srcname}/notifier/bin/pacmanhelper ${pkgdir}/usr/lib/octopi/pacmanhelper
+
+    install -D -m644 ${srcdir}/${_srcname}/notifier/pacmanhelper/polkit/org.octopi.pacman.policy ${pkgdir}/usr/share/polkit-1/actions/org.octopi.pacman.policy
+    install -D -m644 ${srcdir}/${_srcname}/notifier/pacmanhelper/polkit/org.octopi.pacmanhelper.conf ${pkgdir}/etc/dbus-1/system.d/org.octopi.pacmanhelper.conf
+    install -D -m644 ${srcdir}/${_srcname}/notifier/pacmanhelper/polkit/org.octopi.pacmanhelper.xml ${pkgdir}/usr/share/dbus-1/interfaces/org.octopi.pacmanhelper.xml
+    install -D -m644 ${srcdir}/${_srcname}/notifier/pacmanhelper/polkit/org.octopi.pacmanhelper.service ${pkgdir}/usr/share/dbus-1/system-services/org.octopi.pacmanhelper.service
+
+    #Octopi-notifier file
+    install -D -m755 ${srcdir}/${_srcname}/notifier/bin/octopi-notifier ${pkgdir}/usr/bin/octopi-notifier
+    install -D -m644 ${srcdir}/${_srcname}/octopi-notifier.desktop ${pkgdir}/etc/xdg/autostart/octopi-notifier.desktop
+}
+
+package_octopi-repoeditor-git_p() {
+    pkgdesc="Repoeditor for Octopi"
+    conflicts=('octopi-repoeditor' 'octopi-repoeditor-git')
+    provides=('octopi-repoeditor=${pkgver}' "${pkgname}=${pkgver}")
+    #Octopi-repoeditor file
+    install -D -m755 ${srcdir}/${_srcname}/repoeditor/bin/octopi-repoeditor ${pkgdir}/usr/bin/octopi-repoeditor
+}
+
+package_octopi-cachecleaner-git_p() {
+    pkgdesc="Cachecleaner for Octopi"
+    conflicts=('octopi-cachecleaner' 'octopi-cachecleaner-git')
+    provides=('octopi-cachecleaner=${pkgver}' "${pkgname}=${pkgver}")
+    #Octopi-cachecleaner file
+    install -D -m755 ${srcdir}/${_srcname}/cachecleaner/bin/octopi-cachecleaner ${pkgdir}/usr/bin/octopi-cachecleaner
+    install -D -m644 ${srcdir}/${_srcname}/cachecleaner/octopi-cachecleaner.desktop ${pkgdir}/usr/share/applications/octopi-cachecleaner.desktop
+}

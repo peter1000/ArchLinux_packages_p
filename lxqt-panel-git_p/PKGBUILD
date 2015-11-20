@@ -1,0 +1,53 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jerome Leclanche <jerome@leclan.ch>
+
+_srcname=lxqt-panel
+pkgname=${_srcname}-git_p
+pkgver=0.10.0.r14.g0957f8a
+pkgrel=1
+pkgdesc="The LXQt desktop panel"
+arch=('x86_64')
+url="http://lxqt.org"
+license=("GPL2")
+depends=("kguiaddons" "solid" "lxqt-globalkeys-git_p"
+    "menu-cache-git_p" "libxcomposite" "lxmenu-data-git_p"
+    'libdbusmenu-qt5'
+    # optional pull them in
+    'alsa-lib'      # Alsa support in volume control plugin
+    'libpulse'      # PulseAudio support in volume control plugin
+    'lm_sensors'    # ensors (battery) plugin
+    'libstatgrab'   # CPU monitor and Network monitor plugins: Network Monitor plugin requires libstatgrab"
+)
+optdepends=(
+	"libsysstat: System Statistics plugin"
+)
+
+provides=("lxqt-panel=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('lxqt-panel' 'lxqt-panel-git')
+source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")	#commit=0957f8a  OK
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    mkdir build
+    cd build
+    cmake -G Ninja "${srcdir}/${_srcname}" \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DSYSSTAT_PLUGIN=No
+
+    ninja ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}/build"
+    DESTDIR="$pkgdir" ninja install
+}

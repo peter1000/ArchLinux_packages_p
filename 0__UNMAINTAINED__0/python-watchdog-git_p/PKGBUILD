@@ -1,0 +1,44 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: jyantis <yantis@yantis.net>
+# Contributor: Sandro Munda <munda.sandro@gmail.com>
+
+_srcname=watchdog
+pkgname=python-${_srcname}-git_p
+pkgver=0.8.3.r9.gc05183a               #commit=xxxx  OK
+pkgrel=1
+pkgdesc='Python library to monitor filesystem events.'
+arch=('any')
+url='https://github.com/gorakhargosh/watchdog'
+license=('custom')
+depends=('python'
+         'python-pathtools_p'
+         'python-yaml_p'
+         'python-argh_p'
+         )
+makedepends=('git' 'python-setuptools')
+provides=("python-watchdog=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('python-watchdog' 'python-watchdog-git')
+source=("${_srcname}::git+https://github.com/gorakhargosh/${_srcname}.git")
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py build
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py install --skip-build --root="${pkgdir}" --optimize=1
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+    
+    # Install Documentation
+    install -D -m644 README.rst "${pkgdir}/usr/share/doc/${pkgname}/README.rst"
+}

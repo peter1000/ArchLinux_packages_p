@@ -1,0 +1,35 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor:  Bartłomiej Piotrowski <barthalion@gmail.com>
+# Contributor: Thomas S Hatch <thatch45 at gmail dot com>
+
+_srcname=libaio
+pkgname=${_srcname}_p
+pkgver=0.3.110
+pkgrel=1
+pkgdesc="The Linux-native asynchronous I/O facility (aio) library"
+arch=('x86_64')
+url="http://lse.sourceforge.net/io/aio.html"
+license=('LGPL')
+provides=("libaio=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libaio')
+source=(http://ftp.de.debian.org/debian/pool/main/liba/$_srcname/${_srcname}_${pkgver}.orig.tar.gz)
+sha256sums=('2a35602e43778383e2f4907a4ca39ab8')
+
+build() {
+    cd "$srcdir/$_srcname-$pkgver"
+    # AIO library is a thin wrapper around kernel syscalls, it does not use stdlib
+    # and other helpers like stack protection libraries
+    #CFLAGS="-march=${CARCH/_/-} -mtune=generic -O2 -pipe"
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd "$srcdir/$_srcname-$pkgver"
+    make ${MAKEFLAGS} partcheck
+}
+
+package() {
+    cd "$srcdir/$_srcname-$pkgver"
+    make prefix="$pkgdir/usr" install
+}
+

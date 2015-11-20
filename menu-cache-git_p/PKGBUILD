@@ -1,0 +1,51 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Grigory Mishchenko <grishkokot[at]gmail[dot]com>
+
+
+#Installing INFO: https://github.com/lxde/menu-cache
+#
+#Since version 0.7.0 the Libmenu-cache requires Libfm-extra for the menu-cache-gen menu cache generation binary. 
+#Since Libfm depends on Libmenu-cache, there is some hint for bootstrapers how to build those
+#libraries together: you need create Libfm-extra first, you can easily do this by passing '--with-extra-only' option to 
+#configure script and installing Libfm-extra. Then you can succesfully build Libmenu-cache and therefore build full 
+#version of Libfm.
+
+
+_srcname=menu-cache
+pkgname=${_srcname}-git_p
+pkgver=1.0.0.r7.g2d65876                
+pkgrel=1
+pkgdesc='Caching mechanism for freedesktop.org compliant menus'
+arch=('i686' 'x86_64')
+license=('GPL2')
+url='http://lxde.org/'
+depends=('intltool' 'glib2' 'libfm-extra')
+options=('!libtool')
+makedepends=('gtk-doc' 'git' 'intltool' 'pkg-config' 'automake' 'pkgconfig')
+provides=("menu-cache=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('menu-cache' 'menu-cache-git')
+source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")      #commit=2d65876   OK
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+
+    ./autogen.sh
+    ./configure --prefix=/usr --sysconfdir=/etc \
+		--libexecdir=/usr/lib \
+		--disable-static
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir" install
+}

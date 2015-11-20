@@ -1,0 +1,38 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: valère monseur <valere dot monseur at ymail dot com>
+
+_srcname=python-livereload
+pkgname=${_srcname}-git_p
+pkgver=2.4.0.r11.g00bf729               
+pkgrel=1
+pkgdesc="A simple pythonic template language written in Python"
+arch=('any')
+pkgdesc='Python LiveReload is an awesome tool for web developers'
+arch=('any')
+url="https://github.com/lepture/python-livereload"
+license=('BSD')
+makedepends=('git' 'python-setuptools' 'python-tornado' 'python-six')
+provides=('livereload' "python-livereload=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('livereload' 'python-livereload' 'python-livereload-git')
+replaces=('livereload')
+source=("${_srcname}::git+https://github.com/lepture/${_srcname}.git")  #commit=00bf729  OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py build
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py install --skip-build --root="${pkgdir}" --optimize=1
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

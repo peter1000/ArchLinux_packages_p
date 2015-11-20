@@ -1,0 +1,56 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Stéphane Gaudreault <stephane@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+_srcname=gdbm
+pkgname=${_srcname}_p
+pkgver=1.11
+pkgrel=1
+pkgdesc="GNU database library"
+url="http://www.gnu.org/software/gdbm/gdbm.html"
+license=('GPL3')
+arch=('x86_64')
+depends=('glibc' 'sh')
+provides=("gdbm=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('gdbm')
+source=(ftp://ftp.gnu.org/gnu/gdbm/${_srcname}-${pkgver}.tar.gz
+        gdbm-1.10-zeroheaders.patch)
+options=('!makeflags')
+install=gdbm.install
+sha512sums=('272fb65ab9ca0a21e9f0dcfb2c638457e87cbb938c65ee850123474d11f2858496f84d3fa9edca27cd91c7220160cfdb59f90bd46ddc45395514addc9fd4151c'
+            '48e41ba3b3b3d6b1c0a0931324fe6341fddbaa1de64aaf8dcdda8adba447e3d72fa8c9e9aff9c6701cc13c6dc57287567aa992e78d5f398d38eb656564137974')
+
+prepare() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+
+    # Prevent gdbm from storing uninitialized memory content
+    # to database files. This patch improves security, as the
+    # uninitialized memory might contain sensitive informations
+    # from other applications.
+    # https://bugzilla.redhat.com/show_bug.cgi?id=4457
+    # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=208927
+    patch -Np1 -i ../gdbm-1.10-zeroheaders.patch
+}
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    ./configure --prefix=/usr --enable-libgdbm-compat
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make ${MAKEFLAGS} check
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+
+    # create symlinks for compatibility
+    install -dm755 "${pkgdir}"/usr/include/gdbm
+    ln -sf ../gdbm.h "${pkgdir}"/usr/include/gdbm/gdbm.h
+    ln -sf ../ndbm.h "${pkgdir}"/usr/include/gdbm/ndbm.h
+    ln -sf ../dbm.h  "${pkgdir}"/usr/include/gdbm/dbm.h
+}

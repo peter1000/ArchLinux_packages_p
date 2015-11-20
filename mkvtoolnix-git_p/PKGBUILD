@@ -1,0 +1,77 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Giovanni Scafora <giovanni@archlinux.org>
+# Contributor: xduugu <xduugu@gmx.com>
+
+_srcname=mkvtoolnix
+pkgbase=${_srcname}-git_p
+pkgname=('mkvtoolnix-cli-git_p' 'mkvtoolnix-qt-git_p')
+pkgver=8.5.2.r27.g5bfb8bf               
+pkgrel=1
+arch=('x86_64')
+license=('GPL')
+url="http://www.bunkus.org/videotools/mkvtoolnix/index.html"
+makedepends=('git' 'ruby' 'boost' 'desktop-file-utils' 'file' 'flac'
+    'hicolor-icon-theme' 'libmatroska' 'libvorbis' 'qt5-base' 'shared-mime-info')
+source=("${_srcname}::git+https://github.com/mbunkus/${_srcname}.git")		#commit=5bfb8bf OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='release-'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+
+    export CFLAGS="${CFLAGS} -DBOOST_FILESYSTEM_VERSION=3"
+    export CXXFLAGS="${CXXFLAGS} -DBOOST_FILESYSTEM_VERSION=3"
+    ./autogen.sh
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr \
+        --with-boost \
+        --enable-qt
+    ./drake ${MAKEFLAGS}
+
+    cp src/mkvtoolnix-gui/mkvtoolnix-gui src/qt-mkvtoolnix-gui
+}
+
+package_mkvtoolnix-cli-git_p() {
+    pkgdesc="Set of tools to create, edit and inspect Matroska files - CLI (GIT version)"
+    depends=('curl' 'flac' 'libvorbis' 'qt5-base' 'libmatroska' 'boost-libs' 'file')
+    provides=("mkvtoolnix=${pkgver}" "mkvtoolnix-cli=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('mkvtoolnix' 'mkvtoolnix-git' 'mkvtoolnix-cli')
+
+    cd "${srcdir}/${_srcname}"
+
+    ./drake DESTDIR="${pkgdir}" install
+
+    rm -rf "${pkgdir}"/usr/bin/mkvtoolnix-gui
+    rm -rf "${pkgdir}"/usr/share/applications
+    rm -rf "${pkgdir}"/usr/share/icons
+    rm -rf "${pkgdir}"/usr/share/mime
+}
+
+package_mkvtoolnix-qt-git_p() {
+    pkgdesc="Set of tools to create, edit and inspect Matroska files - QT GUI (GIT version)"
+    depends=('curl' 'qt5-base' 'libmatroska' 'boost-libs' 'file' 'desktop-file-utils' 'hicolor-icon-theme' 'shared-mime-info')
+    provides=("mkvtoolnix-qt=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('mkvtoolnix-qt' 'mkvtoolnix-qt-git')
+   
+    install=mkvtoolnix-qt-git_p.install
+
+    cd "${srcdir}/${_srcname}"
+
+    ./drake DESTDIR="${pkgdir}" install
+    rm -rf "${pkgdir}"/usr/bin/mkv*
+    install -Dm755 src/qt-mkvtoolnix-gui "${pkgdir}"/usr/bin/mkvtoolnix-gui
+
+    rm -rf "${pkgdir}"/usr/share/doc
+    rm -rf "${pkgdir}"/usr/share/locale
+    rm -rf "${pkgdir}"/usr/share/man
+}

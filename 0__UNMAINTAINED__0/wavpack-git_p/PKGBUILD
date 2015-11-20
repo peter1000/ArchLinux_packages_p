@@ -1,0 +1,42 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Soukyuu <chrno-sphered at hotmail dot com>
+
+_srcname=wavpack
+pkgname=${_srcname}-git_p
+pkgver=4.75.2.r1.g6e4a7a6               
+pkgrel=1
+pkgdesc="Audio compression format with lossless, lossy and hybrid compression modes"
+arch=('x86_64')
+url="http://www.wavpack.com/"
+license=('BSD')
+depends=('glibc')
+makedepends=('git')
+conflicts=('wavpack' 'wavpack-beta' 'wavpack-git')
+provides=("wavpack=${pkgver}" "${pkgname}=${pkgver}")
+source=("${_srcname}::git+https://github.com/dbry/${_srcname}.git#commit=6e4a7a6")			#commit=6e4a7a6  OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    autoreconf -fiv
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr --libdir=/usr/lib --disable-asm
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="${pkgdir}" install
+    install -Dm644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

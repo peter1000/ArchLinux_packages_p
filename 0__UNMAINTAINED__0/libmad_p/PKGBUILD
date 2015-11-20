@@ -1,0 +1,46 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+
+_srcname=libmad
+pkgname=${_srcname}_p
+pkgver=0.15.1b
+pkgrel=7
+pkgdesc="A high-quality MPEG audio decoder"
+arch=('x86_64')
+url="http://www.underbit.com/products/mad/"
+license=('GPL')
+depends=('glibc')
+conflicts=('libmad')
+provides=("libmad=${pkgver}" "${pkgname}=${pkgver}")
+source=("http://downloads.sourceforge.net/sourceforge/mad/${_srcname}-${pkgver}.tar.gz"
+    'libmad.patch'
+    'amd64-64bit.diff'
+    'frame_length.diff'
+    'optimize.diff')
+sha256sums=('bbfac3ed6bfbc2823d3775ebb931087371e142bb0e9bb1bee51a76a6e0078690'
+            '813634b07e72ccc23c5c5dc63f88fb789706477fa0a74f535115b8bd898b2ff4'
+            '0b506dc3c3a83837739f84f7b9db7497fd79b3623b5fb7e291ce44f79d7bf726'
+            '0e21f2c6b19337d0b237dacc04f7b90a56be7f359f4c9a2ee0b202d9af0cfa69'
+            'f38216942a1e84fd5341394a56dc5e91117d168a660f3c07ebd59af9b907e6f2')
+
+prepare() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    patch -p1 -i "${srcdir}/libmad.patch"
+    patch -p1 -i "${srcdir}/amd64-64bit.diff"
+    patch -p1 -i "${srcdir}/frame_length.diff"
+    patch -p1 -i "${srcdir}/optimize.diff"
+
+    export CFLAGS="$CFLAGS -ftree-vectorize -ftree-vectorizer-verbose=1"
+    autoconf
+}
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+}

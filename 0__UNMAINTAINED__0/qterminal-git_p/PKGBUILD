@@ -1,0 +1,42 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jerome Leclanche <jerome@leclan.ch>
+
+_srcname=qterminal
+pkgname=${_srcname}-git_p
+pkgver=0.6.0.r86.g87e7f88               #commit=xxxx  OK
+pkgrel=1
+pkgdesc="Lightweight Qt-based terminal emulator"
+arch=("i686" "x86_64")
+url="https://github.com/qterminal/qterminal"
+license=("GPL2")
+depends=("qtermwidget-git_p")
+makedepends=("qt5-tools")
+provides=("qterminal=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('qterminal' 'qterminal-git')
+source=("${_srcname}::git+https://github.com/qterminal/${_srcname}.git")
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    mkdir build
+    cd build
+    cmake -G Ninja "${srcdir}/${_srcname}" \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DUSE_SYSTEM_QXT=OFF \
+        -DUSE_QT5=true
+    ninja ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}/build"
+    DESTDIR="$pkgdir" ninja install
+}

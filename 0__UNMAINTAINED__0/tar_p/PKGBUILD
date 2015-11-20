@@ -1,0 +1,37 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Sébastien "Seblu" Luttringer <seblu@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+
+_srcname=tar
+pkgname=${_srcname}_p
+pkgver=1.28
+pkgrel=1
+pkgdesc='Utility used to store, backup, and transport files'
+arch=('x86_64')
+url='http://www.gnu.org/software/tar/tar.html'
+license=('GPL3')
+groups=('base')
+depends=('glibc' 'acl' 'attr')
+options=('!emptydirs')
+install=tar.install
+provides=("tar=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('tar')
+source=("ftp://ftp.gnu.org/gnu/$_srcname/$_srcname-$pkgver.tar.xz")
+sha256sums=('64ee8d88ec1b47a0961033493f919d27218c41b580138fd6802327462aff22f2')
+
+build() {
+	cd $_srcname-$pkgver
+	./configure --prefix=/usr --libexecdir=/usr/lib/tar
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd $_srcname-$pkgver
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd $_srcname-$pkgver
+	make DESTDIR="$pkgdir" install
+}

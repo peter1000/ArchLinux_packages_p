@@ -1,0 +1,67 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: Sergej Pupykin <sergej@aur.archlinux.org>
+
+_srcname=man-db
+pkgname=${_srcname}_p
+pkgver=2.7.4
+pkgrel=1
+pkgdesc="A utility for reading man pages"
+arch=('x86_64')
+url="http://www.nongnu.org/man-db/"
+license=('GPL' 'LGPL')
+groups=('base')
+depends=( 'bash' 'gdbm' 'zlib' 'groff' 'libpipeline' 'less')
+optdepends=('gzip')
+backup=('etc/man_db.conf')
+install=${_srcname}.install
+provides=('man' "man-db=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('man' 'man-db')
+replaces=('man')
+source=(http://download-mirror.savannah.gnu.org/releases/man-db/$_srcname-$pkgver.tar.xz
+        convert-mans
+        man-db.{timer,service})
+sha1sums=('7c84408b94970b7dbdf2f80011b754fc2b238fee'
+          '3c7a367d74f1e492033c6b7785b2a4cac7f0eeb1'
+          '5016d9c8e8c9bbd6478a8658a4860b9e908c33fc'
+          'a71553c31d368d732fb90da7d77dfb204da333b6')
+
+build() {
+    cd ${_srcname}-${pkgver}
+
+    # fix group in systemd tempfile
+    sed -i 's/man\ root/root\ root/' init/systemd/man-db.conf
+
+    ./configure --prefix=/usr \
+        --sbindir=/usr/bin \
+        --sysconfdir=/etc \
+        --libexecdir=/usr/lib \
+        --with-db=gdbm \
+        --disable-setuid \
+        --enable-mandirs=GNU \
+        --with-sections="1 n l 8 3 0 2 5 4 9 6 7"
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd ${_srcname}-${pkgver}
+    make ${MAKEFLAGS} check
+}
+
+package() {
+    cd ${_srcname}-${pkgver}
+    make DESTDIR=${pkgdir} install
+
+    # part of groff pkg
+    rm -f ${pkgdir}/usr/bin/zsoelim
+
+    # script from LFS to convert manpages, see
+    # http://www.linuxfromscratch.org/lfs/view/6.4/chapter06/man-db.html
+    install -D -m755 ${srcdir}/convert-mans  ${pkgdir}/usr/bin/convert-mans 
+
+    # install man-db update timer
+    install -D -m644 ${srcdir}/man-db.timer ${pkgdir}/usr/lib/systemd/system/man-db.timer
+    install -D -m644 ${srcdir}/man-db.service ${pkgdir}/usr/lib/systemd/system/man-db.service
+    install -d -m755 ${pkgdir}/usr/lib/systemd/system/multi-user.target.wants
+    ln -s ../man-db.timer ${pkgdir}//usr/lib/systemd/system/multi-user.target.wants/man-db.timer
+}

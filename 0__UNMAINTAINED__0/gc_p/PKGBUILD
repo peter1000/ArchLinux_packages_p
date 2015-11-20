@@ -1,0 +1,53 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Daniel Isenmann <daniel [at] archlinux.org>
+# Contributor: dorphell <dorphell@gmx.net>
+
+pkgname=gc
+pkgver=7.4.2
+pkgrel=3
+pkgdesc="A garbage collector for C and C++"
+arch=('x86_64')
+url="http://www.hboehm.info/gc/"
+license=('GPL')
+depends=('gcc-libs' 'libatomic_ops')
+provides=("gc=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('gc')
+source=("http://www.hboehm.info/gc/gc_source/${pkgname}-${pkgver}.tar.gz"
+        noelision.patch
+		gc-7.4.2-Export-GC-push-all-eager.patch)
+sha256sums=('63320ad7c45460e4a40e03f5aa4c6893783f21a16416c3282b994f933312afa2'
+            '4326dfc1cae5c47c04a6fa8dec424f4296270a67f76a3be8d226b68a4bdb4e71'
+            '0f60bcc4744136fef1e0df1e746b59412b534d670295450b81c13ce03fe82c9d')
+
+prepare() {
+    cd ${pkgname}-${pkgver}
+
+    # https://bugs.archlinux.org/task/39631
+    # https://github.com/ivmai/bdwgc/pull/51
+    patch -p1 -i ../noelision.patch
+
+    patch -p1 -i ../gc-7.4.2-Export-GC-push-all-eager.patch
+
+    sed -i 's#pkgdata#doc#' doc/doc.am
+}
+
+build() {
+    cd ${pkgname}-${pkgver}
+    autoreconf -fi
+    ./configure --prefix=/usr --enable-cplusplus --disable-static
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd ${pkgname}-${pkgver}
+    make ${MAKEFLAGS} check
+}
+
+package() {
+    cd ${pkgname}-${pkgver}
+    make DESTDIR="${pkgdir}" install
+
+    sed -i -e 's/GC_MALLOC 1L/gc 3/' doc/gc.man
+    install -m755 -d "${pkgdir}/usr/share/man/man3"
+    install -m644 doc/gc.man "${pkgdir}/usr/share/man/man3/gc.3"
+}

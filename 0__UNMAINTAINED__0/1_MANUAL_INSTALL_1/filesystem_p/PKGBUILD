@@ -1,0 +1,159 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Tom Gundersen <teg@jklm.no>
+
+_srcname=filesystem
+pkgname=${_srcname}_p
+pkgver=2015.09
+pkgrel=1
+pkgdesc='Base filesystem'
+arch=('x86_64')
+license=('GPL')
+url='http://www.archlinux.org'
+groups=('base')
+install='filesystem.install'
+makedepends=('asciidoc')
+depends=('iana-etc')
+provides=("filesystem=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('filesystem')
+backup=('etc/fstab' 'etc/crypttab' 'etc/group' 'etc/hosts' 'etc/ld.so.conf' 'etc/passwd'
+        'etc/shadow' 'etc/gshadow' 'etc/resolv.conf' 'etc/motd' 'etc/nsswitch.conf'
+        'etc/shells' 'etc/host.conf' 'etc/securetty' 'etc/profile' 'etc/issue')
+source=('group' 'issue' 'nsswitch.conf' 'securetty' 'host.conf' 'ld.so.conf'
+        'passwd' 'shadow' 'fstab' 'crypttab' 'hosts' 'motd' 'os-release' 'resolv.conf'
+        'shells' 'gshadow' 'profile' 'modprobe.d.usb-load-ehci-first' 'archlinux.7.txt'
+        'locale.sh')
+sha1sums=('ba691081a723f1ef2ec32b7784e401553365c5c6'
+          '11c48fb966bfe560f9f2d160fae5f9fcc87b1f56'
+          'c94bfd7df2f055e1bcbc02a65721ae7f51559c9a'
+          '623efb3ae0715a7fd9433a0c67c7919708a66c4f'
+          '4f95a348f06b96ff4becf51c633ff270db2303c7'
+          'bbbe30e6fa57ffd3529d6cdac5f7d7887e716da3'
+          '546fcaf048de675b86c8ce5af98124eb68d8e9e4'
+          '07c9b6323d3c5ebccdcc179df0b7fa2c04d12c40'
+          'a805082718eb9814229968ab11be76a8d34d6033'
+          'b4f52f9302185ec634f56b2240e41adfc92ca2a8'
+          '1a4f725a1006b1b07a26782ec62ba642bc8e56e8'
+          'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+          '45afe2a5b0348902d8a2fc0ae4f1422582f36fb8'
+          '7c7e3db1af45f2bf0ca527c52e7475103ecc5139'
+          'a2bcc3be1e20deb4af69e98755ebc07f9adcb029'
+          '45686f1a49e8c4d2619b31262850c1c2bfad3703'
+          '13c112d7cf616145a75e2955c473060adb9740f9'
+          'd410164cb71c8b0e1184e36bf6040ff9e41d1992'
+          'd0086cfaf2d10245ab9c9e4eea7c61e98c690b8f'
+          'ad76cffe3f1c7fcebcd9ac30d9be61d48ab2eb3f')
+
+lint() {
+	# ensure that passwd is sync'd to shadow and group is sync'd to gshadow.
+	local r=0
+
+	local passwd shadow group gshadow
+
+	for f in passwd shadow group gshadow; do
+		mapfile -t "$f" < <(cut -d: -f1 "$f" | sort)
+	done
+
+	# we can cheat and do simple string comparison only because we can make some
+	# assumptions about the data in these files
+	if [[ ${passwd[*]} != "${shadow[*]}" ]]; then
+		error 'passwd is not in sync with shadow!'
+		r=1
+	fi
+
+	if [[ ${group[*]} != "${gshadow[*]}" ]]; then
+		error 'group is not in sync with gshadow!'
+		r=1
+	fi
+
+	return $r
+}
+
+build() {
+	cd "$srcdir"
+
+	lint
+
+	a2x -d manpage -f manpage archlinux.7.txt
+}
+
+package() {
+	cd "$pkgdir"
+
+	#
+	# setup root filesystem
+	#
+	for d in boot dev etc home mnt usr var opt srv/http run; do
+		install -d -m755 $d
+	done
+	install -d -m555 proc
+	install -d -m555 sys
+	install -d -m0750 root
+	install -d -m1777 tmp
+	# vsftpd won't run with write perms on /srv/ftp
+	install -d -m555 -g ftp srv/ftp
+
+	# setup /etc
+	install -d etc/{ld.so.conf.d,skel,profile.d}
+	for f in fstab group host.conf hosts issue ld.so.conf motd nsswitch.conf passwd resolv.conf securetty shells profile; do
+		install -m644 "$srcdir"/$f etc/
+	done
+	ln -s /proc/self/mounts etc/mtab
+	for f in gshadow shadow crypttab; do
+		install -m600 "$srcdir"/$f etc/
+	done
+	touch etc/arch-release
+	install -D -m644 "$srcdir"/modprobe.d.usb-load-ehci-first usr/lib/modprobe.d/usb-load-ehci-first.conf
+	install -m755 "$srcdir"/locale.sh etc/profile.d/locale.sh
+	install -Dm644 "$srcdir"/os-release "$pkgdir"/usr/lib/os-release
+
+	# setup /var
+	for d in cache local opt log/old lib/misc empty; do
+		install -d -m755 var/$d
+	done
+	install -d -m1777 var/{tmp,spool/mail}
+
+	# allow setgid games to write scores
+	install -d -m775 -g games var/games
+	ln -s spool/mail var/mail
+	ln -s ../run var/run
+	ln -s ../run/lock var/lock
+
+	#
+	# setup /usr hierarchy
+	#
+	for d in bin include lib share/misc src; do
+		install -d -m755 usr/$d
+	done
+	for d in $(seq 8); do
+		install -d -m755 usr/share/man/man$d
+	done
+
+	#
+	# add lib symlinks
+	#
+	ln -s usr/lib "$pkgdir"/lib
+	[[ $CARCH = 'x86_64' ]] && (
+		ln -s usr/lib "$pkgdir"/lib64
+		ln -s lib "$pkgdir"/usr/lib64
+	)
+
+	#
+	# add bin symlinks
+	#
+	ln -s usr/bin "$pkgdir"/bin
+	ln -s usr/bin "$pkgdir"/sbin
+	ln -s bin "$pkgdir"/usr/sbin
+
+	#
+	# install archlinux(7) manpage
+	#
+	install -D -m644 "$srcdir"/archlinux.7 usr/share/man/man7/archlinux.7
+
+	#
+	# setup /usr/local hierarchy
+	#
+	for d in bin etc games include lib man sbin share src; do
+		install -d -m755 usr/local/$d
+	done
+	ln -s ../man usr/local/share/man
+}

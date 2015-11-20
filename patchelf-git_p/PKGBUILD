@@ -1,0 +1,42 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Daniel Wallace <danielwallace at gtmanfred dot com>
+# Contributor: xduugu
+
+
+_srcname=patchelf
+pkgname=${_srcname}-git_p
+pkgver=0.8.r69.g63296c4             
+pkgrel=1
+pkgdesc="A small utility to modify the dynamic linker and RPATH of ELF executables"
+arch=('x86_64')
+url="http://nixos.org/patchelf.html"
+license=('GPL3')
+makedepends=('git')
+provides=("patchelf=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('patchelf' 'patchelf-git')
+source=("${_srcname}::git+https://github.com/NixOS/${_srcname}.git")         #commit=63296c4  OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    ./bootstrap.sh
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir/" install
+}

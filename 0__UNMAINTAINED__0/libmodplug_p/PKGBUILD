@@ -1,0 +1,28 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+
+_srcname=libmodplug
+pkgname=${_srcname}_p
+pkgver=0.8.8.5
+pkgrel=1
+pkgdesc="A MOD playing library"
+arch=('x86_64')
+url="http://modplug-xmms.sourceforge.net/"
+license=('custom')
+depends=('gcc-libs')
+conflicts=('libmodplug')
+provides=("libmodplug=${pkgver}" "${pkgname}=${pkgver}")
+source=("http://downloads.sourceforge.net/modplug-xmms/${_srcname}-${pkgver}.tar.gz")
+sha256sums=('77462d12ee99476c8645cb5511363e3906b88b33a6b54362b4dbc0f39aa2daad')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    ./configure --prefix=/usr
+    make
+}
+
+package() {
+  cd "${srcdir}/${_srcname}-${pkgver}"
+  make DESTDIR="${pkgdir}" install
+  install -D -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

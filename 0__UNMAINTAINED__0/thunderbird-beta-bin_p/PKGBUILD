@@ -1,0 +1,61 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Det <nimetonmaili g-mail>
+# Based on [extra]'s thunderbird
+
+_srcname=thunderbird-beta-bin
+pkgname=${_srcname}_p
+_pkgname=thunderbird-beta
+pkgver=42.0b2
+_major=${pkgver/rc*}
+_build=${pkgver/*rc}
+pkgrel=1
+pkgdesc="Standalone Mail/News reader - Bleeding edge binary version"
+arch=('x86_64')
+url="https://www.mozilla.org/thunderbird"
+license=('GPL' 'LGPL' 'MPL')
+depends=('alsa-lib' 'cairo' 'dbus-glib' 'desktop-file-utils' 'fontconfig' 'freetype2' 'gtk-update-icon-cache'
+         'gtk2' 'hicolor-icon-theme' 'libnotify' 'libpng' 'libvpx' 'libxt' 'mime-types' 'nss' 'pixman'
+         'sqlite' 'startup-notification')
+optdepends=('libcanberra: for sound support')
+makedepends=('pacman>=4.2.0')
+provides=("thunderbird=$pkgver" "${pkgname}=${pkgver}")
+conflicts=('thunderbird' 'thunderbird-beta' 'thunderbird-beta-bin')
+install=$_srcname.install
+source=("$_srcname.desktop"
+        "$_srcname-safe.desktop"
+        'vendor.js')
+source_x86_64=("https://ftp.mozilla.org/pub/mozilla.org/thunderbird/releases/$pkgver/linux-x86_64/en-US/thunderbird-$pkgver.tar.bz2")
+sha256sums=('5234dfbbb3e8bb5b18f94a6687b2e5ed79848aa50b6a1b1a0f8098b9fc89759a'
+            'feed4e684fe5861c732607d490dfebd9505983c74d7cff1af1ba85acc8b88a79'
+            'e4ea8e6788163d9f8db8f1f40023db3ea0a1358f9a4510169f2d4c4fe6a887ed')
+sha256sums_x86_64=('66b856cce427563d14ce02d1019e564889ac416b9fa436113708baf7110556e7')
+# RC
+if [[ $_build = ? ]]; then
+	source_x86_64=("https://ftp.mozilla.org/pub/mozilla.org/thunderbird/candidates/$_major-candidates/build$_build/linux-x86_64/en-US/thunderbird-$_major.tar.bz2")
+fi
+
+package() {
+	# Create directories
+	msg2 "Creating directory structure..."
+	install -d "$pkgdir"/usr/bin
+	install -d "$pkgdir"/usr/share/applications
+	install -d "$pkgdir"/opt
+
+	msg2 "Moving stuff in place..."
+	# Install
+	cp -r thunderbird/ "$pkgdir"/opt/$_pkgname
+	install -m644 vendor.js "$pkgdir"/opt/$_pkgname/defaults/pref/
+
+	# /usr/bin symlink
+	ln -s /opt/$_pkgname/thunderbird "$pkgdir"/usr/bin/$_pkgname
+
+	# Desktops
+	install -m644 *.desktop "$pkgdir"/usr/share/applications/
+
+	# Icons
+	for i in 16x16 22x22 24x24 32x32 48x48 256x256; do
+	install -d "$pkgdir"/usr/share/icons/hicolor/$i/apps/
+	ln -s /opt/$_pkgname/chrome/icons/default/default${i/x*}.png \
+		  "$pkgdir"/usr/share/icons/hicolor/$i/apps/$_pkgname.png
+	done
+}

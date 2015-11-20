@@ -1,0 +1,33 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Anatol Pomozov <anatol.pomozov@gmail.com>
+
+pkgname=cmocka
+url='http://cmocka.org/'
+pkgver=1.0.1
+pkgrel=1
+pkgdesc='an elegant unit testing framework for C with support for mock objects'
+arch=('x86_64')
+license=('GPL')
+depends=('glibc')
+makedepends=('cmake' 'ninja')
+provides=("cmocka=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('cmocka')
+source=(http://git.cryptomilk.org/projects/cmocka.git/snapshot/cmocka-$pkgver.zip)
+sha1sums=('66ad492fe15848d86fae4ca88ccbce2bcaba0245')
+
+build() {
+    rm -rf build; mkdir build
+    cd build
+    cmake -G Ninja ../$pkgname-$pkgver -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DUNIT_TESTING=ON
+    ninja ${MAKEFLAGS}
+}
+
+check() {
+    cd build
+    ninja ${MAKEFLAGS} test
+}
+
+package() {
+    cd build
+    DESTDIR="$pkgdir" ninja install
+}

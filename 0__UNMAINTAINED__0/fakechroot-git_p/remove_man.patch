@@ -1,0 +1,11 @@
+--- Makefile_orig.am	2015-08-02 20:47:37.614653000 -0300
++++ Makefile.am	2015-08-02 20:50:21.891321927 -0300
+@@ -1,7 +1,7 @@
+ AUTOMAKE_OPTIONS = foreign
+ ACLOCAL_AMFLAGS = -I m4
+ 
+-SUBDIRS = man src scripts test
++SUBDIRS = src scripts test
+ 
+ EXTRA_DIST = COPYING LICENSE NEWS.md README.md THANKS autogen.sh makedist.sh
+ 

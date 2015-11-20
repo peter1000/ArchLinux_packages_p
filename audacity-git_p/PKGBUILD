@@ -1,0 +1,69 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+
+_srcname=audacity
+pkgname=${_srcname}-git_p
+_tag=2.1.2
+pkgver=2.1.2.r4395.gdec93b3         
+pkgrel=1
+pkgdesc="A program that lets you manipulate digital audio waveforms"
+arch=('x86_64')
+url="http://audacity.sourceforge.net/"
+license=('GPL')
+depends=('libmad' 'lilv' 'suil' 'wxgtk' 'soundtouch' 'portaudio' 'libsamplerate' 'twolame'
+    'libsndfile' 'ffmpeg' 'vamp-plugin-sdk' 'sbsms_p' 'portsmf' 'desktop-file-utils') # numcap?  Keep the 'portaudio' 'ffmpeg' dependencies
+makedepends=('cmake' 'python2')
+options=('!makeflags')
+install=audacity-git_p.install
+provides=("audacity=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('audacity' 'audacity-git' 'audacity-svn')
+source=("${_srcname}::git+https://github.com/audacity/${_srcname}.git" 		#commit=dec93b3  OK
+    'audacity-ffmpeg.patch')
+sha256sums=('SKIP'
+    'ee5ddddee23cd292167d319e0dc61a96fb1477380ffbb225d4103472f7aa69b4')
+
+pkgver() {
+    cd "${srcdir}/${_srcname}"
+    printf "${_tag}.r%s.g%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    patch -p1 -i "${srcdir}/audacity-ffmpeg.patch"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    WX_CONFIG=/usr/bin/wx-config ./configure --prefix=/usr \
+        --enable-unicode  \
+        --enable-sse \
+        --enable-nyquist\
+        --enable-ladspa \
+        --enable-vst \
+        --with-expat=system \
+        --with-ffmpeg=system \
+        --with-lame=system \
+        --with-libflac=system \
+        --with-libid3tag=system \
+        --with-libmad=system \
+        --with-libsamplerate=system \
+        --with-sbsms=system \
+        --with-libsndfile=system \
+        --with-soundtouch=system \
+        --with-libsoxr=system \
+        --with-libtwolame=system \
+        --with-libvamp=system \
+        --with-libvorbis=system \
+        --with-lv2=system \
+        --with-midi=system \
+        --with-portaudio=local \
+        --with-widgetextra=local \
+        --with-portmixer
+
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="${pkgdir}" install
+}

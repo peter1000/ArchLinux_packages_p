@@ -1,0 +1,40 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Rémy Oudompheng <remy@archlinux.org>
+# Contributor: Hugo Doria <hugo@archlinux.org>
+# Contributor: sudokode <sudokode@gmail.com>
+# Contributor: Jason Chu <jason@archlinux.org>
+# Contributor: Jesse Young <jesse.young@gmail.com>
+
+_srcname=namcap
+pkgname=${_srcname}-git_p
+pkgver=3.2.5.r13.g228172a               #commit=228172a  OK
+pkgrel=1
+pkgdesc="A Pacman package analyzer (git)"
+arch=('any')
+url="http://projects.archlinux.org/namcap.git/"
+license=('GPL')
+depends=('python' 'pyalpm' 'licenses' 'binutils' 'elfutils' 'python-pyelftools')
+makedepends=('git' 'python-setuptools')
+provides=("namcap" "${pkgname}=${pkgver}")
+conflicts=('namcap' 'namcap-git')
+source=("${_srcname}::git+http://projects.archlinux.org/git/${_srcname}.git#commit=228172a")
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py build
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    python setup.py install --skip-build --root="${pkgdir}" --optimize=1
+    install -Dm644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}

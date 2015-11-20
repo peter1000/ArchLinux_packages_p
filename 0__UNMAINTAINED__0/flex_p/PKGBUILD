@@ -1,0 +1,45 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+_srcname=flex
+pkgname=${_srcname}_p
+pkgver=2.5.39
+pkgrel=1
+pkgdesc="A tool for generating text-scanning programs"
+arch=('x86_64')
+url="http://flex.sourceforge.net"
+license=('custom')
+groups=('base-devel')
+depends=('glibc' 'm4' 'sh')
+install=flex.install
+provides=("flex=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('flex')
+source=(http://downloads.sourceforge.net/sourceforge/flex/flex-$pkgver.tar.xz)
+sha256sums=('c988bb3ab340aaba16df5a54ab98bb4760599975375c8ac9388a078b7f27e9e8')
+
+build() {
+	cd $srcdir/$_srcname-$pkgver
+	./configure --prefix=/usr
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd $srcdir/$_srcname-$pkgver
+
+	# these tests are incompatible with latest bison
+	sed -i -e '/test-bison-yylloc/d' -e '/test-bison-yylval/d' tests/Makefile.in
+
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd $srcdir/$_srcname-$pkgver
+
+	make DESTDIR=$pkgdir install
+	ln -s flex ${pkgdir}/usr/bin/lex
+
+	install -Dm644 COPYING \
+		$pkgdir/usr/share/licenses/${pkgname}/license.txt
+}
+

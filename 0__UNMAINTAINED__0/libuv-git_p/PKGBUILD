@@ -1,0 +1,55 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Massimiliano Torromeo <massimiliano.torromeo@gmail.com>
+
+_srcname=libuv
+pkgname=${_srcname}-git_p
+pkgver=1.7.5.r21.gbda29cf              
+pkgrel=1
+pkgdesc="Multi-platform support library with a focus on asynchronous I/O"
+arch=('x86_64')
+url="https://github.com/libuv/libuv"
+license=('custom')
+depends=('glibc')
+makedepends=('python-sphinx')
+options=('!emptydirs' 'staticlibs')
+provides=("libuv=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libuv' 'libuv-git')
+source=("${_srcname}::git+https://github.com/libuv/${_srcname}.git")                 #commit=xxxx  OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    ./autogen.sh
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr --with-pic
+    make ${MAKEFLAGS}
+    make man -C docs
+}
+
+check() {
+    cd "${srcdir}/${_srcname}"
+    make ${MAKEFLAGS} check
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+
+    make DESTDIR="$pkgdir" install
+
+    install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/${pkgname}/LICENSE
+    install -Dm644 AUTHORS "$pkgdir"/usr/share/doc/${_srcname}/AUTHORS
+    install -Dm644 README.md "$pkgdir"/usr/share/doc/${_srcname}/README.md
+    install -Dm644 ChangeLog "$pkgdir"/usr/share/doc/${_srcname}/ChangeLog
+    install -Dm644 docs/build/man/libuv.1 "$pkgdir"/usr/share/man/man1/libuv.1
+}

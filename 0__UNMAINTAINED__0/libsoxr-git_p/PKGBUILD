@@ -1,0 +1,58 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+#  Contributor: sudokode <sudokode@gmail.com>
+# Contributor: DrZaius <lou[at]fakeoutdoorsman[dot]com>
+
+_srcname=libsoxr
+pkgname=${_srcname}-git_p
+pkgver=0.1.2.r0.ge064aba                #commit=e064aba  OK
+pkgrel=1
+pkgdesc="SoX Resampler library"
+arch=('x86_64')
+license=('LGPL')
+url="http://sourceforge.net/projects/soxr/"
+depends=('gcc-libs')
+makedepends=('cmake' 'ninja' 'git')
+provides=("libsoxr=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libsoxr')
+options=('!emptydirs')
+source=("${_srcname}::git://git.code.sf.net/p/soxr/code#commit=e064aba")
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    cmake \
+        -G Ninja \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DBUILD_EXAMPLES=OFF \
+        -DBUILD_SHARED_LIBS=ON \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DVISIBILITY_HIDDENL=ON \
+        -DWITH_AVFFT=ON \
+        -DWITH_DOUBLE_PRECISION=ON \
+        -DWITH_LSR_BINDINGS=ON \
+        -DWITH_OPENMP=ON \
+        -DWITH_PFFFT=ON \
+        -DWITH_SIMD=ON \
+        .
+
+    ninja ${MAKEFLAGS}
+}
+
+check() {
+    cd "${srcdir}/${_srcname}"
+    ninja test
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    DESTDIR="$pkgdir" ninja install
+    install -Dm644 LICENCE "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+}

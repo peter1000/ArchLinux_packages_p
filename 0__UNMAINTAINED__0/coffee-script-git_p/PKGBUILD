@@ -1,0 +1,39 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Stephen Diehl <sdiehl at clarku dot edu>
+# Contributor: Stefan Husmann <stefan-husmann@t-online.de>
+
+_srcname=coffee-script
+pkgname=${_srcname}-git_p
+pkgver=1.10.0.r24.g87a854a          
+pkgrel=1
+arch=('any')
+pkgdesc='Language that compiles into JavaScript'
+url=http://coffeescript.org
+license=('custom')
+depends=('nodejs' 'underscorejs_p')
+provides=("coffee-script=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('coffee-script' 'coffee-script-git')
+source=("${_srcname}::git+https://github.com/jashkenas/${_srcname}.git#commit=87a854a") 	#commit=87a854a  OK
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    export NODE_PATH=/usr/share/underscorejs:$NODE_PATH
+    install -d $pkgdir/usr/lib/node_modules
+    bin/cake --prefix "$pkgdir/usr/" install
+    cp -r $pkgdir/usr/lib/coffee-script $pkgdir/usr/lib/node_modules/
+    rm -rf $pkgdir/usr/lib/coffee-script
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/${pkgname}/LICENSE"
+    install -Dm644 README.md "$pkgdir/usr/share/doc/${pkgname}/README.md"
+    rm -rf $pkgdir/usr/bin/cake $pkgdir/usr/bin/coffee &&
+    ln -s /usr/lib/node_modules/coffee-script/bin/coffee $pkgdir/usr/bin/coffee &&
+    ln -s /usr/lib/node_modules/coffee-script/bin/cake $pkgdir/usr/bin/cake
+}

@@ -1,0 +1,33 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Dan McGee <dan@archlinux.org>
+
+# NOTE on updating this package:
+# * Go to the trunk/ directory
+# * Run bash -c ". PKGBUILD; updatelist"
+# * update pkgver
+# * Build the package
+
+_srcname=pacman-mirrorlist
+pkgname=${_srcname}_p
+pkgver=20151026
+pkgrel=1
+pkgdesc="Arch Linux mirror list for use by pacman"
+arch=('any')
+url="https://www.archlinux.org/mirrorlist/"
+license=('GPL')
+install=pacman-mirrorlist.install
+provides=("pacman-mirrorlist=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('pacman-mirrorlist')
+source=('mirrorlist_example')
+sha256sums=('d2329f69b64ed2f257b8fe9b21b2da7346db66cfe13b46e5d1fa0c89cfe781c4')
+
+updatelist() {
+    rm -f mirrorlist_example
+    curl -o mirrorlist_example https://www.archlinux.org/mirrorlist/all/
+    updpkgsums
+}
+
+package() {
+    mkdir -p $pkgdir/etc/pacman.d
+    install -m644 $srcdir/mirrorlist_example $pkgdir/etc/pacman.d/
+}

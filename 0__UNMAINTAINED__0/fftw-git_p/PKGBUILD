@@ -1,0 +1,109 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Ronald van Haren <ronald.archlinux.org>
+# Contributor: damir <damir@archlinux.org>
+
+_srcname=fftw3
+pkgname=fftw-git_p
+pkgver=3.3.4.r60.g119aa4c           #commit=119aa4c  OK
+pkgrel=1
+pkgdesc="A library for computing the discrete Fourier transform (DFT)"
+arch=('x86_64')
+license=('GPL2')
+url="http://www.fftw.org/"
+depends=('bash')
+makedepends=('gcc-fortran' 'ocaml' 'indent' 'transfig')
+provides=("fftw=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('fftw' 'fftw-git')
+source=("${_srcname}::git+https://github.com/FFTW/${_srcname}.git")
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='fftw-'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+# notes:
+# http://www.fftw.org/fftw2_doc/fftw_6.html#SEC69
+# http://www.fftw.org/faq/section2.html#singleprec
+# http://www.fftw.org/fftw3_doc/Precision.html#Precision
+
+prepare() {
+    # usesome of  upstream default CFLAGS while keeping our -march/-mtune
+    CFLAGS+=" -fomit-frame-pointer -malign-double -fstrict-aliasing -ffast-math"
+
+    cd "${srcdir}/${_srcname}"
+    # This is taken from mkdist.sh
+    echo
+    echo '...PRE-BUILDING: maintainer-mode...'
+    echo
+    # hackery to build ChangeLog
+    git log --pretty=medium --date-order > ChangeLog
+    sh bootstrap.sh
+    make maintainer-clean
+    ./configure  \
+        --disable-single  \
+        --disable-float   \
+        --disable-long-double \
+        --disable-quad-precision \
+        --disable-doc \
+        --enable-shared \
+        --enable-maintainer-mode
+    make ${MAKEFLAGS}
+    make clean
+    
+    cd ${srcdir}
+    cp -a ${_srcname} ${_srcname}-single
+    cp -a ${_srcname} ${_srcname}-double
+    mv ${_srcname} ${_srcname}-long-double
+
+}
+
+build() {
+    # use upstream default CFLAGS while keeping our -march/-mtune
+    CFLAGS+=" -O3 -fomit-frame-pointer -malign-double -fstrict-aliasing -ffast-math"
+
+    # in the gitversion: 3.3.4.r56.gf6339ea using: --disable-doc because 
+    #       *** No rule to make target 'rfftwnd.pdf', needed by 'fftw3.info'.
+    CONFIGURE="./configure F77=gfortran --prefix=/usr \
+                    --enable-shared --enable-threads \
+                    --enable-openmp \
+                    --disable-doc"
+
+    # build single precision (float)
+    cd ${srcdir}/${_srcname}-single
+    echo
+    echo '...BUILDING: build single precision...'
+    echo
+    $CONFIGURE --enable-float --enable-sse --enable-avx 
+    make ${MAKEFLAGS}
+    
+    # build double precision
+    cd ${srcdir}/${_srcname}-double
+    echo
+    echo '...BUILDING: build double precision...'
+    echo
+    $CONFIGURE --enable-sse2 --enable-avx
+    make ${MAKEFLAGS}
+
+    # build long double precission
+    cd ${srcdir}/${_srcname}-long-double
+    echo
+    echo '...BUILDING: build long-double precision...'
+    echo
+    $CONFIGURE --enable-long-double
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd ${srcdir}/${_srcname}-single
+    make DESTDIR=${pkgdir} install
+    
+    cd ${srcdir}/${_srcname}-double
+    make DESTDIR=${pkgdir} install
+
+    cd ${srcdir}/${_srcname}-long-double
+    make DESTDIR=${pkgdir} install
+}

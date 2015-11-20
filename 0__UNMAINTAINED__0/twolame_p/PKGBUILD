@@ -1,0 +1,29 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Giovanni Scafora <giovanni@archlinux.org>
+# Contributor: farid abdelnour <farid at atelier-labs.org>
+# Contributor: Gustavo Alvarez <sl1pkn07 at gmail.org>
+
+_srcname=twolame
+pkgname=${_srcname}_p
+pkgver=0.3.13
+pkgrel=7
+pkgdesc="An optimized MPEG Audio Layer 2 (MP2) encoder"
+arch=('x86_64')
+url="http://www.twolame.org/"
+license=('LGPL')
+depends=('libsndfile')
+conflicts=('twolame')
+provides=("twolame=${pkgver}" "${pkgname}=${pkgver}")
+source=("http://downloads.sourceforge.net/${_srcname}/${_srcname}-${pkgver}.tar.gz")
+sha256sums=('98f332f48951f47f23f70fd0379463aff7d7fb26f07e1e24e42ddef22cc6112a')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    ./configure --prefix=/usr --disable-static
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR=${pkgdir} install
+}

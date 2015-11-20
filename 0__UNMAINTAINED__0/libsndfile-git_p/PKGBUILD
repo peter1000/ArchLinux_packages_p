@@ -1,0 +1,46 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+
+_srcname=libsndfile
+pkgname=${_srcname}-git_p
+_tag=1.0.26pre6
+pkgver=1.0.26pre6.r2416.gf98d958                
+pkgrel=1
+pkgdesc="A C library for reading and writing files containing sampled sound"
+arch=('x86_64')
+url="http://www.mega-nerd.com/libsndfile"
+license=('LGPL')
+depends=('alsa-lib' 'flac' 'libvorbis')
+checkdepends=('python2')
+conflicts=('libsndfile' 'libsndfile-git')
+provides=("libsndfile=${pkgver}" "${pkgname}=${pkgver}")
+source=("${_srcname}::git+https://github.com/erikd/${_srcname}.git#commit=f98d958") 		#commit=f98d958  OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cd "${srcdir}/${_srcname}"
+    printf "${_tag}.r%s.g%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    sed -i 's|#!/usr/bin/python|#!/usr/bin/python2|' src/binheader_writef_check.py \
+    src/create_symbols_file.py programs/test-sndfile-metadata-set.py
+    autoreconf -fiv
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr --disable-sqlite --enable-external-libs
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd "${srcdir}/${_srcname}"
+    make check
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="${pkgdir}" install
+}

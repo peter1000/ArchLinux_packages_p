@@ -1,0 +1,32 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+
+_srcname=libpipeline
+pkgname=${_srcname}_p
+pkgver=1.4.1
+pkgrel=1
+pkgdesc="a C library for manipulating pipelines of subprocesses in a flexible and convenient way"
+arch=('x86_64')
+url="http://libpipeline.nongnu.org/"
+license=('GPL')
+depends=('glibc')
+provides=("libpipeline=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libpipeline')
+source=(http://download.savannah.gnu.org/releases/libpipeline/$_srcname-$pkgver.tar.gz)
+sha1sums=('b31cc955f22b1aa4545dc8d00ddbde831936594f')
+
+build() {
+    cd $_srcname-$pkgver
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd $_srcname-$pkgver
+    make ${MAKEFLAGS} check
+}
+
+package() {
+    cd $_srcname-$pkgver
+    make DESTDIR="$pkgdir/" install
+}

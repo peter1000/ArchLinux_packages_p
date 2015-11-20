@@ -1,0 +1,38 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Hugo Doria <hugo@archlinux.org>
+
+_srcname=bzr
+pkgname=${_srcname}_p
+pkgver=2.6.0
+pkgrel=1
+pkgdesc="A decentralized revision control system (bazaar)"
+arch=('x86_64')
+url="http://bazaar.canonical.com/en/"
+license=('GPL')
+depends=('python2')
+optdepends=('python2-paramiko: for sftp support')
+provides=("bzr=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('bzr')
+source=("http://launchpad.net/${_srcname}/${pkgver%.*}/${pkgver}/+download/${_srcname}-${pkgver}.tar.gz")
+sha1sums=('5eb4d0367c6d83396250165da5bb2c8a9f378293')
+
+prepare() {
+    cd ${_srcname}-${pkgver}
+    sed -i 's|man/man1|share/man/man1|' setup.py
+    sed -i 's|/usr/bin/env python|/usr/bin/env python2|' \
+        bzrlib/{plugins/bash_completion/bashcomp.py,tests/ssl_certs/create_ssls.py,patiencediff.py,_patiencediff_py.py}
+}
+
+build() {
+    cd ${_srcname}-${pkgver}
+    python2 setup.py build
+}
+
+package() {
+    cd ${_srcname}-${pkgver}
+    python2 setup.py install --prefix=/usr --root="${pkgdir}" --optimize=1
+
+    # bash-completion
+    install -D -m644 contrib/bash/bzr \
+        "${pkgdir}/usr/share/bash-completion/completions/bzr"
+}

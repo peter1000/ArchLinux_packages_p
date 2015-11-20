@@ -1,0 +1,29 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+
+_srcname=mpg123
+pkgname=${_srcname}_p
+pkgver=1.22.4
+pkgrel=1
+pkgdesc="A console based real time MPEG Audio Player for Layer 1, 2 and 3"
+arch=('x86_64')
+url="http://sourceforge.net/projects/mpg123"
+license=('LGPL2.1')
+depends=('libltdl' 'sdl' 'jack2-dbus' 'libpulse_p')
+provides=("mpg123=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('mpg123')
+source=("http://downloads.sourceforge.net/sourceforge/${_srcname}/${_srcname}-${pkgver}.tar.bz2")
+sha256sums=('5069e02e50138600f10cc5f7674e44e9bf6f1930af81d0e1d2f869b3c0ee40d2')
+
+build() {
+    cd "${_srcname}-${pkgver}"
+    ./configure --prefix=/usr --enable-int-quality --with-module-suffix=.so \
+        --with-audio="alsa sdl jack pulse"
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${_srcname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+    install -m755 scripts/conplay "${pkgdir}/usr/bin/conplay"
+}

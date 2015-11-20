@@ -1,0 +1,64 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+_srcname=readline
+pkgname=${_srcname}_p
+_basever=6.3
+_patchlevel=008
+pkgver=$_basever.$_patchlevel
+pkgrel=3
+pkgdesc='GNU readline library'
+arch=('i686' 'x86_64')
+url='http://tiswww.case.edu/php/chet/readline/rltop.html'
+license=('GPL')
+depends=('glibc' 'ncurses' 'libncursesw.so')
+backup=('etc/inputrc')
+options=('!emptydirs')
+install=readline.install
+provides=("readline=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('readline')
+source=(http://ftp.gnu.org/gnu/readline/readline-$_basever.tar.gz
+        inputrc)
+sha1sums=('017b92dc7fd4e636a2b5c9265a77ccc05798c9e1'
+          'b0a8ef0653b64f2f1726d5d9a20d982dc56a66c3'
+          '1627627822568e644de8ef078962f515ac2cac68'
+          '4fdcdd7b5488fb6d64a0a05c6517cca8861720ec'
+          'b6b242a099db06b9b4f638249fa7bc4643e61ae4'
+          'eea4633a52d70523e554c79901156f86acb37060'
+          '45a2babffe2b00ce6656b18ff8d00af77ddb76f9'
+          'a58ccd0ab3b401fad633d3447272564d86e64319'
+          'e744a88f75c1749b6517095000b9cbda4f383de1'
+          '416a9bd6c455f0b1eec7b5694a27073efc2feb78')
+
+
+if [ $_patchlevel -gt 0 ]; then
+    for (( _p=1; _p <= $((10#${_patchlevel})); _p++ )); do
+        source=(${source[@]} http://ftp.gnu.org/gnu/readline/readline-$_basever-patches/readline${_basever//.}-$(printf "%03d" $_p))
+    done
+fi
+
+prepare() {
+    cd $_srcname-$_basever
+    for (( _p=1; _p <= $((10#${_patchlevel})); _p++ )); do
+        msg "applying patch readline${_basever//.}-$(printf "%03d" $_p)"
+        patch -p0 -i ../readline${_basever//.}-$(printf "%03d" $_p)
+    done
+
+    # remove RPATH from shared objects (FS#14366)
+    sed -i 's|-Wl,-rpath,$(libdir) ||g' support/shobj-conf
+}
+
+build() {
+    cd $_srcname-$_basever
+
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS} SHLIB_LIBS=-lncurses
+}
+
+package() {
+    make -C $_srcname-$_basever DESTDIR="$pkgdir" install
+    install -Dm644 inputrc "$pkgdir"/etc/inputrc
+}
+

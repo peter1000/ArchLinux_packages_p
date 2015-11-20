@@ -1,0 +1,35 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Eduardo Lopes (eduol@gmx.net)
+
+_srcname=gksu
+pkgname=${_srcname}_p
+pkgver=2.0.2
+pkgrel=5
+pkgdesc="A graphical frontend for su"
+arch=('x86_64')
+url="http://www.nongnu.org/gksu/index.html"
+license=('GPL')
+depends=('libgksu>=2.0.12' 'xorg-xauth')
+makedepends=('gtk-doc' 'intltool')
+provides=("gksu=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('gksu')
+source=(http://people.debian.org/~kov/gksu/${_srcname}-${pkgver}.tar.gz)
+sha1sums=('dae634e3ed2aa8c3f2bebac17d875bcb49d825cc')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    sed -i -e 's|/usr/bin/x-terminal-emulator|-l gnome-terminal|g' gksu.desktop
+    echo "TryExec=gnome-terminal" >> gksu.desktop
+    ./configure --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --disable-static \
+        --disable-nautilus-extension
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+}

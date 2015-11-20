@@ -1,0 +1,43 @@
+# ADDED 20151031: Colored makepkg-like functions =======================
+msg_blue() {
+    printf "${blue}==>${bold} $1${all_off}\n"
+}
+
+note() {
+    printf "${blue}==>${yellow} NOTE$1:${bold} $2${all_off}\n"
+}
+
+all_off="$(tput sgr0)"
+bold="${all_off}$(tput bold)"
+blue="${bold}$(tput setaf 4)"
+yellow="${bold}$(tput setaf 3)"
+
+# ======================================================================
+
+_update() {
+    note " Renaming (move) new ntp.conf: mv -f /etc/ntp.conf /etc/ntp.conf.example.txt"
+	mv -f /etc/ntp.conf /etc/ntp.con.example.txt
+	
+    msg_blue " Copying saved ntp.conf: cp -f /etc/ntp.conf.pacsave /etc/ntp.conf"
+    cp -f /etc/ntp.conf.pacsave /etc/ntp.conf
+}
+
+post_install() {
+	getent group ntp &>/dev/null || groupadd -g 87 ntp >/dev/null
+	getent passwd ntp &>/dev/null || useradd -u 87 -g ntp -d /var/lib/ntp -c 'Network Time Protocol' -s /bin/false ntp >/dev/null
+	true
+    
+    _update
+}
+
+post_upgrade() {
+    _update
+}
+
+post_remove() {
+	getent passwd ntp &>/dev/null && userdel ntp >/dev/null
+	getent group ntp &>/dev/null && groupdel ntp >/dev/null
+	true
+    
+    _update
+}

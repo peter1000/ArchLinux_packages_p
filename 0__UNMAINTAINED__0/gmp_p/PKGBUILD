@@ -1,0 +1,37 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributer: Jan de Groot <jgc@archlinux.org>
+
+_srcname=gmp
+pkgname=${_srcname}_p
+pkgver=6.0.0
+pkgrel=2
+pkgdesc="A free library for arbitrary precision arithmetic"
+arch=('x86_64')
+url="http://gmplib.org/"
+depends=('gcc-libs' 'sh')
+license=('LGPL3' 'GPL')
+install=gmp.install
+provides=("gmp=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('gmp')
+source=(https://gmplib.org/download/gmp/gmp-${pkgver}a.tar.xz)
+sha256sums=('9156d32edac6955bc53b0218f5f3763facb890b73a835d5e1b901dcf8eb8b764')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+
+    ./configure --build=${CHOST} \
+        --prefix=/usr \
+        --enable-fat --enable-cxx
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make ${MAKEFLAGS} check
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+}

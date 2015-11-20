@@ -1,0 +1,61 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Alfredo Ramos <alfredo dot ramos at yandex dot com>
+# Contributor: Lane Wiscombe <lane dot wiscombe at gmail dot com>
+
+_srcname=qBittorrent
+pkgname=qbittorrent-qt5-git_p
+pkgver=3.3.0beta.r6366.g340288f
+pkgrel=1
+pkgdesc='A bittorrent client based on libtorrent-rasterbar. Qt5 UI. Development version.'
+arch=('x86_64')
+url='http://www.qbittorrent.org/'
+license=('GPL2')
+depends=('qt5-base' 'xdg-utils' 'desktop-file-utils' 'hicolor-icon-theme' 'libtorrent-rasterbar' 'python')
+makedepends=('git' 'boost' 'which' 'qt5-tools')
+provides=("qbittorrent=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('qbittorrent' 'qbittorrent-git')
+install=qbittorrent-qt5.install
+source=("${_srcname}::git+https://github.com/${_srcname}/${_srcname}.git"        #commit=340288f  OK
+    'get_version.pri'
+)
+sha512sums=('SKIP'
+            '8330eda1fa7010134c9f13f2890ee0c62916e3a71b59150c8edfb0f0293731311e19646f581d313a39f63c60b8474828954f4b5ac2a6bb4a31b6b80c198b40b6')
+
+pkgver() {
+    # Updating package version
+    cd ${srcdir}/${_srcname}
+    (
+        set -o pipefail
+        printf "%s.r%s.g%s" "$(qmake-qt5 ../get_version.pri 2>/dev/null)" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)" ||
+        printf "r%s.g%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+    )
+}
+
+prepare() {
+    # Create build directory
+    mkdir -p ${srcdir}/build
+}
+
+build() {
+    # Building package
+    cd ${srcdir}/build
+
+    ../${_srcname}/configure \
+        --prefix=/usr \
+        --with-qt5
+
+    qmake-qt5 ../${_srcname} \
+        CONFIG+=release \
+        CONFIG+=c++14 \
+        QMAKE_CFLAGS_RELEASE="${CFLAGS}"\
+        QMAKE_CXXFLAGS_RELEASE="${CXXFLAGS}" \
+        -spec linux-g++
+
+    make ${MAKEFLAGS}
+}
+
+package() {
+    # Installing package
+    cd ${srcdir}/build
+    make INSTALL_ROOT=${pkgdir} install
+}

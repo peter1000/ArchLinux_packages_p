@@ -1,0 +1,36 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor:  Tobias Powalowski <tpowa@archlinux.org>
+# Contributor: Surain Mallawa Arachchi <mas@crc32.net>
+
+_srcname=linux-atm
+pkgname=${_srcname}_p
+pkgver=2.5.2
+pkgrel=4
+pkgdesc="Drivers and tools to support ATM networking under Linux."
+arch=('x86_64')
+depends=('glibc')
+url="http://linux-atm.sourceforge.net/"
+license=(GPL)
+provides=("linux-atm=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('linux-atm')
+source=(http://downloads.sourceforge.net/sourceforge/${_srcname}/${_srcname}-${pkgver}.tar.gz
+        man-pages.patch)
+options=(!makeflags)
+sha256sums=('9645481a2b16476b59220aa2d6bc5bc41043f291326c9b37581018fbd16dd53a'
+            '0e535ace1a88d4bba95a586f9357a6fef5258e07ffeba209d630e32149dfaa07')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    patch -Np1 -i ../man-pages.patch
+
+    # install firmware in /usr/lib
+    sed -i "s#/lib/firmware#/usr/lib/firmware#" src/extra/Makefile.in
+
+    ./configure --prefix=/usr --sbindir=/usr/bin --sysconfdir=/etc
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+}

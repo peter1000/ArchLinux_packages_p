@@ -1,0 +1,44 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: PelPix <kylebloss[at]pelpix.info>
+# Contributor: DrZaius <lou[at]fakeoutdoorsman.com>
+
+_srcname=fdk-aac
+pkgname=libfdk-aac-git_p
+pkgver=0.1.4.r2.g047376a            
+pkgrel=1
+pkgdesc="Fraunhofer FDK AAC codec library"
+arch=('x86_64')
+url="http://sourceforge.net/projects/opencore-amr/"
+license=('custom')
+depends=('glibc')
+makedepends=('git')
+provides=( 'libfdk-aac.so' "libfdk-aac=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libfdk-aac')
+options=('!libtool')
+source=("${_srcname}::git+https://github.com/mstorsjo/${_srcname}.git")     #commit=047376a   OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    autoreconf -fiv
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make DESTDIR="$pkgdir" install
+    install -Dm644 NOTICE "$pkgdir/usr/share/licenses/${pkgname}/NOTICE"
+}

@@ -1,0 +1,32 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Francois Boulogne <fboulogne at april dot org>
+# Maintainer: Francois Boulogne <fboulogne at april dot org>
+
+_srcname=pathtools
+pkgname=python-${_srcname}_p
+pkgver=0.1.2
+pkgrel=2
+pkgdesc="Pattern matching and various utilities for file systems paths"
+arch=('any')
+url="https://pypi.python.org/pypi/pathtools/"
+license=('MIT')
+depends=('python')
+makedepends=('python-setuptools')
+provides=("python-pathtools=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('python-pathtools' 'python-pathtools-git')
+source=(https://pypi.python.org/packages/source/p/pathtools/pathtools-$pkgver.tar.gz)
+sha256sums=('7c35c5421a39bb82e58018febd90e3b6e5db34c5443aaaf742b3f33d4655f1c0')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    python setup.py build
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    python setup.py install --skip-build --root="${pkgdir}" --optimize=1
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+    
+    # Install Documentation
+    install -D -m644 README "${pkgdir}/usr/share/doc/${pkgname}/README"
+}

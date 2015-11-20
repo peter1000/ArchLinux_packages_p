@@ -1,0 +1,116 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: yuyichao <yyc1992@gmail.com>
+# Contributor: Alexander Rødseth <rodseth@gmail.com>
+# Contributor: devmotion <nospam-archlinux.org@devmotion.de>
+# Contributor: Valentin Churavy <v.churavy@gmail.com>
+# Contributor: Lex Black <autumn-wind at web dot de>
+# Contributor: Michael Jakl <jakl.michael@gmail.com>
+# With contributions from many kind people at https://aur.archlinux.org/packages/julia-git/
+
+_srcname=julia
+pkgbase=${_srcname}-git_p
+pkgname=('julia-git_p' 'julia-docs-git_p')
+pkgver=0.5.0.dev.r28355.g2cac689     
+pkgrel=1
+pkgdesc='High-level, high-performance, dynamic programming language'
+arch=('x86_64')
+url="http://julialang.org"
+license=('MIT')
+
+makedepends=('git' 'python2' 'hicolor-icon-theme' 'xdg-utils' 'gcc-fortran'
+            'llvm'         # Arch
+            'libunwind'    # Arch
+            'pcre2-svn_p'
+            'openlibm-git_p'
+            'openspecfun-git_p'
+            'openblas-lapack-git_p'
+            'fftw'         # Arch
+            'arpack-git_p'
+            'suitesparse_p'
+            # libuv could not get it to work use julias interna;: 20151107 see note: https://github.com/JuliaLang/julia/issues/10246#issuecomment-75029026
+            'libutf8proc-julia-git_p'
+            'libgit2'      # Arch   
+            'patchelf-git_p'
+            )
+optdepends=('gnuplot: If using the Gaston Package from julia')
+options=('!emptydirs')
+backup=('etc/ld.so.conf.d/julia.conf' 'etc/julia/juliarc.jl')
+source=("${_srcname}::git+https://github.com/JuliaLang/julia.git"    #commit=2cac689   OK
+    'Make.user')
+sha256sums=('SKIP'
+            'b0843775fd030b643654400a1ab9bf792cae3a7c26f766593fb85488e26884bf')
+
+pkgver() {
+    cd "${srcdir}/${_srcname}"
+    # use the version from VERSION file
+    local _ver=`git show master:VERSION | sed 's/-/./g'`
+    printf "${_ver}.r%s.g%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    # For /etc/ld.so.conf.d/
+    echo '/usr/lib/julia' > julia.conf
+
+    cp --force "${srcdir}/Make.user" "${srcdir}/${_srcname}/Make.user"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+
+    # most configurations are in the `Make.user` file
+    export JULIA_CPU_CORES=$(nproc)
+    export JULIA_TESTFULL=0
+
+    export CC='gcc -flto'
+    export CXX='g++ -flto'
+    export CPPFLAGS="${CPPFLAGS} \
+        -I/usr/include/libutf8proc-julia"
+
+    make -j "${JULIA_CPU_CORES}" prefix=/usr sysconfdir=/etc
+    libtool --finish "${srcdir}/${_srcname}/usr/lib"
+}
+
+package_julia-git_p() {
+    depends=('hicolor-icon-theme' 'libunwind' 'libutf8proc-julia-git_p')
+    install=${_srcname}.install
+	provides=("julia=${pkgver}" "${pkgname}=${pkgver}")
+	conflicts=('julia' 'julia-git' 'julia_p')
+
+    cd "${srcdir}/${_srcname}"
+    # most configurations are in the `Make.user` file
+    export JULIA_CPU_CORES=$(nproc)
+    export JULIA_TESTFULL=0
+
+    export CC='gcc -flto'
+    export CXX='g++ -flto'
+    export CPPFLAGS="${CPPFLAGS} \
+        -I/usr/include/libutf8proc-julia"
+
+    echo
+    echo '>>> RUNNING MAKE INSTALL.....'
+    echo
+    make -j "${JULIA_CPU_CORES}" DESTDIR="$pkgdir" prefix=/usr sysconfdir=/etc install
+
+    # Remove doc files
+    rm -r "$pkgdir/usr/share/doc/julia"
+    # Install license
+    install -Dm644 LICENSE.md "$pkgdir/usr/share/licenses/${pkgname}/LICENSE.md"
+}
+
+package_julia-docs-git_p() {
+    pkgdesc='Documentation and examples for Julia'
+    depends=("julia-git_p=${pkgver}")
+	provides=("julia-docs=${pkgver}" "${pkgname}=${pkgver}")
+	conflicts=('julia-docs' 'julia-docs-git' 'julia-docs_p')
+
+    cd "${srcdir}/${_srcname}"
+
+    install -d "$pkgdir/usr/share/doc/${_srcname}/html"
+
+    cp -dpr --no-preserve=ownership "$srcdir/${_srcname}/doc/_build/html" "$pkgdir/usr/share/doc/${_srcname}/"
+    cp -rv "$srcdir/${_srcname}/examples" "$pkgdir/usr/share/doc/${_srcname}/examples"
+
+    # Install license
+    install -Dm644 LICENSE.md "$pkgdir/usr/share/licenses/${pkgname}/LICENSE.md"
+}

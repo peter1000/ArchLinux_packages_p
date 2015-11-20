@@ -1,0 +1,45 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Sébastien Luttringer <seblu@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+_srcname=grep
+pkgname=${_srcname}_p
+pkgver=2.21
+pkgrel=2
+pkgdesc='A string search utility'
+arch=('x86_64')
+license=('GPL3')
+url='http://www.gnu.org/software/grep/grep.html'
+groups=('base' 'base-devel')
+depends=('glibc' 'pcre')
+makedepends=('texinfo')
+install=$_srcname.install
+provides=("grep=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('grep')
+source=("ftp://ftp.gnu.org/gnu/$_srcname/${_srcname}-${pkgver}.tar.xz"
+        'CVE-2015-1345.patch')
+sha256sums=('5244a11c00dee8e7e5e714b9aaa053ac6cbfa27e104abee20d3c778e4bb0e5de'
+            '62f8670f3b8cdb8598e38554951cb8e8d5fd5ef8a00c621435564aee9f65bd2b')
+
+prepare() {
+	cd "${_srcname}-${pkgver}"
+	# fix CVE-2015-1345
+	patch -Np1 < "${srcdir}/CVE-2015-1345.patch"
+ }
+
+build() {
+	cd "${_srcname}-${pkgver}"
+	./configure --prefix=/usr --without-included-regex
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd "${_srcname}-${pkgver}"
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd "${_srcname}-${pkgver}"
+	make DESTDIR=$pkgdir install
+}

@@ -1,0 +1,47 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+
+_srcname=DynamicAudioNormalizer
+pkgbase=dynamic-audio-normalizer-git_p
+pkgname=('libdynamic-audio-normalizerapi-git_p' 'dynamic-audio-normalizercli-git_p')
+pkgver=2.08.r24.g6c2612e            
+pkgrel=1
+arch=('x86_64')
+url="https://github.com/lordmulder/DynamicAudioNormalizer.git"
+makedepends=('git' 'libsndfile' 'gcc-libs')
+source=("${_srcname}::git+https://github.com/lordmulder/${_srcname}.git")	#commit=6c2612e  OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    make -j 1 MODE=minimal
+}
+
+package_libdynamic-audio-normalizerapi-git_p() {
+    pkgdesc='A library for advanced audio normalization purposes.'
+    license=('LGPL2.1')
+    depends=('gcc-libs')
+    provides=("libdynamic-audio-normalizerapi=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('libdynamic-audio-normalizerapi-git')
+
+    install -dm755 "$pkgdir/usr/lib"
+    install -m755 "${srcdir}/${_srcname}/DynamicAudioNormalizerAPI/lib/libDynamicAudioNormalizerAPI-7.so" "${pkgdir}/usr/lib/"
+}
+
+package_dynamic-audio-normalizercli-git_p() {
+    pkgdesc='A command-line (CLI) for advanced audio normalization purposes.'
+    license=('GPL2')
+    depends=("libdynamic-audio-normalizerapi-git_p=${pkgver}" 'libsndfile')
+    provides=("dynamic-audio-normalizercli=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('dynamic-audio-normalizercli-git')
+
+    install -dm755 "$pkgdir/usr/bin"
+	install -m755 "${srcdir}/${_srcname}/DynamicAudioNormalizerCLI/bin/DynamicAudioNormalizerCLI.bin" "${pkgdir}/usr/bin/"
+}

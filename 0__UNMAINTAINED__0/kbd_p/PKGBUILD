@@ -1,0 +1,48 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Tobias Powalowski <tpowa@archlinux.org>
+
+_srcname=kbd
+pkgname=${_srcname}_p
+pkgver=2.0.3
+pkgrel=1
+pkgdesc="Keytable files and keyboard utilities"
+arch=('x86_64')
+url="http://www.kbd-project.org"
+license=('GPL')
+depends=('glibc' 'pam')
+makedepends=('check')
+source=(ftp://ftp.altlinux.org/pub/people/legion/kbd/${_srcname}-${pkgver}.tar.gz
+        'fix-euro2.patch')
+provides=('vlock' "kbd=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('vlock' 'kbd')
+replaces=('vlock')
+sha1sums=('e37a6e6a43287afb4e678d4071d50cbf1ef8d581'
+          '7ef40e650976bac3493c58ad36c6c3a0d4882c87')
+
+prepare() {
+    cd ${srcdir}/${_srcname}-${pkgver}
+    # rename keymap files with the same names
+    # this is needed because when only name of keymap is specified
+    # loadkeys loads the first keymap it can find, which is bad (see FS#13837)
+    # this should be removed when upstream adopts the change
+    mv data/keymaps/i386/qwertz/cz{,-qwertz}.map
+    mv data/keymaps/i386/olpc/es{,-olpc}.map
+    mv data/keymaps/i386/olpc/pt{,-olpc}.map
+    mv data/keymaps/i386/dvorak/no{,-dvorak}.map
+    mv data/keymaps/i386/fgGIod/trf{,-fgGIod}.map
+    mv data/keymaps/i386/colemak/{en-latin9,colemak}.map
+    # fix euro2 #28213
+    patch -Np1 -i ../fix-euro2.patch
+}
+
+build() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+	./configure --prefix=/usr --datadir=/usr/share/kbd --mandir=/usr/share/man
+
+	make ${MAKEFLAGS} KEYCODES_PROGS=yes RESIZECONS_PROGS=yes
+}
+
+package() {
+    cd ${srcdir}/${_srcname}-${pkgver}
+    make KEYCODES_PROGS=yes RESIZECONS_PROGS=yes DESTDIR=${pkgdir} install
+}

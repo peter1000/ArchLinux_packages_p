@@ -1,0 +1,95 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Timofey Titovets <nefelim4ag@gmail.com>
+# Contributor: John Reese <john@noswap.com>
+# Upstream URL: https://github.com/atom/atom
+
+_srcname=atom
+pkgname=${_srcname}-git_p
+pkgver=1.3.0.beta4.r49.ge572763            
+pkgrel=1
+pkgdesc="Atom is a hackable text editor for the 21st century"
+arch=('x86_64')
+url="https://github.com/atom/atom"
+license=('MIT')
+depends=('alsa-lib' 'nss' 'libgnome-keyring' 'desktop-file-utils' 'gtk2' 'nodejs' 'libnotify' 'gconf'  'libnotify'
+     'libxtst' 'python' 'python2' 'hicolor-icon-theme' 'xdg-utils' 'ttf-liberation')                # pull in ttf-liberation eventhoug it is not needed
+makedepends=('git' 'npm')
+provides=("atom=${pkgver}" "atom-editor=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('atom-git' 'atom-editor' 'atom-editor-git')
+install=${_srcname}.install
+source=("${_srcname}::git+https://github.com/atom/${_srcname}.git")    #commit=84e18b2 OK
+sha256sums=('SKIP')
+
+
+_PACKAGES_TO_REMOVE=(
+    'metrics'                       # Reports usage information to Google Analytics
+    'exception-reporting'           # Reports uncaught Atom exceptions to bugsnag.com
+    )
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+
+    for pkg_to_remove in ${_PACKAGES_TO_REMOVE[@]}; do
+        echo
+        echo '>>>>REMOVING PKG: ' ${pkg_to_remove}
+        # remove
+        sed --in-place '/'${pkg_to_remove}'/d' 'package.json'
+
+        #### Recheck that they are really gone
+        if grep -q "${pkg_to_remove}" 'package.json'; then
+            echo 'Error! Seems that an atom package we wanted to remove from <package.json> is still found:' 
+            echo '       ATOM PACKAGE: ' ${pkg_to_remove}
+            echo
+            exit
+        fi
+    done
+    echo
+    
+    sed -e "s/<%= description %>/$pkgdesc/" \
+        -e "s|<%= appName %>|Atom|"\
+        -e "s|<%= installDir %>/share/<%= appFileName %>/atom %U|/usr/bin/atom|"\
+        -e "s|<%= iconPath %>|atom|"\
+    resources/linux/atom.desktop.in > resources/linux/Atom.desktop
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+
+    export PYTHON=python2
+    
+    # to show some error info use: `--stack`
+    script/build --stack --build-dir "$srcdir/atom-build"
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+
+    script/grunt install --build-dir "$srcdir/atom-build" --install-dir "$pkgdir/usr"
+    install -Dm644 resources/linux/Atom.desktop "$pkgdir/usr/share/applications/atom.desktop"
+    install -Dm644 resources/app-icons/beta/png/48.png "$pkgdir/usr/share/pixmaps/atom.png"
+    install -Dm644 LICENSE.md "$pkgdir/usr/share/licenses/${pkgname}/LICENSE.md"
+
+    echo
+    echo '================================================'
+    echo
+    echo '!!! WARNING::: Atom has packages which should be disabled because they report to various internet services.'
+    echo
+    echo 'To deactivate any package got to: Settings > Packages section: and then find and disable the package.'
+    echo
+    echo 'Some packages where removed from the default installation: ' 
+    for pkg_to_remove in ${_PACKAGES_TO_REMOVE[@]}; do
+        echo '    ' ${pkg_to_remove}
+    done
+    echo
+    echo '================================================'
+    echo
+}

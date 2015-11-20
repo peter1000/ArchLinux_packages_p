@@ -1,0 +1,39 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Pierre Schmitz <pierre@archlinux.de>
+# Contributor: François Charette <firmicus@gmx.net>
+
+_srcname=xz
+pkgname=${_srcname}_p
+pkgver=5.2.2
+pkgrel=1
+pkgdesc='Library and command line tools for XZ and LZMA compressed files'
+arch=('x86_64')
+url='http://tukaani.org/xz/'
+license=('GPL' 'LGPL' 'custom')
+depends=('sh')
+provides=("xz=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('xz')
+source=("http://tukaani.org/${_srcname}/${_srcname}-${pkgver}.tar.gz")
+sha256sums=('73df4d5d34f0468bd57d09f2d8af363e95ed6cc3a4a86129d2f2c366259902a2')
+
+build() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+
+	./configure --prefix=/usr \
+		--disable-rpath \
+		--enable-werror
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+	make DESTDIR=${pkgdir} install
+	install -d -m755 ${pkgdir}/usr/share/licenses/${pkgname}/
+	ln -sf /usr/share/doc/xz/COPYING ${pkgdir}/usr/share/licenses/${pkgname}/
+	ln -sf /usr/share/licenses/common/GPL2/license.txt ${pkgdir}/usr/share/doc/xz/COPYING.GPLv2
+}

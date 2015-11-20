@@ -1,0 +1,51 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Tom Gundersen <teg@jklm.no>
+# Contributor: John Proctor <jproctor@prium.net>
+
+_srcname=libxml2
+pkgname=${_srcname}_p
+pkgver=2.9.2
+pkgrel=2
+pkgdesc="XML parsing library, version 2"
+arch=('x86_64')
+license=('MIT')
+depends=('zlib' 'readline' 'ncurses' 'xz')
+makedepends=('python2')
+optdepends=('python2: python bindings to libxml')
+url="http://www.xmlsoft.org/"
+provides=("libxml2=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('libxml2')
+source=(ftp://ftp.xmlsoft.org/${_srcname}/${_srcname}-${pkgver}.tar.gz
+        http://www.w3.org/XML/Test/xmlts20080827.tar.gz
+        revert-catalog-initialize.patch
+        fix-CVE-2014-3660.patch)
+sha1sums=('f46a37ea6d869f702e03f393c376760f3cbee673'
+          'dd4e00d0fbbd64c7a2a545100d965ce62edbe5ba'
+          'c67364f843ed43d1c67f87ebae6347d8061fa1f8'
+          '0737a2854d5bfe3a87e4f8328349f9b322ee0770')
+
+prepare() {
+	cd ${_srcname}-${pkgver}
+	sed -e 's|/usr/bin/python -u|/usr/bin/python2 -u|g' -e 's|/usr/bin/python$|/usr/bin/python2|g' -i python/tests/*.py
+	mv ../xmlconf .
+	patch -Np1 -i ../revert-catalog-initialize.patch
+	patch -Np1 -i ../fix-CVE-2014-3660.patch
+}
+
+build() {
+	cd ${_srcname}-${pkgver}
+	./configure --prefix=/usr --with-threads --with-history --with-python=/usr/bin/python2
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd ${_srcname}-${pkgver}
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd ${_srcname}-${pkgver}
+	make DESTDIR="${pkgdir}" install
+	install -Dm644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}

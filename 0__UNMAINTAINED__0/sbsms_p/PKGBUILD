@@ -1,0 +1,30 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+# Contributor: Devin J. Pohly <djpohly+arch@gmail.com>
+
+_srcname=sbsms
+_libname=lib${_srcname}
+pkgname=${_srcname}_p
+pkgver=2.0.2
+pkgrel=1
+pkgdesc='Library for time stretching and pitch scaling of audio.'
+arch=('x86_64')
+url='http://sbsms.sourceforge.net/'
+license=('GPL')
+depends=('gcc-libs')
+options=('!staticlibs')
+conflicts=('sbsms')
+provides=("sbsms=${pkgver}" "${pkgname}=${pkgver}")
+source=("http://downloads.sourceforge.net/project/sbsms/sbsms/${pkgver}/libsbsms-${pkgver}.tar.gz")
+sha256sums=('ceab3d970664b337057b46bcf55283d50d329da636bf83d0ee7c36e22341aeee')
+
+build() {
+    cd "${_libname}-${pkgver}"
+    ./configure --prefix=/usr --enable-shared
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${_libname}-${pkgver}"
+    make DESTDIR="$pkgdir/" install
+}

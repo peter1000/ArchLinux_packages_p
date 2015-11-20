@@ -1,0 +1,37 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor:Jan de Groot <jgc@archlinux.org>
+
+_srcname=gperf
+pkgname=${_srcname}_p
+pkgver=3.0.4
+pkgrel=5
+pkgdesc="Perfect hash function generator"
+arch=('x86_64' 'i686')
+url="http://www.gnu.org/software/gperf/"
+license=('GPL3')
+depends=('gcc-libs' 'texinfo')
+install=gperf.install
+provides=("gperf=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('gperf')
+source=("http://ftp.gnu.org/pub/gnu/gperf/${_srcname}-${pkgver}.tar.gz")
+sha1sums=('e32d4aff8f0c730c9a56554377b2c6d82d0951b8')
+options=('!makeflags')
+
+build() {
+    cd "${srcdir}"/${_srcname}-${pkgver}
+    ./configure --prefix=/usr \
+        --docdir=/usr/share/gperf/doc/
+    make ${MAKEFLAGS}
+}
+
+check() {
+    cd "${srcdir}"/${_srcname}-${pkgver}
+    
+    # test fails here but if run manually they are ok
+    make ${MAKEFLAGS} check
+}
+
+package() {
+    cd "${srcdir}"/${_srcname}-${pkgver}
+    make DESTDIR="${pkgdir}" install
+}

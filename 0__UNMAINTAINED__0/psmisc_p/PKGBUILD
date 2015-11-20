@@ -1,0 +1,35 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+
+_srcname=psmisc
+pkgname=${_srcname}_p
+pkgver=22.21
+pkgrel=3
+pkgdesc="Miscellaneous procfs tools"
+arch=('x86_64')
+url="http://psmisc.sourceforge.net/index.html"
+license=('GPL')
+groups=('base')
+depends=('ncurses')
+provides=("psmisc=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('psmisc')
+source=(http://downloads.sourceforge.net/psmisc/${_srcname}-${pkgver}.tar.gz 
+    psmisc-fuser.patch)
+sha1sums=('09fabbef4539b58b6b8738a73da3d21d5daa1a58'
+          'e739ad5b14ca836db5859f0755d8f2fc8e86de69')
+
+prepare() {
+    cd ${_srcname}-${pkgver}
+    patch -p1 -i ../psmisc-fuser.patch
+}
+
+build() {
+    cd ${_srcname}-${pkgver}
+    ./configure --prefix=/usr
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd ${_srcname}-${pkgver}
+    make DESTDIR="${pkgdir}" install
+}

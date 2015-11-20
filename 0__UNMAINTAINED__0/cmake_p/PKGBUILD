@@ -1,0 +1,70 @@
+# # Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Felix Yan <felixonmars@archlinux.org>
+# Contributor: Andrea Scarpino <andrea@archlinux.org>
+# Contributor: Pierre Schmitz <pierre@archlinux.de>
+
+_srcname=cmake
+pkgname=${_srcname}_p
+pkgver=3.3.2
+pkgrel=3
+pkgdesc='A cross-platform open-source make system'
+arch=('x86_64')
+url="http://www.cmake.org/"
+license=('custom')
+depends=('curl' 'libarchive' 'shared-mime-info' 'jsoncpp')
+makedepends=('qt5-base' 'python-sphinx' 'emacs')
+optdepends=('qt5-base: cmake-gui'
+            'libxkbcommon-x11: cmake-gui')
+install="${_srcname}.install"
+provides=("cmake=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('cmake')
+source=("http://www.cmake.org/files/v${pkgver%.*}/${_srcname}-${pkgver}.tar.gz" 'kdelibs-4.14.11.patch' 'python-3.5.patch')
+sha1sums=('85f4debf7406bb2a436a302bfd51ada2b4e43719'
+          '5b19be9d9d5cb9e4358d058c188d44a15aeb10bb'
+          'ac65f7287c84d29551628d1e0a11a3a24004f9e1')
+
+prepare() {
+    cd ${_srcname}-${pkgver}
+
+    # fix build of KDE4 applications with kdelibs 4.14.11 http://www.cmake.org/gitweb?p=cmake.git;a=commit;h=b9ec9392da21a3421e48c6961976060d872faffb
+    patch -p1 -i ../kdelibs-4.14.11.patch
+
+    # fix detection of Python 3.5
+    patch -p1 --no-backup-if-mismatch -i ../python-3.5.patch
+}
+
+build() {
+    cd ${_srcname}-${pkgver}
+
+    ./bootstrap --prefix=/usr \
+        --mandir=/share/man \
+        --docdir=/share/doc/cmake \
+        --sphinx-man \
+        --system-libs \
+        --qt-gui \
+        --parallel=NCORE
+    make
+}
+
+package() {
+    cd ${_srcname}-${pkgver}
+    make DESTDIR="${pkgdir}" install
+
+    vimpath="${pkgdir}/usr/share/vim/vimfiles"
+    install -d "${vimpath}"/{help,indent,syntax}
+    ln -s /usr/share/cmake-${pkgver%.*}/editors/vim/cmake-help.vim \
+        "${vimpath}"/help/
+    ln -s /usr/share/cmake-${pkgver%.*}/editors/vim/cmake-indent.vim \
+        "${vimpath}"/indent/
+    ln -s /usr/share/cmake-${pkgver%.*}/editors/vim/cmake-syntax.vim \
+        "${vimpath}"/syntax/
+
+    install -d "${pkgdir}"/usr/share/emacs/site-lisp/
+    emacs -batch -f batch-byte-compile \
+        "${pkgdir}"/usr/share/cmake-${pkgver%.*}/editors/emacs/cmake-mode.el
+    ln -s /usr/share/cmake-${pkgver%.*}/editors/emacs/cmake-mode.el \
+        "${pkgdir}"/usr/share/emacs/site-lisp/
+
+    install -Dm644 Copyright.txt \
+        "${pkgdir}"/usr/share/licenses/${pgname}/LICENSE
+}

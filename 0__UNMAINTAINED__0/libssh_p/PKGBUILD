@@ -1,0 +1,64 @@
+# $Id: PKGBUILD 249897 2015-10-31 22:31:31Z arojas $
+# Maintainer: Tom Gundersen <teg@jklm.no>
+# Contributor: Andrea Scarpino <andrea@archlinux.org>
+# Contributor: ice-man <icemanf@gmail.com>
+# Contributor: sergeantspoon <sergeantspoon@archlinux.us>
+
+_srcname=libssh
+pkgbase=${_srcname}_p
+pkgname=(libssh_p libssh-docs_p)
+pkgver=0.7.2
+pkgrel=1
+pkgdesc="Library for accessing ssh client services through C libraries"
+url="http://www.libssh.org/"
+license=(LGPL)
+arch=('x86_64')
+depends=('openssl')
+makedepends=('cmake' 'cmocka' 'doxygen' 'ninja')
+checkdepends=('openssh')
+source=(https://red.libssh.org/attachments/download/177/${_srcname}-${pkgver}.tar.xz)
+sha256sums=('a32c45b9674141cab4bde84ded7d53e931076c6b0f10b8fd627f3584faebae62')
+
+prepare() {
+    # disable the test. It is confused by our clean container setup.
+    # 'extra-x86-build' uses user 'nobody' that has a record in /etc/passwd file
+    # but $HOME envvar is set to '/build'. The test expects that $HOME corresponds to passwd file.
+    sed 's/unit_test(torture_path_expand_tilde_unix),//' -i libssh-${pkgver}/tests/unittests/torture_misc.c
+
+    mkdir -p build
+}
+
+build() {
+    cd build
+    cmake -G Ninja  ../${_srcname}-${pkgver} \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DWITH_GSSAPI=OFF \
+        -DWITH_TESTING=ON
+    ninja ${MAKEFLAGS}
+    ninja ${MAKEFLAGS} doc
+}
+
+check() {
+    cd build
+    ninja ${MAKEFLAGS} test
+}
+
+package_libssh_p() {
+    provides=("libssh=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('libssh')
+    
+    cd build
+    DESTDIR="$pkgdir" ninja install
+}
+
+package_libssh-docs_p() {
+    pkgdesc="Documentation for libssh"
+    depends=()
+    provides=("libssh-docs=${pkgver}" "${pkgname}=${pkgver}")
+    conflicts=('libssh-docs')
+    
+    mkdir -p "$pkgdir"/usr/share/doc/libssh
+    cp -r build/doc/html "$pkgdir"/usr/share/doc/libssh
+    cp -r build/doc/man "$pkgdir"/usr/share
+}

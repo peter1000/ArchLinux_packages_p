@@ -1,0 +1,43 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+
+_srcname=autoconf
+pkgname=${_srcname}_p
+pkgver=2.69
+pkgrel=2
+pkgdesc="A GNU tool for automatically configuring source code"
+arch=('any')
+license=('GPL2' 'GPL3' 'custom')
+url="http://www.gnu.org/software/autoconf"
+groups=('base-devel')
+depends=('awk' 'm4' 'diffutils' 'bash')
+checkdepends=('gcc-fortran')
+install=autoconf.install
+provides=("autoconf=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('autoconf')
+source=(ftp://ftp.gnu.org/pub/gnu/${_srcname}/${_srcname}-${pkgver}.tar.xz)
+sha256sums=('64ebcec9f8ac5b2487125a86a7760d2591ac9e1d3dbd59489633f9de62a57684')
+
+build() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+	./configure --prefix=/usr
+	make ${MAKEFLAGS}
+}
+
+check() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+	make ${MAKEFLAGS} check
+}
+
+package() {
+	cd ${srcdir}/${_srcname}-${pkgver}
+	make DESTDIR=${pkgdir} install
+
+	# license exception
+	install -Dm644 COPYING.EXCEPTION \
+		$pkgdir/usr/share/licenses/${pkgname}/COPYING.EXCEPTION
+
+	# remove unwanted file
+	rm -f ${pkgdir}/usr/share/info/standards.info
+}

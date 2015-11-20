@@ -1,0 +1,76 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Steffen Weber <-boenki-gmx-de->
+# Contributor: Thayer Williams <thayer@archlinux.org>
+# Contributor: James Rayner <james@archlinux.org>
+
+_srcname=tango-icon-theme
+pkgname=${_srcname}_p
+pkgver=0.8.90
+pkgrel=9
+pkgdesc="Icon theme that follows the Tango visual guidelines"
+arch=('any')
+url="http://tango.freedesktop.org"
+license=('custom:public domain' 'custom:TRADEMARKS')
+makedepends=('imagemagick' 'icon-naming-utils' 'intltool' 'librsvg')
+options=(!strip !zipman)
+source=(${url}/releases/${_srcname}-${pkgver}.tar.bz2
+        http://cinderwick.ca/files/archlinux/artwork-official/symbol.svg
+        http://cinderwick.ca/files/archlinux/licensing-docs/TRADEMARKS
+        rsvg.patch)
+sha256sums=('e94004fa9aa6a7250ac4db6180e96f9c147db617c0d8e7fc8c9e2c42924e990c'
+            'd80b992873f80e846f914d70012c448d85ec5654ae0acf80366ac8a3546c5041'
+            'ea8b229c964b47ebf6b1b173ee2a116925be23ea0dafe758c6262fff648cdda5'
+            '8bdfe6117c22790590d106a7cf420e7aec3317ec3136c5767ab7eb653fbafce9')
+
+prepare() {
+    cd ${_srcname}-${pkgver}
+    patch -p1 < "${srcdir}/rsvg.patch"
+    autoreconf -fi
+}
+
+build() {
+    cd ${_srcname}-${pkgver}
+    ./configure --prefix=/usr --enable-png-creation
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd ${_srcname}-${pkgver}
+    make DESTDIR="${pkgdir}" install
+
+    # install licenses
+    install -Dm644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+    install -m644 ../TRADEMARKS "${pkgdir}/usr/share/licenses/${pkgname}/"
+
+    cd "${pkgdir}/usr/share/icons/Tango"
+
+    # function using imagemagick to combine symbols with default folder-icon
+    # used below to create xdg-folders
+    comp() {
+        composite -gravity center \( ${size}x${size}/"$1".png -resize 50% \) \
+            ${size}x${size}/places/folder.png ${size}x${size}/places/folder-"$2".png
+    }
+
+    for size in 16 22 24 32 48 64 72 96 128; do
+        # replace default logo with Arch Linux's
+        rsvg-convert -w ${size} -h ${size} "${srcdir}/symbol.svg" \
+        -o "${size}x${size}/places/start-here.png"
+        # create icon for category "Education"
+        ln -s "../status/dialog-information.png" \
+        "${size}x${size}/categories/applications-science.png"
+
+        # create xdg-folders
+        comp apps/internet-web-browser publicshare
+        comp actions/go-down download
+        comp actions/document-properties templates
+        comp mimetypes/audio-x-generic music
+        comp mimetypes/image-x-generic pictures
+        comp mimetypes/video-x-generic videos
+        comp mimetypes/x-office-document documents
+    done
+
+    install -Dm644 "${srcdir}/symbol.svg" \
+    "scalable/places/start-here.svg"
+    ln -s "../status/dialog-information.svg" \
+    "scalable/categories/applications-science.svg"
+}

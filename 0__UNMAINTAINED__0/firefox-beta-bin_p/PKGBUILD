@@ -1,0 +1,63 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Det <nimetonmaili g-mail>
+# Contributors: Achilleas Pipinellis, speed145a, Schnouki
+
+_srcname=firefox-beta-bin
+pkgname=${_srcname}_p
+_pkgname=firefox-beta
+pkgver=42.0b9
+_major=${pkgver/rc*}
+_build=${pkgver/*rc}
+pkgrel=1
+pkgdesc="Standalone web browser from mozilla.org - Beta"
+arch=('x86_64')
+url="https://www.mozilla.org/en-US/firefox/channel/#beta"
+license=('MPL' 'GPL' 'LGPL')
+depends=('alsa-lib' 'dbus-glib' 'desktop-file-utils' 'gtk2' 'gtk3' 'hicolor-icon-theme'
+         'icu' 'libevent' 'libvpx' 'libxt' 'mime-types' 'nss' 'sqlite' 'libpulse'
+         'gstreamer0.10-base' 'gstreamer0.10-good' 'gstreamer0.10-bad' 'gstreamer0.10-ugly')
+makedepends=('pacman>=4.2.0')
+provides=("firefox=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('firefox' 'firefox-beta-bin')
+install=$_srcname.install
+source=("$_srcname.desktop"
+        "$_srcname-safe.desktop")
+source_x86_64=("https://ftp.mozilla.org/pub/mozilla.org/firefox/releases/$pkgver/linux-x86_64/en-US/firefox-$pkgver.tar.bz2")
+# RC
+if [[ $_build = ? ]]; then
+	source_x86_64=("https://ftp.mozilla.org/pub/mozilla.org/firefox/candidates/$_major-candidates/build$_build/linux-x86_64/en-US/firefox-$_major.tar.bz2")
+fi
+sha256sums=('7e52d370ac4e5856651cc14797749a4bba00055bbaa192960c8441a1bf2b2ae3'
+            '7b6723632e6d19d2911dbd8fa130686f7d34e519d352bece9ecd2be51e858161')
+sha256sums_x86_64=('eb4b1aa336ba9bf845e39ef8b4bd61ae98c8cc9ff94298dc1dbda060d94c1f8d')
+
+package() {
+	# Create directories
+	msg2 "Creating directory structure..."
+	mkdir -p "$pkgdir"/usr/bin
+	mkdir -p "$pkgdir"/usr/share/applications
+	mkdir -p "$pkgdir"/usr/share/icons/hicolor/128x128/apps
+	mkdir -p "$pkgdir"/opt
+
+	msg2 "Moving stuff in place..."
+	# Install
+	cp -r firefox/ "$pkgdir"/opt/$_pkgname
+
+	# /usr/bin symlinks
+	ln -s /opt/$_pkgname/firefox "$pkgdir"/usr/bin/$_pkgname
+	ln -s /opt/$_pkgname/firefox "$pkgdir"/usr/bin/$_srcname  # compatibility
+
+	# Desktops
+	install -m644 *.desktop "$pkgdir"/usr/share/applications/
+
+	# Icons
+	for i in 16x16 22x22 24x24 32x32 48x48 256x256; do
+	install -d "$pkgdir"/usr/share/icons/hicolor/$i/apps/
+	ln -s /opt/$_pkgname/browser/chrome/icons/default/default${i/x*}.png \
+		"$pkgdir"/usr/share/icons/hicolor/$i/apps/$_pkgname.png
+	done
+
+	# 128x128
+	ln -s /opt/$_pkgname/browser/icons/mozicon128.png \
+		"$pkgdir"/usr/share/icons/hicolor/128x128/apps/$_pkgname.png
+}

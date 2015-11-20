@@ -1,0 +1,44 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: dorphell <dorphell@archlinux.org>
+
+_srcname=bc
+pkgname=${_srcname}_p
+pkgver=1.06.95
+pkgrel=1
+pkgdesc="An arbitrary precision calculator language"
+arch=('x86_64')
+url="http://www.gnu.org/software/bc/"
+license=('GPL')
+depends=('readline')
+install=bc.install
+provides=("bc=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('bc' 'bc-readline')
+replaces=('bc-readline')
+source=(ftp://alpha.gnu.org/gnu/${_srcname}/${_srcname}-${pkgver}.tar.bz2
+        bc-1.06.95-void_uninitialized.patch)
+sha256sums=('7ee4abbcfac03d8a6e1a8a3440558a3d239d6b858585063e745c760957725ecc'
+            '5297ad3e259402911884e306b7fb811fe22a72367a96abbea62340f40613b0b9')
+
+prepare() {
+    cd "${_srcname}-${pkgver}"
+
+    # https://bugs.gentoo.org/show_bug.cgi?id=349339
+    patch -Np0 -i ${srcdir}/bc-1.06.95-void_uninitialized.patch
+}
+
+build() {
+    cd "${_srcname}-${pkgver}"
+    ./configure --prefix=/usr --mandir=/usr/share/man \
+    --infodir=/usr/share/info --with-readline
+    make ${MAKEFLAGS}
+}
+
+check () {
+    cd "${_srcname}-${pkgver}"
+    echo "quit" | ./bc/bc -l Test/checklib.b # 10 failures
+}
+
+package() {
+    cd "${_srcname}-${pkgver}"
+    make DESTDIR="${pkgdir}" install
+}
