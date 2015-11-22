@@ -3,7 +3,7 @@
 
 _srcname=lxqt-about
 pkgname=${_srcname}-git_p
-pkgver=0.10.0.r4.g821dec5               
+pkgver=0.10.0.r5.g6156670               
 pkgrel=1
 pkgdesc="LXQt about dialog."
 arch=('x86_64')

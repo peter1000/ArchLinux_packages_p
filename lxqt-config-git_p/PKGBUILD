@@ -3,7 +3,7 @@
 
 _srcname=lxqt-config
 pkgname=${_srcname}-git_p
-pkgver=0.10.0.r3.gda7400d               
+pkgver=0.10.0.r7.g84a5d3c               
 pkgrel=1
 pkgdesc="LXQt system configuration."
 arch=('x86_64')

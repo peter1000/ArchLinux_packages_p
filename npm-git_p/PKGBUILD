@@ -3,7 +3,7 @@
 
 _srcname=npm
 pkgname=${_srcname}-git_p
-pkgver=v3.3.10.r0.g716556a                  #commit=716556a  OK
+pkgver=3.5.0.r1.g72a6926                  
 pkgrel=1
 pkgdesc='A package manager for javascript'
 arch=('any')
@@ -15,11 +15,11 @@ optdepends=('python2: for node-gyp')
 options=('!emptydirs')
 provides=("nodejs-node-gyp=${pkgver}" "npm=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('npm' 'npm-git')
-source=("${_srcname}::git+https://github.com/npm/${_srcname}.git#commit=716556a")
+source=("${_srcname}::git+https://github.com/npm/${_srcname}.git") #commit=g72a6926  OK
 sha512sums=('SKIP')
 
 pkgver() {
-    cur_prefix=''
+    cur_prefix='v'
     cd "${srcdir}/${_srcname}"
     local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
     local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"

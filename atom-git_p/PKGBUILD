@@ -5,7 +5,7 @@
 
 _srcname=atom
 pkgname=${_srcname}-git_p
-pkgver=1.3.0.beta4.r49.ge572763            
+pkgver=1.3.0.beta5.r92.g2c9e13a            
 pkgrel=1
 pkgdesc="Atom is a hackable text editor for the 21st century"
 arch=('x86_64')
@@ -13,7 +13,7 @@ url="https://github.com/atom/atom"
 license=('MIT')
 depends=('alsa-lib' 'nss' 'libgnome-keyring' 'desktop-file-utils' 'gtk2' 'nodejs' 'libnotify' 'gconf'  'libnotify'
      'libxtst' 'python' 'python2' 'hicolor-icon-theme' 'xdg-utils' 'ttf-liberation')                # pull in ttf-liberation eventhoug it is not needed
-makedepends=('git' 'npm')
+makedepends=('git' 'npm>=3.5.0')
 provides=("atom=${pkgver}" "atom-editor=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('atom-git' 'atom-editor' 'atom-editor-git')
 install=${_srcname}.install
