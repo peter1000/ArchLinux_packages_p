@@ -4,7 +4,7 @@
 
 _srcname=libebml
 pkgname=${_srcname}-git_p
-pkgver=1.3.3.r4.g81e7ffd            
+pkgver=1.3.3.r5.g1c93d14            
 pkgrel=1
 pkgdesc="Extensible Binary Meta Language library"
 arch=('x86_64')

@@ -4,7 +4,7 @@
 
 _srcname=libmatroska
 pkgname=${_srcname}-git_p
-pkgver=1.4.4.r0.g2619e00                
+pkgver=1.4.4.r1.g6d8e423                
 pkgrel=1
 pkgdesc="Matroska library"
 arch=('x86_64')

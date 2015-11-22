@@ -5,7 +5,7 @@
 _srcname=mkvtoolnix
 pkgbase=${_srcname}-git_p
 pkgname=('mkvtoolnix-cli-git_p' 'mkvtoolnix-qt-git_p')
-pkgver=8.5.2.r27.g5bfb8bf               
+pkgver=8.5.2.r36.g33abbc8               
 pkgrel=1
 arch=('x86_64')
 license=('GPL')
