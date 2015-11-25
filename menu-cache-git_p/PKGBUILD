@@ -4,24 +4,24 @@
 
 #Installing INFO: https://github.com/lxde/menu-cache
 #
-#Since version 0.7.0 the Libmenu-cache requires Libfm-extra for the menu-cache-gen menu cache generation binary. 
+#Since version 0.7.0 the Libmenu-cache requires Libfm-extra for the menu-cache-gen menu cache generation binary.
 #Since Libfm depends on Libmenu-cache, there is some hint for bootstrapers how to build those
-#libraries together: you need create Libfm-extra first, you can easily do this by passing '--with-extra-only' option to 
-#configure script and installing Libfm-extra. Then you can succesfully build Libmenu-cache and therefore build full 
+#libraries together: you need create Libfm-extra first, you can easily do this by passing '--with-extra-only' option to
+#configure script and installing Libfm-extra. Then you can succesfully build Libmenu-cache and therefore build full
 #version of Libfm.
 
 
 _srcname=menu-cache
 pkgname=${_srcname}-git_p
-pkgver=1.0.0.r7.g2d65876                
+pkgver=1.0.0.r7.g2d65876
 pkgrel=1
 pkgdesc='Caching mechanism for freedesktop.org compliant menus'
-arch=('i686' 'x86_64')
+arch=('x86_64')
 license=('GPL2')
 url='http://lxde.org/'
-depends=('intltool' 'glib2' 'libfm-extra')
+depends=('intltool' 'glib2' 'gtk-doc')
 options=('!libtool')
-makedepends=('gtk-doc' 'git' 'intltool' 'pkg-config' 'automake' 'pkgconfig')
+makedepends=('git' 'intltool' 'pkg-config' 'automake' 'pkgconfig')
 provides=("menu-cache=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('menu-cache' 'menu-cache-git')
 source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")      #commit=2d65876   OK
@@ -41,6 +41,9 @@ build() {
     ./autogen.sh
     ./configure --prefix=/usr --sysconfdir=/etc \
 		--libexecdir=/usr/lib \
+        --disable-gtk-doc \
+        --disable-gtk-doc-html \
+        --disable-gtk-doc-pdf \
 		--disable-static
     make ${MAKEFLAGS}
 }

@@ -3,7 +3,7 @@
 
 _srcname=lxqt-session
 pkgname=${_srcname}-git_p
-pkgver=0.10.0.r5.g302843e               
+pkgver=0.10.0.r6.gaa7169a
 pkgrel=1
 pkgdesc="LXQt session"
 arch=('x86_64')
@@ -14,7 +14,7 @@ depends=('liblxqt-git_p'
         'sddm')
 provides=("lxqt-session=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('lxqt-session' 'lxqt-session-git')
-source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")		#commit=302843e  OK
+source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")		#commit=aa7169a  OK
 sha512sums=('SKIP')
 
 pkgver() {

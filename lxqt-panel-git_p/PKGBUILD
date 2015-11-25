@@ -3,7 +3,7 @@
 
 _srcname=lxqt-panel
 pkgname=${_srcname}-git_p
-pkgver=0.10.0.r14.g0957f8a
+pkgver=0.10.0.r15.g245de98
 pkgrel=1
 pkgdesc="The LXQt desktop panel"
 arch=('x86_64')
@@ -24,7 +24,7 @@ optdepends=(
 
 provides=("lxqt-panel=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('lxqt-panel' 'lxqt-panel-git')
-source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")	#commit=0957f8a  OK
+source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")	   #commit=245de98  OK
 sha512sums=('SKIP')
 
 pkgver() {

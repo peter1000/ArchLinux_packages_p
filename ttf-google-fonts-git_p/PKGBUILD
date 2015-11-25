@@ -8,7 +8,7 @@
 
 _srcname=fonts
 pkgname=ttf-google-font-git_p
-pkgver=r280.ga26bc2b        
+pkgver=r282.g9c1ea82
 pkgrel=1
 pkgdesc="TrueType fonts from the Google Fonts project"
 arch=('any')
@@ -68,7 +68,7 @@ _fonts=('adobe-source-code-pro-fonts'
            'ttf-google-font-git')
 provides=("${_fonts[@]}" 'ttf-font' "ttf-google-font=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=("${_fonts[@]}" 'ttf-google-font' 'ttf-google-font-git')
-source=("${_srcname}::git+https://github.com/google/${_srcname}.git")		 #commit=a26bc2b   OK
+source=("${_srcname}::git+https://github.com/google/${_srcname}.git")		 #commit=9c1ea82    OK
 sha512sums=('SKIP')
 
 pkgver() {

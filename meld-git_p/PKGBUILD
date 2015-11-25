@@ -23,7 +23,7 @@ options=('!emptydirs')
 provides=("meld=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('meld' 'meld-dev' 'meld-git')
 replaces=('meld')
-source=("${_srcname}::git+https://git.gnome.org/browse/meld.git")      #commit=5f2e3f4"  OK
+source=("${_srcname}::git+https://git.gnome.org/browse/meld.git")      #commit=f25d0b3"  OK
 sha256sums=('SKIP')
 
 pkgver() {
@@ -50,5 +50,5 @@ package() {
         --prefix=/usr \
         --root="${pkgdir}" \
         --optimize=1
-    
+
 }

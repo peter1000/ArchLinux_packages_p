@@ -1,16 +1,18 @@
 # Maintainer: peter1000 <https://github.com/peter1000>
 # Contributor: Jerome Leclanche <jerome@leclan.ch>
 
+# this is the second round and builds the full libfm
+
 _srcname=libfm
 pkgname=${_srcname}-git_p
-pkgver=1.2.3.r60.g9f3315d            
+pkgver=1.2.3.r60.g9f3315d
 pkgrel=1
 pkgdesc='Library for file management'
 arch=('x86_64')
 url="http://www.lxde.org"
 license=("GPL2")
-depends=('menu-cache' 'libexif')
-makedepends=("git" "vala" 'intltool' 'gtk-doc' "libfm-extra-git_p=${pkgver}")   # force same version for: libfm-extra-git_p - keep this dependency
+depends=('libfm-extra-git_p' 'libexif' 'menu-cache-git_p')
+makedepends=("git" "vala" 'intltool' "libfm-extra-git_p=${pkgver}")   # force same version for: libfm-extra-git_p - keep this dependency
 provides=("libfm=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('libfm' 'libfm-git')
 source=("${_srcname}::git+https://github.com/lxde/$_srcname.git")        #commit=9f3315d  OK
@@ -31,10 +33,12 @@ build() {
     ./configure \
         --without-gtk \
         --disable-gtk-doc \
-        --disable-udisks \
+        --enable-udisks \
+        --enable-exif \
         --enable-actions \
         --prefix="/usr" \
         --sysconfdir="/etc"
+
     make ${MAKEFLAGS}
 }
 

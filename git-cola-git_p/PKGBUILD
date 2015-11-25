@@ -4,7 +4,7 @@
 
 _srcname=git-cola
 pkgname=${_srcname}-git_p
-pkgver=2.4.r65.g7f44c75         
+pkgver=2.4.r69.g2912883
 pkgrel=1
 pkgdesc="A powerful GUI for Git"
 url="http://git-cola.github.com/"
@@ -16,7 +16,7 @@ options=('!makeflags')
 provides=("git-cola=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('git-cola' 'git-cola-git')
 install=${pkgname}.install
-source=("${_srcname}::git+https://github.com/davvid/${_srcname}.git")    #commit=7f44c75  OK
+source=("${_srcname}::git+https://github.com/davvid/${_srcname}.git")    #commit=2912883  OK
 sha512sums=('SKIP')
 
 pkgver() {

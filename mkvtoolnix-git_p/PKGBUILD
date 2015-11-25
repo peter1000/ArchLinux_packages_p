@@ -5,14 +5,14 @@
 _srcname=mkvtoolnix
 pkgbase=${_srcname}-git_p
 pkgname=('mkvtoolnix-cli-git_p' 'mkvtoolnix-qt-git_p')
-pkgver=8.5.2.r36.g33abbc8               
+pkgver=8.5.2.r46.gefe80d1
 pkgrel=1
 arch=('x86_64')
 license=('GPL')
 url="http://www.bunkus.org/videotools/mkvtoolnix/index.html"
 makedepends=('git' 'ruby' 'boost' 'desktop-file-utils' 'file' 'flac'
     'hicolor-icon-theme' 'libmatroska' 'libvorbis' 'qt5-base' 'shared-mime-info')
-source=("${_srcname}::git+https://github.com/mbunkus/${_srcname}.git")		#commit=5bfb8bf OK
+source=("${_srcname}::git+https://github.com/mbunkus/${_srcname}.git")		#commit=efe80d1  OK
 sha256sums=('SKIP')
 
 pkgver() {
@@ -62,7 +62,7 @@ package_mkvtoolnix-qt-git_p() {
     depends=('curl' 'qt5-base' 'libmatroska' 'boost-libs' 'file' 'desktop-file-utils' 'hicolor-icon-theme' 'shared-mime-info')
     provides=("mkvtoolnix-qt=${pkgver}" "${pkgname}=${pkgver}")
     conflicts=('mkvtoolnix-qt' 'mkvtoolnix-qt-git')
-   
+
     install=mkvtoolnix-qt-git_p.install
 
     cd "${srcdir}/${_srcname}"

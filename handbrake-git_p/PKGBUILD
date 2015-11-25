@@ -12,19 +12,29 @@
 _srcname=HandBrake
 pkgbase=handbrake-git_p
 pkgname=('handbrake-cli-git_p' 'handbrake-gtk-git_p')
-pkgver=0.10.0.r1040.g6c731e1        
+pkgver=0.10.0.r1043.gec2474b
 pkgrel=1
 pkgdesc="Multiplatform, multithreaded DVD to MPEG-4/H264/Theora converter (uses mostly system libs)"
 arch=('x86_64')
 url="http://handbrake.fr/"
 license=('GPL')
 depends=('dbus-glib' 'desktop-file-utils' 'gst-plugins-base-libs' 'gtk3' 'jansson'
-    'libsamplerate'  'libnotify' 'libdvdnav' 'librsvg' 'libgudev' 'ffmpeg' 'libfdk-aac'
-    'gst-plugins-base' 'gst-plugins-bad' 'gst-plugins-good' 'gst-plugins-ugly' 'gst-libav')
+    'libsamplerate'  'libnotify' 'libdvdnav' 'librsvg' 'libgudev' 'ffmpeg'
+    'gst-plugins-base' 'gst-plugins-bad' 'gst-plugins-good' 'gst-plugins-ugly' 'gst-libav'
+    # 'libfdk-aac'
+        # NOTE: Compiles with the libfdk-aac but got notification when using:
+        #       --enable-fdk-aac --disable-libav-aac
+        #       $ ghb
+        #       > Preset Normal: Invalid audio encoder (aac)
+        #
+        # so we disabled it
+    )
 makedepends=('cmake' 'intltool' 'python2' 'gettext' 'subversion' 'yasm')
 options=('!makeflags')
-source=("${_srcname}::git+https://github.com/HandBrake/${_srcname}.git#commit=6d66bd5")		#commit=6d66bd5   OK -  FAILED: 20151112  #commit=7554941
-sha512sums=('SKIP')
+source=("${_srcname}::git+https://github.com/HandBrake/${_srcname}.git"  #commit=ec2474b   OK -  FAILED: 20151112  #commit=7554941
+    'remove_audio_track_associations_commit_7554941.patch')
+sha512sums=('SKIP'
+            '8543acf2863d837039fb48dd8ebb44a39a51d449ed51fa57daa2208253e9b278eb28e1f68525f577e77a2cccb26f917ee8026e8c68d9f370d927fa1e5fea1e2c')
 
 pkgver() {
     cur_prefix=''
@@ -37,16 +47,19 @@ pkgver() {
 prepare() {
     cd "${srcdir}/${_srcname}"
 
+    # PATCH : might break it: peter1000 20151125
+    patch -Np1 -i "${srcdir}/remove_audio_track_associations_commit_7554941.patch"
+
     # python2 substitutions
     sed -i -e '1c#! /usr/bin/python2' "gtk/src/makedeps.py"
     sed -i -e '1c#! /usr/bin/python2' "make/configure.py"
 
     # Use more system libs
     # x265:  Gave an error so we use the bundled one maybe check this at a later time again
-    # libiconv: package gave other problems
+    # libiconv: keep this too
     for module in autoconf automake bzip2 cmake fdk-aac ffmpeg fontconfig freetype fribidi jansson lame libass \
         libbluray libdvdnav libdvdread libgnurx libmfx libogg libsamplerate libtheora libtool \
-        libvorbis libvpx libxml2 m4 pkgconfig pthreadw32 x264 yasm zlib; do
+        libvorbis libvpx libxml2 m4 pkgconfig pthreadw32 x264 yasm zlib;  do
         sed -i -e "/MODULES += contrib\/$module/d" make/include/main.defs
     done
 }
@@ -54,21 +67,26 @@ prepare() {
 build() {
     cd "${srcdir}/${_srcname}"
 
+    # --disable-fdk-aac:  Compiles with the libfdk-aac but got notification when using:
+    #       --enable-fdk-aac --disable-libav-aac
+    #       $ ghb
+    #       > Preset Normal: Invalid audio encoder (aac)
+
     ./configure --build="build" \
     --prefix=/usr \
     --force \
+    --verbose \
     --disable-gtk-update-checks \
     --launch-jobs=0 \
     --fetch=curl \
-    --enable-x265 \
+    --disable-x265 \
     \
-    --enable-fdk-aac \
+    --disable-fdk-aac \
     --enable-libav-aac \
     \
     --enable-local-yasm \
     --enable-local-autotools \
-    --enable-local-cmake \
-    --snapshot
+    --enable-local-cmake
 
     install -d -m755 "build/build_tmp"
 

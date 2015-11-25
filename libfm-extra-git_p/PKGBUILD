@@ -1,9 +1,11 @@
 # Maintainer: peter1000 <https://github.com/peter1000>
 # Contributor: Jerome Leclanche <jerome@leclan.ch>
 
+# NOTE: this is the first round and builds: --with-extra-onl
+
 _srcname=libfm
 pkgname=${_srcname}-extra-git_p
-pkgver=1.2.3.r60.g9f3315d          
+pkgver=1.2.3.r60.g9f3315d
 pkgrel=1
 pkgdesc='Library for file management. (Libfm-extra only)'
 arch=('x86_64')
@@ -28,15 +30,14 @@ build() {
     cd "${srcdir}/${_srcname}"
 
     ./autogen.sh
-    ./configure \
+    ./configure --prefix=/usr --sysconfdir=/etc \
         --without-gtk \
         --disable-gtk-doc \
-        --disable-udisks \
+        --enable-udisks \
+        --enable-exif \
         --enable-actions \
-        --with-extra-only \
-        --prefix="/usr" \
-        --sysconfdir="/etc"
-        
+        --with-extra-only
+
     make ${MAKEFLAGS}
 }
 

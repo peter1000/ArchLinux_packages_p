@@ -3,7 +3,7 @@
 
 _srcname=pcmanfm-qt
 pkgname=${_srcname}-git_p
-pkgver=0.10.0.r22.gde32b25               
+pkgver=0.10.0.r30.g60568c9
 pkgrel=1
 pkgdesc="The LXQt file manager, Qt port of PCManFM"
 arch=('x86_64')
@@ -13,7 +13,7 @@ depends=('liblxqt-git_p' "libfm-git_p" "lxmenu-data-git_p" "qt5-x11extras")
 provides=("pcmanfm-qt=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('pcmanfm-qt' 'pcmanfm-qt-git')
 install="$_srcname.install"
-source=("${_srcname}::git+https://github.com/lxde/$_srcname.git")        #commit=4af5a3e   OK
+source=("${_srcname}::git+https://github.com/lxde/$_srcname.git")        #commit=60568c9    OK
 sha512sums=('SKIP')
 
 pkgver() {
