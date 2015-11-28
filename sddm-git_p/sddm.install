@@ -16,11 +16,8 @@ yellow="${bold}$(tput setaf 3)"
 
 
 _update() {
-    msg_blue " Moving new sddm.conf: mv -f /etc/sddm.conf /etc/sddm.conf.example.txt"
-    mv -f /etc/sddm.conf /etc/sddm.conf.example.txt
-    
-    msg_blue " Copying saved sddm.conf: cp -f /etc/sddm.conf.pacorig /etc/sddm.conf"
-    cp -f /etc/sddm.conf.pacorig /etc/sddm.conf
+    msg_blue " Moving new sddm.conf: mv -f /etc/sddm.conf.pacnew /etc/sddm.conf.example.txt"
+    mv -f /etc/sddm.conf.pacnew /etc/sddm.conf.example.txt
 }
 
 post_install() {

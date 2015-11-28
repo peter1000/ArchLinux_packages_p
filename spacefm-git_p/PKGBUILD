@@ -23,7 +23,6 @@ optdepends=('lsof: device processes'
             'udisks2: mount as non-root user'
             'startup-notification'
             'spacefm-plugin-clamav')
-
 source=("${_srcname}::git+https://github.com/IgnorantGuru/${_srcname}.git")    #commit=16e3c62  OK
 sha256sums=('SKIP')
 

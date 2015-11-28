@@ -4,7 +4,7 @@
 _srcname=audacity
 pkgname=${_srcname}-git_p
 _tag=2.1.2
-pkgver=2.1.2.r4396.g83830d5
+pkgver=2.1.2.r4398.g13f1349
 pkgrel=1
 pkgdesc="A program that lets you manipulate digital audio waveforms"
 arch=('x86_64')
@@ -17,7 +17,7 @@ options=('!makeflags')
 install=audacity-git_p.install
 provides=("audacity=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('audacity' 'audacity-git' 'audacity-svn')
-source=("${_srcname}::git+https://github.com/audacity/${_srcname}.git" 		#commit=83830d5  OK
+source=("${_srcname}::git+https://github.com/audacity/${_srcname}.git" 		#commit=13f1349  OK
     'audacity-ffmpeg.patch')
 sha256sums=('SKIP'
     'ee5ddddee23cd292167d319e0dc61a96fb1477380ffbb225d4103472f7aa69b4')

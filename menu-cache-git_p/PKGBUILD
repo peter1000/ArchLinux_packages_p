@@ -13,7 +13,7 @@
 
 _srcname=menu-cache
 pkgname=${_srcname}-git_p
-pkgver=1.0.0.r7.g2d65876
+pkgver=1.0.0.r9.g0b1e85c
 pkgrel=1
 pkgdesc='Caching mechanism for freedesktop.org compliant menus'
 arch=('x86_64')
@@ -24,7 +24,7 @@ options=('!libtool')
 makedepends=('git' 'intltool' 'pkg-config' 'automake' 'pkgconfig')
 provides=("menu-cache=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('menu-cache' 'menu-cache-git')
-source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")      #commit=2d65876   OK
+source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")      #commit=0b1e85c   OK
 sha512sums=('SKIP')
 
 pkgver() {
