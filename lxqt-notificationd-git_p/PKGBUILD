@@ -3,7 +3,7 @@
 
 _srcname=lxqt-notificationd
 pkgname=${_srcname}-git_p
-pkgver=0.10.0.r2.g0ff373b              
+pkgver=0.10.0.r4.gfeab6d8
 pkgrel=1
 pkgdesc="LXQt notification daemon and library."
 arch=('x86_64')
@@ -12,7 +12,7 @@ license=("GPL2")
 depends=("lxqt-common-git_p" 'liblxqt-git_p')
 provides=("lxqt-notificationd=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('lxqt-notificationd' 'lxqt-notificationd-git')
-source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")        #commit=0ff373b  OK
+source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")        #commit=feab6d8   OK
 sha512sums=('SKIP')
 
 pkgver() {
