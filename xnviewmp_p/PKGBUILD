@@ -18,7 +18,7 @@ pkgdesc="An efficient multimedia viewer, browser and converter."
 arch=('x86_64')
 url="http://www.xnview.com/en/xnviewmp/"
 license=('custom')
-depends=('desktop-file-utils')   # namcap? disregard output of namcap
+depends=('desktop-file-utils' 'gstreamer0.10-base')   # gstreamer0.10-base was needed for 0.76 check dependency again when new version is out
 install='xnviewmp_p.install'
 provides=("xnviewmp=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('xnviewmp')
