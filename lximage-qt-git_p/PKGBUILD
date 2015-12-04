@@ -3,7 +3,7 @@
 
 _srcname=lximage-qt
 pkgname=${_srcname}-git_p
-pkgver=0.4.0.r20.g520f921                   
+pkgver=0.4.0.r21.g79ea1a0
 pkgrel=1
 pkgdesc="The LXQt image viewer"
 arch=('x86_64')
@@ -13,7 +13,7 @@ depends=('pcmanfm-qt-git_p')
 provides=("lximage-qt=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('lximage-qt' 'lximage-qt-git')
 install="lximage-qt.install"
-source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")      #commit=a68b3d7  OK
+source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")      #commit=79ea1a0  OK
 sha512sums=('SKIP')
 
 pkgver() {

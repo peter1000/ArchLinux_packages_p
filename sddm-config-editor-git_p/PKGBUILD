@@ -3,7 +3,7 @@
 
 _srcname=sddm-config-editor
 pkgname=${_srcname}-git_p
-pkgver=0.1.r21.g8cd5edc
+pkgver=0.1.r22.g718206d
 pkgrel=1
 pkgdesc='SDDM Configuration Editor'
 arch=('x86_64')
@@ -13,7 +13,7 @@ depends=('qt5-quickcontrols' 'sddm' 'polkit')
 makedepends=('git')
 provides=("sddm-config-editor=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('sddm-config-editor' 'sddm-config-editor-git')
-source=("${_srcname}::git+https://github.com/hagabaka/${_srcname}.git")        #commit=8cd5edc  OK
+source=("${_srcname}::git+https://github.com/hagabaka/${_srcname}.git")        #commit=718206d  OK
 sha512sums=('SKIP')
 
 pkgver() {

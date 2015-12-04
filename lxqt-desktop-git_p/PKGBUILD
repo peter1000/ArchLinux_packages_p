@@ -3,7 +3,7 @@
 
 _srcname=lxqt-desktop
 pkgname=${_srcname}-git_p
-pkgver=0.10.0.r5.gcd145a5               
+pkgver=0.10.0.r10.g470e7c1
 pkgrel=1
 pkgdesc="The LXQt desktop and some extras."
 arch=('x86_64')
@@ -40,7 +40,7 @@ depends=(
 makedepends=("git")
 provides=("lxqt-desktop=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('lxqt-desktop' 'lxqt-desktop-git')
-source=("$_srcname::git+https://github.com/lxde/lxqt.git")        #commit=cd145a5  OK
+source=("$_srcname::git+https://github.com/lxde/lxqt.git")        #commit=470e7c1  OK
 sha512sums=('SKIP')
 
 pkgver() {

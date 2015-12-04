@@ -3,7 +3,7 @@
 
 _srcname=lxqt-about
 pkgname=${_srcname}-git_p
-pkgver=0.10.0.r6.gac14e6c
+pkgver=0.10.0.r7.g81beb96
 pkgrel=1
 pkgdesc="LXQt about dialog."
 arch=('x86_64')
@@ -12,7 +12,7 @@ license=("GPL2")
 depends=('liblxqt-git_p')
 provides=("lxqt-about=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('lxqt-about' 'lxqt-about-git')
-source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")      #commit=ac14e6c  OK
+source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")      #commit=81beb96  OK
 sha512sums=('SKIP')
 
 pkgver() {
