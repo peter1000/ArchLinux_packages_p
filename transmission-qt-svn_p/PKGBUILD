@@ -1,0 +1,51 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Tom Gundersen <teg@jklm.no>
+# Contributor : Ionut Biru <ibiru@archlinux.org>
+
+_srcname=transmission
+pkgname=${_srcname}-qt-svn_p
+_tag=2.84
+pkgver=2.84.r14610
+pkgrel=1
+arch=('x86_64')
+pkgdesc="Fast, easy, and free BitTorrent client (Qt GUI)"
+url="http://www.transmissionbt.com/"
+license=('MIT')
+depends=('curl' 'qt5-base' 'libevent' 'libxkbcommon-x11' 'intltool')
+makedepends=('subversion')
+provides=("transmission-qt=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('transmission' 'transmission-qt' 'transmission-svn' 'transmission-svn-gtk')
+install=transmission-qt.install
+source=("${_srcname}::svn://svn.transmissionbt.com/Transmission/trunk")     #revision=14610 OK
+sha512sums=('SKIP')
+      
+pkgver() {
+    cd "${srcdir}/${_srcname}"
+    local ver="$(svnversion)"
+    printf "${_tag}.r%s" "${ver//[[:alpha:]]}"
+}
+  
+ 
+build() {
+    cd "${srcdir}/${_srcname}"
+
+    ./autogen.sh --prefix=/usr \
+        --disable-nls \
+        --disable-cli \
+        --disable-daemon \
+        --without-gtk
+    make ${MAKEFLAGS}
+    pushd qt
+    qmake-qt5 qtr.pro
+    make ${MAKEFLAGS}
+}
+
+package() {
+  cd "${srcdir}/${_srcname}"
+
+  make -C qt INSTALL_ROOT="$pkgdir"/usr install
+
+  install -D -m644 COPYING "$pkgdir/usr/share/licenses/transmission-qt/COPYING"
+  install -D -m644 qt/icons/transmission.png "$pkgdir/usr/share/pixmaps/transmission-qt.png"
+  install -D -m644 qt/transmission-qt.desktop "$pkgdir/usr/share/applications/transmission-qt.desktop"
+}
