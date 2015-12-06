@@ -13,7 +13,7 @@ depends=('libfm-qt-git_p')
 provides=("pcmanfm-qt=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('pcmanfm-qt' 'pcmanfm-qt-git')
 install="$_srcname.install"
-source=("${_srcname}::git+https://github.com/lxde/$_srcname.git")        #commit=7cff9ef    OK
+source=("${_srcname}::git+https://github.com/lxde/$_srcname.git")        #commit=7cff9ef OK
 sha512sums=('SKIP')
 
 #pkgver() {

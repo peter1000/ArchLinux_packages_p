@@ -3,7 +3,7 @@
 
 _srcname=openlibm
 pkgname=${_srcname}-git_p
-pkgver=0.4.1.r122.ge102501              
+pkgver=0.4.1.r127.g5cd80c4
 pkgrel=1
 pkgdesc="Portable libm library containing elementary math functions."
 arch=('x86_64')
@@ -13,7 +13,7 @@ depends=('glibc')
 options=('!emptydirs')
 provides=("openlibm=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('openlibm' 'openlibm-git')
-source=("${_srcname}::git+https://github.com/JuliaLang/${_srcname}.git")    #commit=e102501   OK
+source=("${_srcname}::git+https://github.com/JuliaLang/${_srcname}.git")    #commit=5cd80c4    OK
 sha256sums=('SKIP')
 
 pkgver() {

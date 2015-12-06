@@ -3,7 +3,7 @@
 
 _srcname=lxqt-globalkeys
 pkgname=${_srcname}-git_p
-pkgver=0.10.0.r4.g219ef1d               
+pkgver=0.10.0.r5.g581f11e
 pkgrel=1
 pkgdesc="LXQt daemon and library for global keyboard shortcuts registration."
 arch=('x86_64')
@@ -12,7 +12,7 @@ license=("GPL2")
 depends=('liblxqt-git_p')
 provides=("lxqt-globalkeys=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('lxqt-globalkeys' 'lxqt-globalkeys-git')
-source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")   #commit=219ef1d  OK
+source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")   #commit=581f11e  OK
 sha512sums=('SKIP')
 
 pkgver() {

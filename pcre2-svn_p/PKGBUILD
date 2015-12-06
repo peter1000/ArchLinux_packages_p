@@ -9,7 +9,7 @@
 _srcname=pcre2
 pkgname=${_srcname}-svn_p
 _tag=10.20
-pkgver=10.20.r450
+pkgver=10.20.r463
 pkgrel=1
 arch=('x86_64')
 pkgdesc='A library that implements Perl 5-style regular expressions. 2nd version'
@@ -19,7 +19,7 @@ depends=('zlib' 'bzip2' 'bash')
 makedepends=('subversion')
 provides=("pcre2=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('pcre2' 'pcre2-svn')
-source=("${_srcname}::svn://vcs.exim.org/pcre2/code/trunk")     #revision=450 OK  NOTE: had previously some problems and 443 was ok
+source=("${_srcname}::svn://vcs.exim.org/pcre2/code/trunk")     #revision=463    450 OK
 sha512sums=('SKIP')
 
 pkgver() {
@@ -31,13 +31,13 @@ pkgver() {
 prepare() {
     cd "${srcdir}/${_srcname}"
     autoreconf -fiv
-    
+
     # fix test permission: #revision=427
     #    ./test-driver: line 107: ./RunTest: Permission denied
     #    FAIL RunTest (exit status: 126)
     #    ./test-driver: line 107: ./RunGrepTest: Permission denied
     #    FAIL RunGrepTest (exit status: 126)
-    
+
     chmod +x RunTest
     chmod +x RunGrepTest
 }

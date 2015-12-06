@@ -3,7 +3,7 @@
 
 _srcname=lxqt-common
 pkgname=${_srcname}-git_p
-pkgver=0.10.0.r4.g8773fb3
+pkgver=0.10.0.r6.g24a0a52
 pkgrel=1
 pkgdesc="Common data to run a LXQt session."
 arch=("any")
@@ -12,7 +12,7 @@ license=("GPL2")
 depends=("bash" "hicolor-icon-theme" 'liblxqt-git_p')
 provides=("lxqt-common=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('lxqt-common' 'lxqt-common-git')
-source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")  #commit=8773fb3  OK
+source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")  #commit=24a0a52  OK
 sha512sums=('SKIP')
 
 pkgver() {

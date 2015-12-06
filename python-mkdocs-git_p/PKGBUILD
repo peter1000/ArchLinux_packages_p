@@ -4,7 +4,7 @@
 
 _srcname=mkdocs
 pkgname=python-${_srcname}-git_p
-pkgver=0.14.0.r117.g3dfd95d
+pkgver=0.14.0.r119.g0630c49
 pkgrel=1
 pkgdesc='Project documentation with Markdown'
 url="http://www.mkdocs.org"
@@ -23,7 +23,7 @@ depends=('python'
 makedepends=('git' 'python-setuptools')
 provides=("python-mkdocs=${pkgver}" "mkdocs=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('mkdocs' 'python-mkdocs' 'python-mkdocs-git')
-source=("${_srcname}::git+https://github.com/mkdocs/${_srcname}.git")   #commit=3dfd95d  OK
+source=("${_srcname}::git+https://github.com/mkdocs/${_srcname}.git")   #commit=0630c49  OK
 sha256sums=('SKIP')
 
 pkgver() {
