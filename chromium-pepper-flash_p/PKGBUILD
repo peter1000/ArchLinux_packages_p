@@ -1,0 +1,28 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: ava1ar <mail(at)ava1ar(dot)me>
+
+_srcname=chromium-pepper-flash
+pkgname=${_srcname}_p
+pkgdesc="Google Chrome's Pepper Flash plugin for Chromium (stable version)"
+_verbld=47.0.2526.73-1
+pkgver=19.0.0.245
+pkgrel=1
+epoch=1
+arch=('x86_64')
+url="http://www.google.com/chrome"
+license=('custom:chrome')
+provides=("pepper-flash=${pkgver}" "chromium-pepper-flash=${pkgver}" "${_srcname}=${pkgver}")
+conflicts=('chromium-pepper-flash' 'chromium-pepper-flash-dev')
+source=(${_srcname}-license.html::https://www.google.com/chrome/intl/en/eula_text.html
+    https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome-stable-${_verbld}.x86_64.rpm)
+sha256sums=('b35811bb330576631e64f7885c66720e0be4ca81afb04328b3a0f288a708e37f'
+    'b74aabe468412c90f9b91f3f782e20f60ac696091443911b2101c3b096fe1dde')
+
+package() {
+	# create required directories
+	install -d "${pkgdir}"/usr/lib/PepperFlash
+	# copy required files
+	install -m644 "${srcdir}"/opt/google/chrome/PepperFlash/* "${pkgdir}"/usr/lib/PepperFlash
+	# copy license
+	install -Dm644 "${srcdir}"/${_srcname}-license.html "${pkgdir}"/usr/share/licenses/${pkgname}/license.html
+}
