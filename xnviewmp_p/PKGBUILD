@@ -22,8 +22,10 @@ depends=('desktop-file-utils' 'gstreamer0.10-base')   # gstreamer0.10-base was n
 install='xnviewmp_p.install'
 provides=("xnviewmp=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('xnviewmp')
-# Orig source "XnViewMP-linux-x64-${pkgver}.tgz::http://download.xnview.com/XnViewMP-linux-x64.tgz"
-source=("XnViewMP-linux-x64-${pkgver}.tar.xz"   
+# Orig source "http://download.xnview.com/XnViewMP-linux-x64.tgz"
+#        "http://www.xnview.com/beta/XnView-archx64.gz"
+
+source=("XnViewMP-linux-x64-${pkgver}.tar.xz"
     'xnviewmp.desktop')
 sha256sums=('9422d30e3da434a682ebdf2a06d81449b6832c5b460cea0c6296080585dd144b'
             '8a74c2a92a5f07c8b48a83adc77ce579e379eb8016c653c65537c9b3ba4c04da')

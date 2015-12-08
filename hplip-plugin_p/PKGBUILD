@@ -4,19 +4,19 @@
 
 _srcname=hplip-plugin
 pkgname=${_srcname}_p
-pkgver=3.15.9
+pkgver=3.15.11
 pkgrel=2
 pkgdesc="Binary plugin for HPs hplip printer driver library"
 arch=('x86_64')
 url="http://hplipopensource.com/node/309"
 license=('custom:proprietary')
-depends=("hplip_p>=$pkgver") 
+depends=("hplip_p>=$pkgver")
 backup=(var/lib/hp/hplip.state)
 provides=("hplip-plugin=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('hplip-plugin')
 #source=("http://www.openprinting.org/download/printdriver/auxfiles/HP/plugins/hplip-$pkgver-plugin.run")
 source=("http://hplipopensource.com/hplip-web/plugin/hplip-$pkgver-plugin.run")
-sha256sums=('fac909587cbc5ab4ab679fe6495df216069fed9c164a0a0d041dd53e10a70aaa')
+sha256sums=('a986ca52c6436f2ce87ad6a11fe0d7880797fbb0d940f23f6a928434bc193102')
 
 prepare() {
 	sh hplip-$pkgver-plugin.run --target "$srcdir/hplip-$pkgver-plugin" --noexec
@@ -64,7 +64,7 @@ EOF
         link_name="$(basename $f | cut -d- -f1).so"
         ln -s $(basename $f) $link_name
     done
-    
+
     echo
     echo 'Note: to check the install, perform: hp-diagnose_plugin'
     echo

@@ -3,7 +3,7 @@
 
 _srcname=meld
 pkgname=${_srcname}-git_p
-pkgver=3.15.0.r29.gca3b9fc
+pkgver=3.15.0.r35.g3be18e7
 pkgrel=1
 pkgdesc='Visual diff and merge tool'
 arch=('any')
@@ -23,7 +23,7 @@ options=('!emptydirs')
 provides=("meld=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('meld' 'meld-dev' 'meld-git')
 replaces=('meld')
-source=("${_srcname}::git+https://git.gnome.org/browse/meld.git")      #commit=ca3b9fc  OK
+source=("${_srcname}::git+https://git.gnome.org/browse/meld.git")      #commit=3be18e7  OK
 sha256sums=('SKIP')
 
 pkgver() {
