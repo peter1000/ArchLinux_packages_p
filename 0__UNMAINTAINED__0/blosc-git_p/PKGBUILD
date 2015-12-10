@@ -1,0 +1,48 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Andrzej Giniewicz <gginiu@gmail.com>
+
+_srcname=c-blosc
+pkgname=blosc-git_p
+pkgver=v1.7.0.r12.g2c0d473
+pkgrel=1
+pkgdesc='A blocking, shuffling and loss-less compression library.'
+arch=('i686' 'x86_64')
+url='http://blosc.org/'
+license=('MIT')
+depends=('lz4' 'snappy' 'zlib')
+makedepends=('cmake' 'ninja')
+options=(staticlibs)
+provides=("blosc=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('blosc' 'blosc-git')
+source=("${_srcname}::git+https://github.com/Blosc/${_srcname}.git")         #commit=2c0d473  OK
+sha512sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    mkdir build
+    cd build
+    cmake -G Ninja "${srcdir}/${_srcname}" \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DPREFER_EXTERNAL_LZ4="ON" \
+        -DPPREFER_EXTERNAL_SNAPPY="ON" \
+        -DPREFER_EXTERNAL_ZLIB="ON" \
+        -DBUILD_TESTS="OFF"
+        
+    ninja ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}/build"
+    DESTDIR="$pkgdir" ninja install
+    
+    install -Dm644 "$srcdir"/${_srcname}/LICENSES/BLOSC.txt "$pkgdir"/usr/share/licenses/${pkgname}/LICENCE
+}

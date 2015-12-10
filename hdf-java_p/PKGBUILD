@@ -1,0 +1,64 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor  : Martin Wimpress <code@flexion.org>
+# Contributor : Nick Pope
+# Contributor : Bryce Nordgren  <bnordgren at gmail dot com>
+
+pkgname=hdf-java
+_srcname=HDFView
+pkgver=2.11
+pkgrel=1
+pkgdesc="Java interface to HDF 4 and 5; plus the HDFView application"
+arch=('i686' 'x86_64')
+url="http://www.hdfgroup.org/hdf-java-html/"
+license=('custom')
+depends=('java-runtime')
+optdepends=('hdf4: to work with hdf4 files',
+            'hdf5: to work with hdf5 files')
+options=(!strip)
+#source=("http://www.hdfgroup.org/ftp/HDF5/releases/HDF-JAVA/${pkgname}-${pkgver}/bin/${pkgname}-${pkgver}-linux.tar.gz"
+source=("http://www.hdfgroup.org/ftp/HDF5/hdf-java/current/bin/${_srcname}-${pkgver}-centos6-x64.tar.gz"
+        license
+        HDFView
+        HDFView.desktop
+        HDFView.ico)
+sha512sums=('82696732845b0ef07fa3b9d68517c40b31a36297fbf741cd0d11aee8881a138832691b989735d5695514daa8e14eec582349406d6032c9e93e2e20dbb668ec70'
+            'd831e3211c67480728488e1e2df2596d41381c5ba7b8451ea0f5174d9a34f224133d9cbaa81728cb68560328054663e8940de86db4777de8b46b65f080de9674'
+            'd3429b3640f1ff9c2d0d9dbb9e314e636278f750b41753e5049722a01be1a5bad2712a159549579a8c9329914e7ea57695e8c290ad73a6a511b41f2ef4150da4'
+            'e7256c59e15a6c796edfd40c118efdde886d4e999d8839e18bb9d66542fef72d5930e0dcd3c727e4d52a57e3347470c60482472ea57ce55984c0a50a52d2ddbd'
+            'bc2bb9ffa22140c1b6b5448ed310a8dbb839ddcf802ec327f32f904f0e77e0034bb26fabeb5d9e4e8ce8d334333327a2bd08b8e07f0313e85ef50afe0be41cfe')
+
+prepare() {
+    # Make extraction automatic
+    sed -i 's/interactive=TRUE/interactive=FALSE/' "${srcdir}/${_srcname}-${pkgver}/HDFView-${pkgver}.0-Linux.sh"
+    sed -i 's/cpack_skip_license=FALSE/cpack_skip_license=TRUE/' "${srcdir}/${_srcname}-${pkgver}/HDFView-${pkgver}.0-Linux.sh"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    ./HDFView-${pkgver}.0-Linux.sh
+}
+
+package() {
+    # JARs
+    mkdir -p "${pkgdir}/usr/share/java/${pkgname}"
+    mv "${srcdir}/${_srcname}-${pkgver}/HDF_Group/${_srcname}/${pkgver}.0/lib" "${pkgdir}/usr/share/java/${pkgname}"
+    find "${pkgdir}/usr/share/java/${pkgname}" -type 'f' -exec chmod 644 '{}' \;
+    find "${pkgdir}/usr/share/java/${pkgname}" -type 'd' -exec chmod 755 '{}' \;
+
+    # Main script
+    mkdir -p "${pkgdir}/usr/bin"
+    sed -e 's:INSTALLDIR=/HDF_Group/HDFView/2.11.0:INSTALLDIR=/usr/share/java/hdf-java:' "${srcdir}/${_srcname}-${pkgver}/HDF_Group/${_srcname}/${pkgver}.0/bin/hdfview.sh" > "${pkgdir}/usr/bin/hdf-java"
+    chmod 755 "${pkgdir}/usr/bin/hdf-java"
+
+    # Documentation
+    mkdir -p "${pkgdir}/usr/share/${pkgname}"
+    mv "${srcdir}/${_srcname}-${pkgver}/HDF_Group/${_srcname}/${pkgver}.0/share/UsersGuide" "${pkgdir}/usr/share/${pkgname}/doc"
+    find "${pkgdir}/usr/share/${pkgname}/doc" -type 'f' -exec chmod 644 '{}' \;
+    find "${pkgdir}/usr/share/${pkgname}/doc" -type 'd' -exec chmod 755 '{}' \;
+
+    # Desktop files, icons, wrappers and license
+    install -D -m 755 "${srcdir}/HDFView" "${pkgdir}/usr/bin/HDFView"
+    install -D -m 644 "${srcdir}/HDFView.desktop" "${pkgdir}/usr/share/applications/HDFView.desktop"
+    install -D -m 644 "${srcdir}/HDFView.ico" "${pkgdir}/usr/share/pixmaps/HDFView.ico"
+    install -D -m 644 "${srcdir}/license" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

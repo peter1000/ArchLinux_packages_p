@@ -1,0 +1,62 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Ronald van Haren <ronald.archlinux.org>
+# Contributor: Stefan Husmann <stefan-husmann@t-online.de>
+# Contributor: damir <damir@archlinux.org>
+# Contributor: Tom K <tomk@runbox.com>
+
+#
+# see here for version snapshots: ftp://ftp.hdfgroup.uiuc.edu/pub/outgoing/hdf5/snapshots/
+#
+# 20151210: trunk: building with cmake - ninja did not work out of the box
+#
+# 20151210: julia HDF5.jl did not work with this: 1.9.233.r28556: 
+#  branch hdf5_1_8: 1.8.17.r28556 was ok
+
+_srcname=hdf5
+pkgname=${_srcname}-svn_p
+_tag=1.8.17
+pkgver=1.8.17.r28556
+pkgrel=1
+arch=('x86_64')
+pkgdesc="General purpose library and file format for storing scientific data"
+url="http://www.hdfgroup.org/HDF5/"
+license=('custom')
+depends=('zlib' 'sh')
+makedepends=('time' 'subversion')
+provides=("lhdf5=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('hdf5' 'hdf5-cpp-fortran' 'hdf5-openmpi')
+#source=("${_srcname}::svn+http://svn.hdfgroup.uiuc.edu/hdf5/trunk")     #revision=28556   OK
+source=("${_srcname}::svn+https://svn.hdfgroup.uiuc.edu/hdf5/branches/hdf5_1_8/")     #revision=28556 OK
+sha512sums=('SKIP')
+
+pkgver() {
+    cd "${srcdir}/${_srcname}"
+    local ver="$(svnversion)"
+    printf "${_tag}.r%s" "${ver//[[:alpha:]]}"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    #./autogen.sh    #20151210 Not used by the branches
+    chmod +x "${srcdir}/${_srcname}/configure"
+    ./configure --prefix=/usr --disable-static \
+        --enable-hl \
+        --disable-threadsafe \
+        --disable-parallel \
+        --enable-production \
+        --with-pic \
+        --docdir=/usr/share/doc/hdf5/ \
+        --with-pthread=/usr/lib/ \
+        --disable-sharedlib-rpath
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+
+    make -j1 DESTDIR="${pkgdir}" install
+
+    install -d -m755 "$pkgdir/usr/share/licenses/${pkgname}"
+    install -m644 "$srcdir/${_srcname}/COPYING" "$pkgdir/usr/share/licenses/${pkgname}/LICENSE" 
+}
+

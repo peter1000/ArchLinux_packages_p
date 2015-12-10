@@ -1,0 +1,57 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Antonio Rojas <arojas@archlinux.org>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: yugrotavele <yugrotavele at archlinux dot us>
+# Contributor: Arkham <arkham at archlinux dot us>
+# Contributor: Christoph Zeiler <archNOSPAM_at_moonblade.dot.org>
+# Contributor: Arnaud Durand <biginozNOSPAM_at_free.dot.fr>
+# Contributor: Nuno Araujo <nuno.araujo at russo79.com>
+
+_srcname=bleachbit
+pkgname=${_srcname}-git_p
+pkgver=1.9.2.r40.g4c647c6
+pkgrel=1
+pkgdesc='Deletes unneeded files to free disk space and maintain privacy'
+arch=(any)
+url='http://bleachbit.sourceforge.net/'
+license=(GPL3)
+depends=(pygtk desktop-file-utils gtk-update-icon-cache hicolor-icon-theme)
+install=$_srcname.install
+provides=("bleachbit=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('bleachbit' 'bleachbit-git')
+source=("${_srcname}::git+https://github.com/az0/${_srcname}.git")    #commit=4c647c6  OK
+sha256sums=('SKIP')
+
+pkgver() {
+    cur_prefix='v'
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    for file in $(find . -name '*.py' -print); do
+        sed -i -e 's_^#!.*/usr/bin/python_#!/usr/bin/python2_' \
+               -e 's_^#!.*/usr/bin/env.*python_#!/usr/bin/env python2_' "$file"
+    done
+    sed -i 's/python/python2/g' Makefile
+}
+
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make prefix=/usr DESTDIR="$pkgdir" PYTHON=python2 install
+}
+
+#build() {
+    #cd "${srcdir}/${_srcname}"
+    #python2 setup.py build
+#}
+
+#package() {
+    #cd "${srcdir}/${_srcname}"
+    #python2 setup.py install --skip-build --root="${pkgdir}" --optimize=1
+    #install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+#}
