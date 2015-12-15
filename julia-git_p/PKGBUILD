@@ -10,7 +10,7 @@
 _srcname=julia
 pkgbase=${_srcname}-git_p
 pkgname=('julia-git_p' 'julia-docs-git_p')
-pkgver=0.5.0.dev.r28692.g55fd7b1
+pkgver=0.5.0.dev.r28764.g53978e7
 pkgrel=1
 pkgdesc='High-level, high-performance, dynamic programming language'
 arch=('x86_64')
@@ -35,7 +35,7 @@ makedepends=('git' 'gmp' 'mpfr' 'python2' 'hicolor-icon-theme' 'xdg-utils' 'gcc-
 optdepends=('gnuplot: If using the Gaston Package from julia')
 options=('!emptydirs')
 backup=('etc/ld.so.conf.d/julia.conf' 'etc/julia/juliarc.jl')
-source=("${_srcname}::git+https://github.com/JuliaLang/julia.git"    #commit=55fd7b1  OK
+source=("${_srcname}::git+https://github.com/JuliaLang/julia.git"    #commit=53978e7  OK
     'Make.user')
 sha256sums=('SKIP'
             'b0843775fd030b643654400a1ab9bf792cae3a7c26f766593fb85488e26884bf')

@@ -3,7 +3,7 @@
 
 _srcname=liblxqt
 pkgname=${_srcname}-git_p
-pkgver=0.10.0.r9.gc24f8b8
+pkgver=0.10.0.r10.gc33265c
 pkgrel=1
 pkgdesc="Common base library for LXQt components."
 arch=('x86_64')
@@ -12,7 +12,7 @@ license=("GPL2")
 depends=('qt5-x11extras' 'kwindowsystem' 'libqtxdg')
 provides=("liblxqt=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('liblxqt-git_p' 'liblxqt-git')
-source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")		#commit=c24f8b8   OK
+source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")		#commit=c33265c   OK
 sha512sums=('SKIP')
 
 pkgver() {

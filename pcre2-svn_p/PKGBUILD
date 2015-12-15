@@ -9,7 +9,7 @@
 _srcname=pcre2
 pkgname=${_srcname}-svn_p
 _tag=10.20
-pkgver=10.20.r463
+pkgver=10.20.r465
 pkgrel=1
 arch=('x86_64')
 pkgdesc='A library that implements Perl 5-style regular expressions. 2nd version'
@@ -19,7 +19,7 @@ depends=('zlib' 'bzip2' 'bash')
 makedepends=('subversion')
 provides=("pcre2=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('pcre2' 'pcre2-svn')
-source=("${_srcname}::svn://vcs.exim.org/pcre2/code/trunk")     #revision=463    450 OK
+source=("${_srcname}::svn://vcs.exim.org/pcre2/code/trunk")     #revision=465 OK
 sha512sums=('SKIP')
 
 pkgver() {

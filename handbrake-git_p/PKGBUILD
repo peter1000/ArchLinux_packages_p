@@ -12,7 +12,7 @@
 _srcname=HandBrake
 pkgbase=handbrake-git_p
 pkgname=('handbrake-cli-git_p' 'handbrake-gtk-git_p')
-pkgver=0.10.0.r1054.gca69335
+pkgver=0.10.0.r1065.g0057924
 pkgrel=1
 pkgdesc="Multiplatform, multithreaded DVD to MPEG-4/H264/Theora converter (uses mostly system libs)"
 arch=('x86_64')
@@ -31,7 +31,7 @@ depends=('dbus-glib' 'desktop-file-utils' 'gst-plugins-base-libs' 'gtk3' 'jansso
     )
 makedepends=('cmake' 'intltool' 'python2' 'gettext' 'subversion' 'yasm')
 options=('!makeflags')
-source=("${_srcname}::git+https://github.com/HandBrake/${_srcname}.git"  #commit=ca69335  OK
+source=("${_srcname}::git+https://github.com/HandBrake/${_srcname}.git"  #commit=0057924  OK
     'remove_audio_track_associations_commit_7554941.patch')
 sha512sums=('SKIP'
             '8543acf2863d837039fb48dd8ebb44a39a51d449ed51fa57daa2208253e9b278eb28e1f68525f577e77a2cccb26f917ee8026e8c68d9f370d927fa1e5fea1e2c')

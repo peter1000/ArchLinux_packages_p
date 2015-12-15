@@ -6,7 +6,7 @@
 _srcname=ninja
 pkgname=${_srcname}-git_p
 _tag=1.6.0
-pkgver=1.6.0.r2134.g2eb1cc9
+pkgver=1.6.0.r2136.g9a4eb58
 pkgrel=1
 pkgdesc='Small build system with a focus on speed'
 arch=('x86_64')
@@ -16,7 +16,7 @@ depends=('gcc-libs')
 makedepends=('asciidoc' 'python' 're2c')
 conflicts=('ninja' 'ninja-git')
 provides=("ninja=${pkgver}" "${pkgname}=${pkgver}")
-source=("${_srcname}::git://github.com/martine/${_srcname}.git")      #commit=2eb1cc9  OK
+source=("${_srcname}::git://github.com/martine/${_srcname}.git")      #commit=9a4eb58  OK
 sha256sums=('SKIP')
 
 pkgver() {

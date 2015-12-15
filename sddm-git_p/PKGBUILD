@@ -3,7 +3,7 @@
 
 _srcname=sddm
 pkgname=${_srcname}-git_p
-pkgver=v0.13.0.r22.g668f7c9
+pkgver=v0.13.0.r25.g56f6417
 pkgrel=1
 pkgdesc="The Simple Desktop Display Manager"
 arch=('x86_64')
@@ -15,7 +15,7 @@ provides=('display-manager' "sddm=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('sddm' 'sddm-git' 'display-manager')
 install="sddm.install"
 backup=(etc/sddm.conf usr/share/sddm/scripts/Xsetup)
-source=("${_srcname}::git+https://github.com/sddm/$_srcname.git")     #commit=668f7c9  OK
+source=("${_srcname}::git+https://github.com/sddm/$_srcname.git")     #commit=56f6417  OK
 sha512sums=('SKIP')
 
 pkgver() {

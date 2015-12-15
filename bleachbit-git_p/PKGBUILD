@@ -9,7 +9,7 @@
 
 _srcname=bleachbit
 pkgname=${_srcname}-git_p
-pkgver=1.9.2.r40.g4c647c6
+pkgver=1.9.2.r45.gd9b0aaf
 pkgrel=1
 pkgdesc='Deletes unneeded files to free disk space and maintain privacy'
 arch=(any)
@@ -19,7 +19,7 @@ depends=(pygtk desktop-file-utils gtk-update-icon-cache hicolor-icon-theme)
 install=$_srcname.install
 provides=("bleachbit=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('bleachbit' 'bleachbit-git')
-source=("${_srcname}::git+https://github.com/az0/${_srcname}.git")    #commit=4c647c6  OK
+source=("${_srcname}::git+https://github.com/az0/${_srcname}.git")    #commit=d9b0aaf  OK
 sha256sums=('SKIP')
 
 pkgver() {
