@@ -1,0 +1,9 @@
+[Desktop Entry]
+NoDisplay=false
+Name=GooglePlayDownloader
+Comment=GooglePlayDownloader
+Icon=googleplaydownloader
+Exec=python2 /opt/googleplaydownloader/googleplaydownloader.py
+Terminal=false
+Type=Application
+Categories=Utility;

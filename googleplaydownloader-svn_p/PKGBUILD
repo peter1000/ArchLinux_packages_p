@@ -1,0 +1,52 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Yamakaky <yamakaky@yamaworld.fr>
+
+_srcname=googleplaydownloader
+pkgname=${_srcname}-svn_p
+_tag=1.8
+pkgver=1.8.r71
+pkgrel=1
+arch=('x86_64')
+pkgdesc="A graphical software to download APKs from the Google Play store."
+arch=(any)
+url="https://codingteam.net/project/googleplaydownloader"
+license=('AGPL')
+depends=('python2'
+         'python2-protobuf'
+         'python2-requests'
+         'python2-ndg-httpsclient'
+         'python2-pyasn1'
+         'wxpython')
+optdepends=('java-runtime: needed for autogeneration of a new AndroiID')
+makedepends=('subversion')
+provides=("googleplaydownloader=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('googleplaydownloader' 'googleplaydownloader-svn')
+options=(!emptydirs)
+install=googleplaydownloader.install
+source=("${_srcname}::svn+http://svn.codingteam.net/googleplaydownloader"   #revision=71 OK
+    'googleplaydownloader.xpm'
+    'googleplaydownloader.desktop')     
+sha512sums=('SKIP'
+            '1ac39c6ec42df3d961220d2fb6d06af43eaef862bd7608071ff0128215d28ff0cb5f1c494e8a653f4e4f6873dd9711b5633d90be6d8ead5c4aa2ff0ddee97ac5'
+            'fc60f5e147ae1f6c14dd6059b4b63ec61d3ebb6bdf113547fb570f2880d99739712097f512e25513a5a5269fffe0bfea86f1d4ef19b472d6dabdba57df5f6d35')
+
+pkgver() {
+    cd "${srcdir}/${_srcname}"
+    local ver="$(svnversion)"
+    printf "${_tag}.r%s" "${ver//[[:alpha:]]}"
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    install -d -m755 "${pkgdir}/opt/${_srcname}"
+    install -d -m755 "${pkgdir}/usr/bin"
+    install -d -m755 "${pkgdir}/usr/share/applications"
+    install -d -m755 "${pkgdir}/usr/share/pixmaps"
+
+    cp -a "${srcdir}/googleplaydownloader/googleplaydownloader"/* "${pkgdir}/opt/${_srcname}"
+    cp -a "${srcdir}/googleplaydownloader/README.txt" "${pkgdir}/opt/${_srcname}/README.txt"
+
+    install -m644 "${srcdir}/${_srcname}.desktop" "${pkgdir}/usr/share/applications/${_srcname}.desktop"
+    install -m644 "${srcdir}/${_srcname}.xpm" "${pkgdir}/usr/share/pixmaps/${_srcname}.xpm"
+
+}
