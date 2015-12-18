@@ -10,7 +10,7 @@
 _srcname=julia
 pkgbase=${_srcname}-git_p
 pkgname=('julia-git_p' 'julia-docs-git_p')
-pkgver=0.5.0.dev.r28764.g53978e7
+pkgver=0.5.0.dev.r28863.ge83b755
 pkgrel=1
 pkgdesc='High-level, high-performance, dynamic programming language'
 arch=('x86_64')

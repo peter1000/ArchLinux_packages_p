@@ -3,7 +3,7 @@
 
 _srcname=npm
 pkgname=${_srcname}-git_p
-pkgver=3.5.3.r0.ga81f2d2
+pkgver=3.5.3.r10.ge73b564
 pkgrel=1
 pkgdesc='A package manager for javascript'
 arch=('any')
@@ -15,7 +15,7 @@ optdepends=('python2: for node-gyp')
 options=('!emptydirs')
 provides=("nodejs-node-gyp=${pkgver}" "npm=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('npm' 'npm-git')
-source=("${_srcname}::git+https://github.com/npm/${_srcname}.git") #commit=a81f2d2  OK
+source=("${_srcname}::git+https://github.com/npm/${_srcname}.git") #commit=e73b564 a81f2d2  OK
 sha512sums=('SKIP')
 
 pkgver() {
