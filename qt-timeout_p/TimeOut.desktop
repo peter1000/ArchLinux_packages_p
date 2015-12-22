@@ -1,0 +1,11 @@
+[Desktop Entry]
+NoDisplay=false
+Name=TimeOut
+Comment=A small Qt-based countdown timer program.
+GenericName=QT TimeOut
+Exec=/usr/bin/TimeOut
+Icon=TimeOut.png
+Type=Application
+StartupNotify=true
+Categories=Utility;Qt;
+

@@ -1,0 +1,38 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Yaohan Chen <yaohan.chen@gmail.com>
+
+_srcname=qt-timeout
+pkgname=${_srcname}_p
+pkgver=20151222
+pkgrel=1
+pkgdesc="A small Qt-based countdown timer program."
+arch=('x86_64')
+url="https://github.com/silviubogan/qt-timeout/"
+license=('MIT')
+depends=('desktop-file-utils' 'qt5-webkit' 'qmake-qt5')  
+install='qt-timeout.install'
+provides=("qt-timeout=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('qt-timeout')
+# Orig source "https://github.com/silviubogan/qt-timeout"
+
+source=(qt-timeout-20151222.tar.xz
+    'TimeOut.desktop')
+sha256sums=('b166324df1ec464644e71ae0550b3b44e71a0173554fa0fd8ac9c116fa52d5f1'
+            '48dccb25cd6544dd77c8a459fd89d219df8b251005fb13e92dd1688f2e08cc1d')
+
+build() {
+    cd "${srcdir}/${_srcname}"
+
+    qmake-qt5 ${_srcname}.pro \
+        QMAKE_CFLAGS_RELEASE="${CFLAGS}"\
+        QMAKE_CXXFLAGS_RELEASE="${CXXFLAGS}"
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    install -D -m 755 "${srcdir}/${_srcname}/TimeOut" "${pkgdir}/usr/bin/TimeOut"
+    install -D -m 644 "${srcdir}/TimeOut.desktop" "${pkgdir}/usr/share/applications/TimeOut.desktop"
+    install -D -m 644 "${srcdir}/${_srcname}/chronometer.png" "${pkgdir}/usr/share/pixmaps/TimeOut.png"
+    install -D -m 644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"    
+} 
