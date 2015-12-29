@@ -3,7 +3,7 @@
 
 _srcname=lxqt-sudo
 pkgname=${_srcname}-git_p
-pkgver=0.10.0.r1.g2b8047c               
+pkgver=0.10.0.r3.ga68d11a
 pkgrel=1
 pkgdesc="Qt front-end for sudo. Part of but not restricted to LXQt."
 arch=('x86_64')
@@ -12,7 +12,7 @@ license=("LGPL2.1")
 depends=("sudo" 'liblxqt-git_p')
 provides=("lxqt-sudo=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('lxqt-sudo' 'lxqt-sudo-git')
-source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")      #commit=2b8047c  OK
+source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")      #commit=a68d11a  OK
 sha512sums=('SKIP')
 
 pkgver() {

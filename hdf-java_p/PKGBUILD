@@ -3,12 +3,12 @@
 # Contributor : Nick Pope
 # Contributor : Bryce Nordgren  <bnordgren at gmail dot com>
 
-pkgname=hdf-java
 _srcname=HDFView
+pkgname=hdf-java_p
 pkgver=2.11
 pkgrel=1
 pkgdesc="Java interface to HDF 4 and 5; plus the HDFView application"
-arch=('i686' 'x86_64')
+arch=('x86_64')
 url="http://www.hdfgroup.org/hdf-java-html/"
 license=('custom')
 depends=('java-runtime')
@@ -40,10 +40,10 @@ build() {
 
 package() {
     # JARs
-    mkdir -p "${pkgdir}/usr/share/java/${pkgname}"
-    mv "${srcdir}/${_srcname}-${pkgver}/HDF_Group/${_srcname}/${pkgver}.0/lib" "${pkgdir}/usr/share/java/${pkgname}"
-    find "${pkgdir}/usr/share/java/${pkgname}" -type 'f' -exec chmod 644 '{}' \;
-    find "${pkgdir}/usr/share/java/${pkgname}" -type 'd' -exec chmod 755 '{}' \;
+    mkdir -p "${pkgdir}/usr/share/java/hdf-java"
+    mv "${srcdir}/${_srcname}-${pkgver}/HDF_Group/${_srcname}/${pkgver}.0/lib" "${pkgdir}/usr/share/java/hdf-java"
+    find "${pkgdir}/usr/share/java/hdf-java" -type 'f' -exec chmod 644 '{}' \;
+    find "${pkgdir}/usr/share/java/hdf-java" -type 'd' -exec chmod 755 '{}' \;
 
     # Main script
     mkdir -p "${pkgdir}/usr/bin"

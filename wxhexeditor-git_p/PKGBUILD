@@ -3,7 +3,7 @@
 
 _srcname=wxhexeditor
 pkgname=${_srcname}-git_p
-pkgver=0.23.r100.g6613dc6
+pkgver=0.23.r101.ge0917aa
 pkgrel=1
 pkgdesc="a free hex editor / disk editor for Linux, Windows and MacOSX"
 arch=('x86_64')
@@ -13,7 +13,7 @@ depends=('wxgtk')
 makedepends=('git')
 provides=("wxhexeditor=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('wxhexeditor' 'wxhexeditor-git')
-source=("${_srcname}::git+https://github.com/EUA/${_srcname}.git")    #commit=6613dc6  OK
+source=("${_srcname}::git+https://github.com/EUA/${_srcname}.git")    #commit=e0917aa  OK
 sha256sums=('SKIP')
 
 pkgver() {

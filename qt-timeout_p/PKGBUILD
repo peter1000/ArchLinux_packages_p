@@ -9,7 +9,7 @@ pkgdesc="A small Qt-based countdown timer program."
 arch=('x86_64')
 url="https://github.com/silviubogan/qt-timeout/"
 license=('MIT')
-depends=('desktop-file-utils' 'qt5-webkit' 'qmake-qt5')  
+depends=('desktop-file-utils' 'qt5-webkit' 'qt5-base')
 install='qt-timeout.install'
 provides=("qt-timeout=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('qt-timeout')
@@ -34,5 +34,5 @@ package() {
     install -D -m 755 "${srcdir}/${_srcname}/TimeOut" "${pkgdir}/usr/bin/TimeOut"
     install -D -m 644 "${srcdir}/TimeOut.desktop" "${pkgdir}/usr/share/applications/TimeOut.desktop"
     install -D -m 644 "${srcdir}/${_srcname}/chronometer.png" "${pkgdir}/usr/share/pixmaps/TimeOut.png"
-    install -D -m 644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"    
-} 
+    install -D -m 644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

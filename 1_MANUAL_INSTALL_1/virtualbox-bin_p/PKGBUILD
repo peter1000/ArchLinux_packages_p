@@ -4,8 +4,8 @@
 
 _srcname=virtualbox-bin
 pkgname=${_srcname}_p
-pkgver=5.0.10
-_build=104061
+pkgver=5.0.12
+_build=104815
 pkgrel=1
 pkgdesc='Oracle VM VirtualBox Binary Edition (Oracle branded non-OSE version)'
 arch=('x86_64')
@@ -41,7 +41,7 @@ source=(
   'vboxweb.rc'
   'vboxweb.conf'
 )
-sha512sums=('431edd417f7e7931dfa4314ef095aedc3eb489349d16a13cb8bae1c9fbf6b19aed00e845b9389ff1805959649b8cabb6b8e38c36cb7b65f8450d403f68b6d414'
+sha512sums=('6a14d92794bab5fdf7b79e48b02afe91863d693aa5d94f15e5d69ac377c1597fe3b6e0e390cf5ae5b0de77f85f52aa07b776bb50f3ed4a89e504b38d28da0411'
             '547f35f5815483587d5c575e07c06b676f2b68381458bee2f0ab2c74c7d58e009fe64743d0ad9d87b5aaabac08fcc177d108b602b14d42a24da69a1252d5296a'
             '9adea87480a6b6cf36f69d57731a5dc8ff4dabb5f8234628f056bd7d982f57442231a2bbf83ea526cd298a7b49ce9c3c7ae58ddbaa8ecdcf44950552abbc954b'
             'f9ed592d3f882e8cb9413ef3a9aa631da696e94e5de2d87e3b1e2e70f71c0cad729cda125c904bf51d7ac82397470f8daaf5f9f0a4a8d4906a8332a5f79c7f6b'

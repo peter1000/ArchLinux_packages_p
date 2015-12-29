@@ -4,7 +4,7 @@
 
 _srcname=lxmenu-data
 pkgname=${_srcname}-git_p
-pkgver=0.1.4.r3.g4f3a96e                    
+pkgver=0.1.4.r4.ge0da9fc
 pkgrel=1
 pkgdesc="freedesktop.org desktop menus for LXDE"
 arch=('x86_64')
@@ -12,7 +12,7 @@ license=('GPL2')
 url="http://lxde.org/"
 groups=('lxde')
 makedepends=('intltool')
-source=("${_srcname}::git+https://github.com/lxde/$_srcname.git")    #commit=4f3a96e  OK
+source=("${_srcname}::git+https://github.com/lxde/$_srcname.git")    #commit=e0da9fc  OK
 sha512sums=('SKIP')
 
 pkgver() {

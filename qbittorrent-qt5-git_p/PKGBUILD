@@ -4,7 +4,7 @@
 
 _srcname=qBittorrent
 pkgname=qbittorrent-qt5-git_p
-pkgver=3.4.0alpha.r6421.g17ac4b9
+pkgver=3.4.0alpha.r6458.g7a0f04e
 pkgrel=1
 pkgdesc='A bittorrent client based on libtorrent-rasterbar. Qt5 UI. Development version.'
 arch=('x86_64')
@@ -15,7 +15,7 @@ makedepends=('git' 'boost' 'which' 'qt5-tools')
 provides=("qbittorrent=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('qbittorrent' 'qbittorrent-git')
 install=qbittorrent-qt5.install
-source=("${_srcname}::git+https://github.com/${_srcname}/${_srcname}.git"        #commit=17ac4b9  OK
+source=("${_srcname}::git+https://github.com/${_srcname}/${_srcname}.git"        #commit=7a0f04e  OK
     'get_version.pri'
 )
 sha512sums=('SKIP'

@@ -5,7 +5,7 @@
 
 _srcname=atom
 pkgname=${_srcname}-git_p
-pkgver=1.4.0.beta2.r44.g329d7f4
+pkgver=1.4.0.beta3.r56.g5d85ea1
 pkgrel=1
 pkgdesc="Atom is a hackable text editor for the 21st century"
 arch=('x86_64')
@@ -17,7 +17,7 @@ makedepends=('git' 'npm>=3.5.0')
 provides=("atom=${pkgver}" "atom-editor=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('atom-git' 'atom-editor' 'atom-editor-git')
 install=${_srcname}.install
-source=("${_srcname}::git+https://github.com/atom/${_srcname}.git")    #commit=305.gc90aabe  OK
+source=("${_srcname}::git+https://github.com/atom/${_srcname}.git")    #commit=5d85ea1  OK
 sha256sums=('SKIP')
 
 

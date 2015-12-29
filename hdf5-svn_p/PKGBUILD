@@ -15,7 +15,7 @@
 _srcname=hdf5
 pkgname=${_srcname}-svn_p
 _tag=1.8.17
-pkgver=1.8.17.r28634
+pkgver=1.8.17.r28731
 pkgrel=1
 arch=('x86_64')
 pkgdesc="General purpose library and file format for storing scientific data"
@@ -26,7 +26,7 @@ makedepends=('time' 'subversion')
 provides=("lhdf5=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('hdf5' 'hdf5-cpp-fortran' 'hdf5-openmpi')
 #source=("${_srcname}::svn+http://svn.hdfgroup.uiuc.edu/hdf5/trunk")     #revision=28634   OK
-source=("${_srcname}::svn+https://svn.hdfgroup.uiuc.edu/hdf5/branches/hdf5_1_8/")     #revision=28556 OK
+source=("${_srcname}::svn+https://svn.hdfgroup.uiuc.edu/hdf5/branches/hdf5_1_8/")     #revision=28731 OK
 sha512sums=('SKIP')
 
 pkgver() {

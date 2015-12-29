@@ -3,7 +3,7 @@
 
 _srcname=lxqt-runner
 pkgname=${_srcname}-git_p
-pkgver=0.10.0.r4.gd9df07a
+pkgver=0.10.0.r6.gb498258
 pkgrel=1
 pkgdesc="The LXQt application launcher"
 arch=('x86_64')
@@ -12,7 +12,7 @@ license=("GPL2")
 depends=("lxqt-globalkeys-git_p" "menu-cache-git_p" "qt5-script")
 provides=("lxqt-runner=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('lxqt-runner' 'lxqt-runner-git')
-source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")      #commit=d9df07a  OK
+source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")      #commit=b498258  OK
 sha512sums=('SKIP')
 
 pkgver() {

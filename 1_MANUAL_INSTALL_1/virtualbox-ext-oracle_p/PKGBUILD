@@ -3,7 +3,7 @@
 
 _srcname=virtualbox-ext-oracle
 pkgname=${_srcname}_p
-pkgver=5.0.10
+pkgver=5.0.12
 pkgrel=1
 pkgdesc='Oracle VM VirtualBox Extension Pack'
 arch=('any')
@@ -17,7 +17,7 @@ provides=("virtualbox-ext-oracle=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('virtualbox-ext-oracle')
 source=("http://download.virtualbox.org/virtualbox/${pkgver}/Oracle_VM_VirtualBox_Extension_Pack-${pkgver}.vbox-extpack")
 noextract=("Oracle_VM_VirtualBox_Extension_Pack-${pkgver}.vbox-extpack")
-sha512sums=('ae6bab29c14b1ace849ebf5715360fc0921950c62345e18709347f44c07f88727bf1785d53437e39d67f8c56d92cef1f6e3d03c3f7d6dd76c6d4d9ee7f1f1d5b')
+sha512sums=('4a21cd155d1e60d3b6a4f4864cd8ca8ccd75f02448e832d72b42284dde5aa3c4aeba7f7297e3e7e198e4b4c665d770ac65c1aeca3df1dfa6a8454c47553baad7')
 
 prepare() {
     # shrink uneeded cpuarch

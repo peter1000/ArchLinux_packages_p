@@ -16,7 +16,7 @@ makedepends=('subversion')
 provides=("transmission-qt=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('transmission' 'transmission-qt' 'transmission-svn' 'transmission-svn-gtk')
 install=transmission-qt.install
-source=("${_srcname}::svn://svn.transmissionbt.com/Transmission/trunk")     #revision=14610 OK
+source=("${_srcname}::svn://svn.transmissionbt.com/Transmission/trunk#revision=14610")     #revision=14610  OK - Revision 14643 chrashed sometimes
 sha512sums=('SKIP')
       
 pkgver() {

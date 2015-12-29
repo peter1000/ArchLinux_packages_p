@@ -2,7 +2,7 @@
 
 _srcname=libfm-qt
 pkgname=${_srcname}-git_p
-pkgver=r302.g0138052
+pkgver=r306.ga7db9eb
 pkgrel=1
 pkgdesc="The LXQt file manager, Qt port of PCManFM"
 arch=('x86_64')
@@ -11,7 +11,7 @@ license=("GPL2")
 depends=('liblxqt-git_p' "libfm-git_p" "lxmenu-data-git_p" "qt5-x11extras")
 provides=("libfm-qt=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('libfm-qt' 'libfm-qt-git')
-source=("${_srcname}::git+https://github.com/lxde/$_srcname.git")        #commit=0138052    OK
+source=("${_srcname}::git+https://github.com/lxde/$_srcname.git")        #commit=a7db9eb    OK
 sha512sums=('SKIP')
 
 #pkgver() {

@@ -7,7 +7,7 @@
 
 _srcname=OpenBLAS
 pkgname=openblas-lapack-git_p
-pkgver=0.2.15.r60.g01db790
+pkgver=0.2.15.r62.gb9b52c2
 pkgrel=1
 _provide_blas_ver=3.5.0  # the version are just the once arch currently uses for blas, lapack, cblas
 arch=('x86_64')
@@ -19,7 +19,7 @@ makedepends=('perl' 'gcc-fortran')
 provides=("openblas=${pkgver}" "blas=${_provide_blas_ver}" "lapack=${_provide_blas_ver}"
     "cblas=${_provide_blas_ver}" 'openblas-lapack' "${pkgname}=${pkgver}")
 conflicts=('openblas' 'blas' 'lapack' 'cblas' 'openblas-git' 'openblas-lapack' 'openblas-lapack-git')
-source=("${_srcname}::git+https://github.com/xianyi/OpenBLAS.git")         #commit=01db790  OK
+source=("${_srcname}::git+https://github.com/xianyi/OpenBLAS.git")         #commit=b9b52c2  OK
 sha256sums=('SKIP')
 
 pkgver() {

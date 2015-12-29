@@ -3,7 +3,7 @@
 
 _srcname=lxqt-openssh-askpass
 pkgname=${_srcname}-git_p
-pkgver=0.10.0.r2.g13158eb
+pkgver=0.10.0.r4.g7508cbb
 pkgrel=1
 pkgdesc="LXQt openssh password prompt"
 arch=('x86_64')
@@ -12,7 +12,7 @@ license=("GPL2")
 depends=('liblxqt-git_p')
 provides=("lxqt-openssh-askpass=${pkgver}" "${pkgname}=${pkgver}")
 conflicts=('lxqt-openssh-askpass' 'lxqt-openssh-askpass-git')
-source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")      #commit=13158eb  OK
+source=("${_srcname}::git+https://github.com/lxde/${_srcname}.git")      #commit=7508cbb  OK
 sha512sums=('SKIP')
 
 pkgver() {
