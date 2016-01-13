@@ -1,0 +1,39 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Marcos Heredia <chelqo@gmail.com>
+# Contributor: Joris Steyn <jorissteyn@gmail.com>
+# Contributor: speps <speps at aur dot archlinux dot org>
+# Contributor: Roman Kyrylych <roman@archlinux.org>
+# Contributor: orelien <aurelien.foret@wanadoo.fr>
+# Contributor: Muflone <webreg@vbsimple.net>
+
+_srcname=httrack
+pkgname=${_srcname}_p
+pkgver=3.48.21
+pkgrel=2
+pkgdesc="An easy-to-use offline browser utility."
+arch=('i686' 'x86_64')
+url="http://www.httrack.com/"
+license=('GPL')
+depends=('bash' 'xdg-utils' 'hicolor-icon-theme' 'openssl')
+provides=("httrack=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('httrack' 'httrack-git')
+options=('!libtool')
+install="httrack.install"
+source=("http://mirror.httrack.com/historical/$_srcname-$pkgver.tar.gz")
+sha256sums=('871b60a1e22d7ac217e4e14ad4d562fbad5df7c370e845f1ecf5c0e4917be482')
+
+build() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    ./configure --prefix=/usr --enable-static=no
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-${pkgver}"
+    make DESTDIR="$pkgdir/" install
+    _docdir=${pkgdir}/usr/share/doc/${pkgname}
+    _licdir=${pkgdir}/usr/share/licenses/${pkgname}
+    install -dpm755 ${_docdir} ${_licdir}
+    install -Dpm644 AUTHORS INSTALL* README ${_docdir}/
+    install -Dpm644 COPYING license.txt ${_licdir}/
+}

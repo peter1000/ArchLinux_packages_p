@@ -1,0 +1,54 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: giacomogiorgianni@gmail.com 
+
+_srcname=httraqt
+pkgname=${_srcname}-git_p
+pkgver=1.4.7.34.r328.g33b1852
+pkgrel=1
+pkgdesc="Is the clone from WinHTTrack tool. GUI is based on Qt libriaries. (GIT Version)"
+arch=('x86_64')
+url='http://qt-apps.org/content/show.php/HTTraQt?content=155711'
+license=('GPL')
+depends=('qt5-multimedia' 'httrack>=3')
+makedepends=('git' 'cmake')
+provides=("httraqt=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('httraqt-git')
+source=("${_srcname}::git://git.code.sf.net/p/httraqt/code.git")  #commit=33b1852   OK
+sha512sums=('SKIP')
+install=httraqt-git.install
+
+#pkgver() {
+    #cur_prefix='httraqt.'
+    #cd "${srcdir}/${_srcname}"
+    #local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    #local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    #printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+#}
+
+pkgver(){
+    cd "${srcdir}/${_srcname}"
+    _ver="$(cat README | grep -E "^[0-9]+\\.[0-9]+\\.[0-9]+" | head -n 1 | grep -o "[[:digit:]]*" | paste -sd'.')"
+    echo "${_ver}.r$(git rev-list --count HEAD).g$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    mkdir -p build
+    sed 's|USE_QT_VERSION 4|USE_QT_VERSION 5|g' -i CMakeLists.txt
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    cd build
+    # Note 20160113: failed with ninja
+    cmake "${srcdir}/${_srcname}" \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DCMAKE_BUILD_TYPE=Release
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    make -C build DESTDIR="$pkgdir" install
+}
