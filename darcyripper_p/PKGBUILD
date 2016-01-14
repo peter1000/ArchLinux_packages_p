@@ -1,0 +1,32 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+
+_srcname=darcyripper
+pkgname=${_srcname}_p
+pkgver=1.2.3
+pkgrel=1
+pkgdesc="An offline free website downloader."
+arch=('x86_64')
+url="http://darcyripper.com/"
+license=('GPL2')
+depends=('java-runtime' 'desktop-file-utils')
+install='darcyripper.install'
+provides=("darcyripper=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('darcyripper')
+source=("http://darcyripper.com/download/1230/darcyripper.zip"
+    'darcyripper.desktop'
+    'darcyripper.jpg')
+sha256sums=('f165790b49139d467b09ae765cc901323cccc8ea08addf459d95457b9408a66b'
+            '3066e6a97684bbd165f970a291004dbe212f8d19cd20674ff005c4dba4ad15d5'
+            '4941823e1a8be6920abe67059acf5f28c29ed8698d51bbf3689063679a72f59f')
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    install -d -m755 "${pkgdir}/opt/${_srcname}"
+    install -d -m755 "${pkgdir}/usr/share/applications"
+
+    cp -a "${srcdir}/${_srcname}"/* "${pkgdir}/opt/${_srcname}"
+
+    install -m644 "${srcdir}/darcyripper.jpg" "${pkgdir}/opt/${_srcname}/darcyripper.jpg"
+    install -m644 "${srcdir}/${_srcname}.desktop" "${pkgdir}/usr/share/applications/${_srcname}.desktop"
+    install -d -m644 "${srcdir}/license.txt" "${pkgdir}/usr/share/licenses/${pkgname}/license"
+}

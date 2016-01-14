@@ -1,0 +1,12 @@
+[Desktop Entry]
+NoDisplay=fase
+Encoding=UTF-8
+Terminal=false
+Exec=java -jar /opt/darcyripper/DarcyRipper.jar
+Icon=/opt/darcyripper/darcyripper.jpg
+Type=Application
+Categories=Network;
+StartupNotify=true
+Name=DarcyRipper Webdownloader
+GenericName=DarcyRipper
+Name[en_US]=DarcyRipper
