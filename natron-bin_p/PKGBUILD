@@ -1,0 +1,15 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Rutger Broekhoff
+
+_srcname=natron-bin
+pkgname=natron-bin_p
+install=natron-bin.install
+pkgver=2.0.0
+pkgrel=1
+pkgdesc='Video compositing software (similar to Nuke and Adobe After Effects)'
+arch=('x86_64')
+url='http://natron.fr/'
+license=MPL
+depends=('ffmpeg' 'p7zip')
+optdepends=('blender: for 3d opencolor-io support')
+conflicts=('natron' 'natron-rc' 'natron-bin-dev')

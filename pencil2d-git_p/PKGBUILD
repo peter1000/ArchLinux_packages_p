@@ -1,0 +1,53 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Benjamin Robin <dev@benjarobin.fr>
+# Contributor: Otto VonStein <otto>
+
+_srcname=pencil
+pkgname=${_srcname}-git_p
+pkgver=1941.f04423b
+pkgrel=1
+pkgdesc="Animation/drawing software, that lets you create traditional hand-drawn animation using both bitmap and vector graphics"
+arch=('x86_64')
+url="http://www.pencil2d.org/"
+license=('GPL')
+depends=('ming' 'ffmpeg' 'qt5-svg' 'qt5-multimedia')
+makedepends=('git' 'qt5-tools')
+provides=("pencil2d=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('pencil2d' 'pencil2d-git')
+install=pencil2d.install
+source=("${_srcname}::git+http://github.com/pencil2d/pencil.git"    #commit=f04423b  OK
+        'pencil2d.desktop')
+sha256sums=('SKIP'
+            '485846e06e48583df5e9d94712ac5e2440d188b53d66d29a1491a9b4bc4a3671')
+
+pkgver() {
+    cur_prefix=''
+    cd "${srcdir}/${_srcname}"
+    local _tag_stripped="$(git describe --abbrev=0 --tags | sed 's/^'${cur_prefix}'//;s/-/./g')"
+    local _rev="$(($(git rev-list --count HEAD)-$(git rev-list --count $(git describe --abbrev=0 --tags))))"
+    printf "${_tag_stripped}.r${_rev}.g%s" "$(git rev-parse --short HEAD)"
+}
+
+prepare()
+{
+    cd "${srcdir}/${_srcname}"
+    # Translation build is broken
+    sed -i "/SUBDIRS/s/l10n//" pencil.pro
+}
+
+build()
+{
+    cd "${srcdir}/${_srcname}"
+    qmake-qt5 ${_srcname}.pro \
+        QMAKE_CFLAGS_RELEASE="${CFLAGS}"\
+        QMAKE_CXXFLAGS_RELEASE="${CXXFLAGS}"
+    make ${MAKEFLAGS}
+}
+
+package()
+{
+    cd "${srcdir}/${_srcname}"
+    install -D -m755 app/Pencil2D "${pkgdir}/usr/bin/pencil2d"
+    install -D -m644 icons/icon.png "${pkgdir}/usr/share/pixmaps/pencil2d.png"
+    install -D -m644 "${srcdir}/pencil2d.desktop" "${pkgdir}/usr/share/applications/pencil2d.desktop"
+}

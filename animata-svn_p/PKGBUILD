@@ -1,0 +1,47 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: ianux <ianux@free.fr>
+
+_srcname=animata
+pkgname=${_srcname}-svn_p
+pkgver=.r63
+pkgrel=1
+pkgdesc="an open source real-time animation software"
+arch=('x86_64')
+url="http://animata.kibu.hu/"
+license=('GPL')
+depends=('fltk' 'mesa')
+makedepends=('scons' 'subversion')
+provides=("animata=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('animata' 'animata-svn')
+install=animata.install
+source=("${_srcname}::svn+http://animata.googlecode.com/svn/trunk/"     #revision=14610  OK
+    'animata.desktop')
+sha256sums=('SKIP'
+            '0e12f6321f95080209b95223d9471aea37e20e8b78430ff95eba47a86a3e593a')
+
+pkgver() {
+    cd "${srcdir}/${_srcname}"
+    local ver="$(svnversion)"
+    printf "${_tag}.r%s" "${ver//[[:alpha:]]}"
+}
+
+build() {
+  cd ${srcdir}
+
+  cp -a "${srcdir}/${_srcname}" "${srcdir}/${_srcname}-build"
+  cd "${srcdir}/${_srcname}-build"
+
+  scons PREFIX=/usr
+}
+
+package() {
+    cd "${srcdir}/${_srcname}-build"
+
+    install -D -m755 ${srcdir}/${_srcname}-build/build/animata ${pkgdir}/usr/bin/animata
+    install -d ${pkgdir}/usr/share/animata
+    cp -r ${srcdir}/${_srcname}-build/examples ${pkgdir}/usr/share/animata
+    install -D -m644 ${srcdir}/${_srcname}-build/data/animata_icon.png ${pkgdir}/usr/share/pixmaps/animata.png
+    install -D -m644 ${startdir}/animata.desktop ${pkgdir}/usr/share/applications/animata.desktop
+
+    rm -rf "${srcdir}/${_srcname}-build"
+}

@@ -1,0 +1,49 @@
+# Maintainer: peter1000 <https://github.com/peter1000>
+# Contributor: Maxime Gauduin <alucryd@archlinux.org>
+# Contributor: PelPix <kylebloss@pelpix.info>
+
+_srcname=Papagayo
+pkgname=papagayo-git_p
+_tag=2.0
+pkgver=2.0.r2.ge143684              
+pkgrel=1
+pkgdesc='Lipsync tool for animators '
+arch=('x86_64')
+url="http://www.lostmarble.com/papagayo/index.shtml"
+license=('custom')
+depends=('gst-libav')
+makedepends=('git')
+provides=("papagayo=${pkgver}" "${pkgname}=${pkgver}")
+conflicts=('papagayo' 'papagayo-git')
+license=('GPL' 'custom:UNREDISTRIBUTABLE')
+install='Papagayo.install'
+source=("${_srcname}::git+https://github.com/LostMoho/${_srcname}.git"    #commit=e143684   OK
+    'Papagayo.desktop')
+sha256sums=('SKIP'
+            '6fde59a6225877565dd4c7128649b9727751931dd8cb76a2c90cca818c29e33c')
+
+pkgver() {
+    cd "${srcdir}/${_srcname}"
+    printf "${_tag}.r$(git rev-list --count HEAD).g$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/${_srcname}"
+    qmake-qt5 ${_srcname}.pro \
+        QMAKE_CFLAGS_RELEASE="${CFLAGS}"\
+        QMAKE_CXXFLAGS_RELEASE="${CXXFLAGS}"
+    make ${MAKEFLAGS}
+}
+
+package() {
+    cd "${srcdir}/${_srcname}"
+    install -D -m 755 "${srcdir}/${_srcname}/Papagayo" "${pkgdir}/usr/bin/Papagayo"
+    install -d -m755 "${pkgdir}/usr/share"
+    cp -a "${srcdir}/${_srcname}/installer/Papagayo" "${pkgdir}/usr/share"
+
+    install -D -m 644 "${srcdir}/${_srcname}.desktop" "${pkgdir}/usr/share/applications/${_srcname}.desktop"
+    install -D -m 644 "${srcdir}/${_srcname}/rsrc/images/papagayo.png" "${pkgdir}/usr/share/pixmaps/${_srcname}.png"
+    install -D -m 644 "${srcdir}/${_srcname}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
+
+
